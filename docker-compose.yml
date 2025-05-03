@@ -10,7 +10,6 @@ services:
     environment:
       - DAGGER_HOST=unix:///run/dagger/engine.sock
       - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
     env_file:
       - .env
     depends_on:
