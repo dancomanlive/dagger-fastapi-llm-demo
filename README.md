@@ -1,101 +1,77 @@
-🧠 Dagger + FastAPI + OpenAI Chat API
+# 🧠 Dagger + FastAPI + OpenAI Chat API
 
 This project is a minimal demo of an AI-powered API using FastAPI, Dagger, and OpenAI. The API runs entirely in Docker and exposes a simple chat endpoint that leverages OpenAI language models.
 
-⸻
+## 🚀 Features
 
-🚀 Features
-	•	✅ Docker-first deployment
-	•	✅ Built-in integration with OpenAI models (GPT-4, GPT-3.5, etc.)
-	•	✅ Secure handling of API keys via .env or environment variables
-	•	✅ Lightweight FastAPI backend for sending prompts and receiving completions
+- Docker-first deployment
+- Integration with OpenAI models (GPT-4, GPT-3.5, etc.)
+- Secure API key management via .env or environment variables
+- Lightweight FastAPI backend to send prompts and receive completions
 
-⸻
+## 🛠️ Setup & Usage
 
-🛠️ Setup & Usage
+### 1. Clone the repository
 
-1. Clone the repository
+    git clone https://github.com/your-username/dagger-fastapi-llm-demo.git
+    cd dagger-fastapi-llm-demo
 
-git clone https://github.com/your-username/dagger-fastapi-llm-demo.git
-cd dagger-fastapi-llm-demo
+### 2. Create a .env file in the project root
 
-2. Create a .env file in the project root
+    # .env
+    OPENAI_API_KEY=your_openai_api_key_here
+    # Optional:
+    # OPENAI_MODEL=gpt-4o
+    # OPENAI_BASE_URL=https://api.openai.com/v1/
 
-# .env
-OPENAI_API_KEY=your_openai_api_key_here
-# Optional:
-# LLM_MODEL=gpt-4o
+(The .env file is automatically loaded by Docker and is ignored by Git.)
 
-✅ The .env file is automatically used by Docker and ignored by git.
+### 3. Start the API using Docker
 
-3. Start the API using Docker
+    docker-compose up -d
 
-docker-compose up -d
+The API will now be available at:
 
-This will start the FastAPI server inside a container. Once running, the API will be available at:
+    http://localhost:8000
 
-http://localhost:8000
+## 📡 API Usage
 
+### POST /chat
 
+Send a prompt to the model and get a response.
 
-⸻
+#### Example Request:
 
-📡 API Usage
+    curl -X POST http://localhost:8000/chat \
+      -H "Content-Type: application/json" \
+      -d '{
+        "prompt": "What is the capital of Malaysia?"
+      }'
 
-🔹 Endpoint
+#### Example Response:
 
-POST /chat
+    {
+      "response": "The capital of Malaysia is Kuala Lumpur."
+    }
 
-Send a prompt to the model and receive an AI-generated response.
+You can optionally pass a specific model in the request:
 
-Request
+    {
+      "prompt": "Hello!",
+      "model": "gpt-4"
+    }
 
-POST http://localhost:8000/chat
-Content-Type: application/json
+## 🔒 Security Notes
 
-{
-  "prompt": "What is the capital of Malaysia?"
-}
+- Do not commit your `.env` file. It's already listed in `.gitignore`.
+- Store secrets only in `.env` or secure environment variables.
+- Dagger ensures secrets are never exposed in logs or Docker layer history.
 
-Response
+Learn more at: https://docs.dagger.io/features/security
 
-{
-  "response": "The capital of Malaysia is Kuala Lumpur."
-}
+## 🧩 Tech Stack
 
-📝 You can also optionally include a model field in the request body to override the default (e.g., "model": "gpt-4").
-
-⸻
-
-🔒 Security Notes
-	•	Secrets like OPENAI_API_KEY should only be stored in .env or as environment variables.
-	•	The .env file is ignored by git to prevent accidental leaks.
-	•	Dagger ensures secrets are not exposed in logs or containers.
-
-For more, see the Dagger Security Docs.
-
-⸻
-
-🧩 Tech Stack
-	•	FastAPI – Web API framework
-	•	Dagger – Secure containerized DevOps
-	•	Docker – Container-based environment
-	•	OpenAI API – Language model backend
-
-⸻
-
-🧪 Quick Test (No code)
-
-Run this in your terminal to test the chat API:
-
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "What is the capital of Malaysia?"
-}'
-
-
-
-⸻
-
-Let me know if you want a diagram of the architecture or Docker setup!
+- FastAPI – for serving the API
+- Dagger – for managing containerized workflows and secret injection
+- Docker – for consistent local and production environments
+- OpenAI – the language model backend
