@@ -1,0 +1,35 @@
+services:
+  fastapi:
+    build: .
+    volumes:
+      - .:/app
+      - dagger-socket:/run/dagger
+    command: uvicorn main:app --host 0.0.0.0 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      - DAGGER_HOST=unix:///run/dagger/engine.sock
+      - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    env_file:
+      - .env
+    depends_on:
+      - dagger-engine
+    networks:
+      - dagger-net
+
+  dagger-engine:
+    image: registry.dagger.io/engine:v0.18.5
+    container_name: dagger-engine
+    privileged: true
+    volumes:
+      - dagger-socket:/run/dagger
+    networks:
+      - dagger-net
+
+volumes:
+  dagger-socket:
+
+networks:
+  dagger-net:
+    driver: bridge
