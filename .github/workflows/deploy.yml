@@ -34,6 +34,7 @@ jobs:
           DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          GITHUB_ACTIONS: ${{ env.GITHUB_ACTIONS }}
         run: |
           docker run --rm \
             -v ${PWD}:/app \
@@ -44,5 +45,6 @@ jobs:
             -e DAGGER_CLOUD_TOKEN \
             -e OPENAI_API_KEY \
             -e LLM_MODEL \
+            -e GITHUB_ACTIONS \
             python:3.11-slim \
             sh -c "apt-get update && apt-get install -y docker.io && pip install dagger-io python-dotenv && python ci/dagger_pipeline.py"

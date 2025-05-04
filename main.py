@@ -28,6 +28,9 @@ logger = logging.getLogger(__name__)
 # Set default model from environment variable OPENAI_MODEL, fallback to "gpt-4o"
 DEFAULT_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 
+# Print the presence of DAGGER_CLOUD_TOKEN in the environment
+print("DAGGER_CLOUD_TOKEN present:", bool(os.environ.get("DAGGER_CLOUD_TOKEN")))
+
 # Define an asynchronous context manager for FastAPI application lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
