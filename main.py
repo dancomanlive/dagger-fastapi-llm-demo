@@ -31,6 +31,10 @@ DEFAULT_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 # Define an asynchronous context manager for FastAPI application lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Get Dagger Cloud token from env
+    token = os.getenv("DAGGER_CLOUD_TOKEN")
+    if not token:
+        logger.warning("DAGGER_CLOUD_TOKEN not found. Dagger Cloud features will be disabled.")
     # Initialize Dagger configuration with stderr logging
     config = dagger.Config(log_output=sys.stderr)
     # Establish connection to Dagger client
