@@ -33,7 +33,9 @@ jobs:
         run: |
           docker run --rm \
             -v ${PWD}:/app \
+            -v /var/run/docker.sock:/var/run/docker.sock \
             -w /app \
             -e DAGGER_CLOUD_TOKEN \
+            --name dagger-runner \
             python:3.11-slim \
-            sh -c "pip install dagger-io && python ci/dagger_pipeline.py"
+            sh -c "apt-get update && apt-get install -y docker.io && pip install dagger-io && python ci/dagger_pipeline.py"
