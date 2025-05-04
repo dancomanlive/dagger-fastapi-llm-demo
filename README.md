@@ -59,14 +59,14 @@ Send a prompt to the model and get a response.
 ```bash
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "What is the capital of Malaysia?"}'
+  -d '{"prompt": "What is the capital of China?"}'
 ```
 
 #### Example Response:
 
 ```json
 {
-  "response": "The capital of Malaysia is Kuala Lumpur."
+  "response": "The capital of China is Beijing."
 }
 ```
 
