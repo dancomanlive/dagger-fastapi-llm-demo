@@ -29,13 +29,21 @@ jobs:
 
       - name: Run Dagger Pipeline in Docker
         env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
         run: |
           docker run --rm \
             -v ${PWD}:/app \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -w /app \
+            -e DOCKERHUB_USERNAME \
+            -e DOCKERHUB_TOKEN \
             -e DAGGER_CLOUD_TOKEN \
+            -e OPENAI_API_KEY \
+            -e LLM_MODEL \
             --name dagger-runner \
             python:3.11-slim \
             sh -c "apt-get update && apt-get install -y docker.io && pip install dagger-io && python ci/dagger_pipeline.py"
