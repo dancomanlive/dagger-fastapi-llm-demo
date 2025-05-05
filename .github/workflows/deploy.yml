@@ -46,5 +46,6 @@ jobs:
             -e OPENAI_API_KEY \
             -e LLM_MODEL \
             -e GITHUB_ACTIONS \
+            -e CI=true \
             python:3.11-slim \
             sh -c "apt-get update && apt-get install -y docker.io && pip install dagger-io python-dotenv && python ci/dagger_pipeline.py"
