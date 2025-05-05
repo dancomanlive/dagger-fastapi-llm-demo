@@ -4,6 +4,8 @@ This project is a minimal demo of an AI-powered API using FastAPI, Dagger, and O
 
 <img width="1710" alt="Screenshot 2025-05-04 at 15 05 54" src="https://github.com/user-attachments/assets/8033e815-1c23-4662-9041-8e59c23f225c" />
 
+<img width="877" alt="Screenshot 2025-05-05 at 12 30 53" src="https://github.com/user-attachments/assets/feefbb63-7039-41ea-bb2d-640f68fd806a" />
+
 ## 🚀 Features
 
 - **Docker-first deployment**
