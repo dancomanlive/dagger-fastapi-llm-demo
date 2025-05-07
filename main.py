@@ -78,10 +78,6 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def get_module_execution_command(module_name, class_name, method_name):
-    """Generate a standardized Python command to execute a module"""
-    return f"from {module_name} import {class_name}; obj = {class_name}(); print(obj.{method_name}())"
-
 @app.get("/echo")
 async def echo_endpoint(text: str = "Hello from Dagger"):
     """Endpoint that echoes the provided text using a Dagger container"""
