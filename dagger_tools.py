@@ -28,8 +28,6 @@ def hello_world_container(client: dagger.Client, name: str = "World") -> dagger.
         A configured container ready to execute
     """
     return client.container().from_("python:3.11-slim") \
-        .with_exec(["pip", "install", "--upgrade", "pip"]) \
-        .with_exec(["pip", "install", "dagger-io==0.18.5"]) \
         .with_mounted_directory("/scripts", client.host().directory(SCRIPTS_DIR)) \
         .with_workdir("/scripts") \
         .with_exec(["python", "hello_world.py", name])
