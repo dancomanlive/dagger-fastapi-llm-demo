@@ -1,7 +1,5 @@
-import dagger
 import sys
 
-@dagger.function
 def hello_world(name: str) -> str:
     return f"Hello, {name}!"
 
