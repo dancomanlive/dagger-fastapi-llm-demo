@@ -1,100 +1,197 @@
-# Import required standard Python libraries for OS operations, system interactions, and logging
 import os
-import sys
 import logging
-# Import Optional type hint for type checking
+import json
 from typing import Optional
-# Import asynccontextmanager for managing asynchronous context
 from contextlib import asynccontextmanager
 
-# Import FastAPI for building the web API
-from fastapi import FastAPI
-# Import BaseModel from Pydantic for data validation and serialization
+
+from fastapi import FastAPI, HTTPException # Added HTTPException
+
 from pydantic import BaseModel
-# Import load_dotenv to load environment variables from a .env file
+
 from dotenv import load_dotenv
 
-# Import dagger for interacting with the Dagger client
-import dagger
 
-# Load environment variables from .env file
+import dagger
+from dagger import dag
+
+
 load_dotenv()
 
-# Configure basic logging with INFO level
+
 logging.basicConfig(level=logging.INFO)
-# Create a logger instance for this module
+
 logger = logging.getLogger(__name__)
 
-# Set default model from environment variable OPENAI_MODEL, fallback to "gpt-4o"
 DEFAULT_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 
-# Print the presence of DAGGER_CLOUD_TOKEN in the environment
-print("DAGGER_CLOUD_TOKEN present:", bool(os.environ.get("DAGGER_CLOUD_TOKEN")))
-
-# Define an asynchronous context manager for FastAPI application lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Get Dagger Cloud token from env
-    token = os.getenv("DAGGER_CLOUD_TOKEN")
-    if not token:
-        logger.warning("DAGGER_CLOUD_TOKEN not found. Dagger Cloud features will be disabled.")
-    # Initialize Dagger configuration with stderr logging
-    config = dagger.Config(log_output=sys.stderr)
-    # Establish connection to Dagger client
-    async with dagger.Connection(config) as client:
-        # Store Dagger client in FastAPI app state
-        app.state.dagger_client = client
-        # Log successful connection establishment
-        logger.info("Dagger connection established.")
-        # Yield control back to FastAPI, keeping the context alive
-        yield
-        # Log connection closure when context is exited
-        logger.info("Dagger connection closed.")
+    logger.info("FastAPI lifespan: Initializing Dagger client...")
+    try:
+        async with dagger.connection() as client:
+            app.state.dagger_client = client
+            logger.info("Dagger client initialized and stored in app state.")
+            yield
+    except Exception as e:
+        logger.critical(f"An error occurred during Dagger client initialization: {e}", exc_info=True)
+        raise
+    finally:
+        logger.info("FastAPI lifespan: Cleaning up Dagger client...")
+        app.state.dagger_client = None
 
-# Initialize FastAPI application with title and custom lifespan
+
 app = FastAPI(title="Dagger FastAPI Demo", lifespan=lifespan)
 
-# Define Pydantic model for chat request payload
+
 class ChatRequest(BaseModel):
-    prompt: str  # Required field for user prompt
-    model: Optional[str] = DEFAULT_MODEL  # Optional model field with default value
+    prompt: str  
+    model: Optional[str] = DEFAULT_MODEL 
 
-# Define Pydantic model for chat response payload
 class ChatResponse(BaseModel):
-    response: str  # Required field for response content
+    response: str  
 
-# Define root endpoint for GET requests
 @app.get("/")
 async def read_root():
-    # Return a welcome message
     return {"message": "Welcome to Dagger FastAPI Demo"}
 
-# Define chat endpoint for POST requests
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    # Retrieve Dagger client from app state
-    client = app.state.dagger_client
+    """Endpoint that uses the Dagger LLM module to generate a response"""
+    logger.info("/chat endpoint called. Using Dagger global client.")
 
     try:
-        # Check if OPENAI_API_KEY is set in environment
         if not os.environ.get("OPENAI_API_KEY"):
-            # Log error if API key is missing
             logger.error("OPENAI_API_KEY not found in environment or .env file")
-            # Return error response
-            return ChatResponse(
-                response="Error: OPENAI_API_KEY not found. Please set it in your environment or .env file."
-            )
+            raise HTTPException(status_code=400, detail="OPENAI_API_KEY not found")
         
-        # Configure LLM with specified model and prompt
-        llm = client.llm().with_model(request.model).with_prompt(request.prompt)
+        llm = dag.llm().with_model(request.model).with_prompt(request.prompt)
 
-        # Await and retrieve the last reply from LLM
         result = await llm.last_reply()
-        # Return successful response with LLM output
+        logger.info(f"Received response from LLM with model {request.model}")
         return ChatResponse(response=result)
 
     except Exception as e:
-        # Log any exceptions that occur during LLM execution
-        logger.exception("Error during LLM execution")
-        # Return error response with exception details
-        return ChatResponse(response=f"Error: {e}")
+        logger.exception(f"Error during LLM execution: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+def get_module_execution_command(module_name, class_name, method_name):
+    """Generate a standardized Python command to execute a module"""
+    return f"from {module_name} import {class_name}; obj = {class_name}(); print(obj.{method_name}())"
+
+@app.get("/echo")
+async def echo_endpoint(text: str = "Hello from Dagger"):
+    """Endpoint that echoes the provided text using a Dagger container"""
+    logger.info(f"/echo endpoint called with text: {text}. Using Dagger global client.")
+
+    try:
+        from dagger_tools import echo
+        
+        # Use the functional approach
+        result = await echo(dag, text)
+        
+        logger.info(f"Received echo from container: {result}")
+        return {"message": result}
+
+    except Exception as e:
+        logger.exception(f"Error executing echo container: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/hello")
+async def hello_world_endpoint(name: str = "World"):
+    """Endpoint that executes a simple hello-world function using a container with custom name"""
+    logger.info(f"/hello endpoint called with name: {name}. Using Dagger global client.")
+
+    try:
+        from dagger_tools import hello_world
+        
+        # Use the functional approach
+        message = await hello_world(dag, name)
+        
+        logger.info(f"Received message from hello-world function: {message}")
+        return {"message": message}
+
+    except Exception as e:
+        logger.exception(f"Error executing hello-world container: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/process")
+async def process_data_endpoint(data: dict):
+    """Endpoint that processes data using a Dagger container"""
+    logger.info("/process endpoint called with data. Using Dagger global client.")
+
+    try:
+        from dagger_tools import process_data
+        import json
+        
+        # Convert dict to JSON string for processing
+        json_data = json.dumps(data)
+        
+        # Use the functional approach
+        result = await process_data(dag, json_data)
+        
+        # Parse result back to dict
+        processed_data = json.loads(result)
+        
+        logger.info("Processed data in container")
+        return {"result": processed_data}
+
+    except Exception as e:
+        logger.exception(f"Error processing data: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/analyze-text")
+async def analyze_text_endpoint(request: dict):
+    """Endpoint that analyzes text using a Dagger container"""
+    if "text" not in request:
+        raise HTTPException(status_code=400, detail="Text field is required")
+        
+    text = request["text"]
+    logger.info(f"Analyzing text with {len(text)} characters")
+
+    try:
+        from dagger_tools import analyze_text
+        
+        # Use the functional approach
+        result = await analyze_text(dag, text)
+        
+        # Parse result back to dict
+        analysis_result = json.loads(result)
+        
+        logger.info("Text analysis completed")
+        return {"analysis": analysis_result}
+
+    except Exception as e:
+        logger.exception(f"Error analyzing text: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/filter-csv")
+async def filter_csv_endpoint(request: dict):
+    """Endpoint that filters CSV data using a Dagger container"""
+    required_fields = ["csv_data", "column", "value"]
+    for field in required_fields:
+        if field not in request:
+            raise HTTPException(status_code=400, detail=f"{field} field is required")
+    
+    csv_data = request["csv_data"]
+    column = request["column"]
+    value = request["value"]
+    
+    logger.info(f"Filtering CSV data on {column}={value}")
+
+    try:
+        from dagger_tools import filter_csv
+        
+        # Use the functional approach
+        result = await filter_csv(dag, csv_data, column, value)
+        
+        # Parse result back to dict
+        filter_result = json.loads(result)
+        
+        logger.info(f"CSV filtering completed, found {filter_result.get('count', 0)} matching rows")
+        return {"result": filter_result}
+
+    except Exception as e:
+        logger.exception(f"Error filtering CSV: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

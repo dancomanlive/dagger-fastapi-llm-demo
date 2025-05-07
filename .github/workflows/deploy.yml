@@ -34,8 +34,20 @@ jobs:
           DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
-          GITHUB_ACTIONS: ${{ env.GITHUB_ACTIONS }}
+          GITHUB_ACTIONS: "true"
+          CI: "true"
+          DAGGER_CI: "true"
+          DAGGER_CI_RUNNER: "github"
         run: |
+          # Debug environment variables to help with troubleshooting
+          echo "Environment variables for Dagger CI detection:"
+          echo "CI=${CI}"
+          echo "GITHUB_ACTIONS=${GITHUB_ACTIONS}"
+          echo "DAGGER_CI=${DAGGER_CI}"
+          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"
+          echo "GITHUB_RUN_ID=${GITHUB_RUN_ID}"
+          
+          # Run the pipeline in Docker
           docker run --rm \
             -v ${PWD}:/app \
             -v /var/run/docker.sock:/var/run/docker.sock \
@@ -46,6 +58,12 @@ jobs:
             -e OPENAI_API_KEY \
             -e LLM_MODEL \
             -e GITHUB_ACTIONS \
-            -e CI=true \
+            -e CI \
+            -e DAGGER_CI \
+            -e DAGGER_CI_RUNNER \
+            -e GITHUB_REPOSITORY="${GITHUB_REPOSITORY}" \
+            -e GITHUB_RUN_ID="${GITHUB_RUN_ID}" \
+            -e GITHUB_RUN_NUMBER="${GITHUB_RUN_NUMBER}" \
+            -e GITHUB_WORKFLOW="${GITHUB_WORKFLOW}" \
             python:3.11-slim \
             sh -c "apt-get update && apt-get install -y docker.io && pip install dagger-io python-dotenv && python ci/dagger_pipeline.py"
