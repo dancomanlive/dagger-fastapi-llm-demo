@@ -110,6 +110,27 @@ The guide includes:
 - Advanced patterns for complex use cases
 - Examples for various input types and processing needs
 
+## 🚧 Limitations & Workarounds
+
+### Python SDK Module Function Invocation
+
+While Dagger is a powerful tool for containerized workflows, the Python SDK (as of version 0.18.5) has some limitations:
+
+- **Module Function Limitations**: There is currently no straightforward way to call Dagger module functions programmatically from the Python SDK. These module functions (defined with `@dagger.function` in a module configured via `dagger.json`) are primarily designed to be called via the Dagger CLI.
+
+- **Official Workaround**: As confirmed by Dagger maintainers, the only current way to invoke module functions from Python is through complex GraphQL operations, which is not ideal for production code.
+
+### Our Solution
+
+This project demonstrates a practical workaround by using a functional approach with direct container operations:
+
+1. Instead of using module functions, we define container-based tools with explicit input/output contracts
+2. We separate script logic into external files for better maintainability
+3. We mount these scripts into containers at runtime rather than embedding them in code
+4. We use pure functions to create and execute these containers
+
+This approach sidesteps the SDK limitations while still leveraging Dagger's powerful container orchestration capabilities. The result is clean, maintainable code that follows functional programming principles while achieving the same goals as module functions.
+
 ## 📁 Project Structure
 
 ```
