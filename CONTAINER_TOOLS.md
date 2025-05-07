@@ -24,22 +24,45 @@ result = input_data.upper()
 print(result)
 ```
 
-### 2. Add container functions in `dagger_tools.py`
+### 2. Create a new tool module in the `tools/` directory
 
-Add two functions to the `dagger_tools.py` file:
+Add a new Python module to the `tools/` directory that leverages the shared factory functions:
 
 ```python
-# Container creation function
-def my_tool_container(client: dagger.Client, input: str) -> dagger.Container:
-    return client.container().from_("python:3.11-slim") \
-        .with_mounted_directory("/scripts", client.host().directory(SCRIPTS_DIR)) \
-        .with_workdir("/scripts") \
-        .with_exec(["python", "my_script.py", input])
+"""
+My tool - demonstrates usage of the core utilities.
+"""
+import dagger
+from tools.core import get_tool_base, run_container_and_check, SCRIPTS_DIR
 
-# Convenience execution function
-async def my_tool(client: dagger.Client, input: str) -> str:
-    container = my_tool_container(client, input)
-    return await run_container(container)
+async def my_tool(
+    client: dagger.Client, 
+    input: str,
+    image: str = "python:3.11-slim"
+) -> str:
+    """
+    Process input with my_script.py in a container.
+    
+    Args:
+        client: Dagger client
+        input: Text to process
+        image: Container image to use
+        
+    Returns:
+        The processed result
+    """
+    # Get a base container configured with our scripts directory
+    container = get_tool_base(
+        client=client,
+        image=image,
+        scripts_dir=SCRIPTS_DIR,
+    )
+    
+    # Run the my_script.py script with the provided input
+    return await run_container_and_check(
+        container=container,
+        args=["python", "scripts/my_script.py", input]
+    )
 ```
 
 ### 3. Add an endpoint in `main.py`
@@ -49,10 +72,52 @@ Create a new FastAPI endpoint that uses your tool:
 ```python
 @app.get("/my-endpoint")
 async def my_endpoint(input: str):
-    from dagger_tools import my_tool
-    result = await my_tool(dag, input)
-    return {"message": result}
+    """Endpoint that processes input using a Dagger container"""
+    logger.info(f"/my-endpoint called with input: {input}. Using Dagger client from app state.")
+
+    try:
+        from tools.my_tool import my_tool
+        
+        # Use the client from app state
+        client = app.state.dagger_client
+        result = await my_tool(client, input)
+        
+        logger.info(f"Processed input with my tool")
+        return {"message": result}
+
+    except Exception as e:
+        logger.exception(f"Error processing input: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 ```
+
+## Tools Architecture
+
+The project uses a modular approach for containerized tools:
+
+### Core Utilities (`tools/core.py`)
+
+The `core.py` module provides shared functionality:
+
+- `get_tool_base()`: Creates standardized container configurations
+- `run_container_and_check()`: Executes containers and handles errors consistently 
+- `SCRIPTS_DIR`: Centralized path to the scripts directory
+
+### Individual Tool Modules
+
+Each tool is implemented as a separate module in the `tools/` directory:
+
+- `hello.py`: Hello world greeting tool
+- `echo.py`: Text echo tool
+- `process_data.py`: JSON data processing tool
+- `analyze_text.py`: Text analysis tool
+- `filter_csv.py`: CSV filtering tool
+
+This architecture provides several benefits:
+
+1. **DRY (Don't Repeat Yourself)**: Common container setup and execution logic is centralized
+2. **Standardized Error Handling**: All tools handle errors consistently
+3. **Maintainability**: Changes to common behavior only need to be made in one place
+4. **Modularity**: Tools are isolated and easy to test independently
 
 ## Best Practices
 

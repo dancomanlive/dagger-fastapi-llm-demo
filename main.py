@@ -84,7 +84,7 @@ async def echo_endpoint(text: str = "Hello from Dagger"):
     logger.info(f"/echo endpoint called with text: {text}. Using Dagger client from app state.")
 
     try:
-        from dagger_tools import echo
+        from tools.echo import echo
         
         # Use the client from app state
         client = app.state.dagger_client
@@ -103,7 +103,7 @@ async def hello_world_endpoint(name: str = "World"):
     logger.info(f"/hello endpoint called with name: {name}. Using Dagger client from app state.")
 
     try:
-        from dagger_tools import hello_world
+        from tools.hello import hello_world
         
         # Use the client from app state
         if not app.state.dagger_client:
@@ -125,7 +125,7 @@ async def process_data_endpoint(data: dict):
     logger.info("/process endpoint called with data. Using Dagger client from app state.")
 
     try:
-        from dagger_tools import process_data
+        from tools.process_data import process_data
         import json
         
         # Convert dict to JSON string for processing
@@ -155,7 +155,7 @@ async def analyze_text_endpoint(request: dict):
     logger.info(f"Analyzing text with {len(text)} characters")
 
     try:
-        from dagger_tools import analyze_text
+        from tools.analyze_text import analyze_text
         
         # Use the client from app state
         client = app.state.dagger_client
@@ -186,7 +186,7 @@ async def filter_csv_endpoint(request: dict):
     logger.info(f"Filtering CSV data on {column}={value}")
 
     try:
-        from dagger_tools import filter_csv
+        from tools.filter_csv import filter_csv
         
         # Use the client from app state
         client = app.state.dagger_client

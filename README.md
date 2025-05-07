@@ -30,24 +30,30 @@ This project demonstrates a functional approach to using Dagger containers with 
 The key components are:
 
 - **`scripts/`**: Contains Python scripts to be executed in containers
-- **`dagger_tools.py`**: Contains functional implementations of containerized tools
-- **FastAPI endpoints**: Use these functions to handle HTTP requests
+- **`tools/`**: Contains modular tool implementations using shared utilities
+- **`tools/core.py`**: Provides shared container setup and execution logic
+- **FastAPI endpoints**: Use these tools to handle HTTP requests
 
-### Function Types
+### Architecture Components
 
-We use two main types of functions:
+The project has a modular architecture:
 
-1. **Container creation functions**: Return configured Dagger containers
+1. **Core Utilities**: Centralized container creation and execution logic
    ```python
-   def hello_world_container(client: dagger.Client, name: str) -> dagger.Container:
-       # Mount and execute scripts from the scripts/ directory
+   # From tools/core.py
+   def get_tool_base(client, image, scripts_dir, workdir="/workspace") -> dagger.Container:
+       # Create a standardized container base
+   
+   async def run_container_and_check(container, args) -> str:
+       # Execute container and handle errors consistently
    ```
 
-2. **Execution functions**: Run containers and return results
+2. **Tool Modules**: Individual tool implementations using core utilities
    ```python
+   # From tools/hello.py
    async def hello_world(client: dagger.Client, name: str) -> str:
-       container = hello_world_container(client, name)
-       return await run_container(container)
+       container = get_tool_base(client, "python:3.11-slim", SCRIPTS_DIR)
+       return await run_container_and_check(container, ["python", "scripts/hello_world.py", name])
    ```
 
 ## 🛠️ Setup & Usage
