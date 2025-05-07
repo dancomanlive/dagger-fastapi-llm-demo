@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 
 
 import dagger
-from dagger import dag
 
 
 load_dotenv()
@@ -29,7 +28,9 @@ DEFAULT_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
 async def lifespan(app: FastAPI):
     logger.info("FastAPI lifespan: Initializing Dagger client...")
     try:
-        async with dagger.connection() as client:
+        # Connect to the Dagger engine
+        async with dagger.Connection() as client:
+            # Store the client directly - it's already a Client object
             app.state.dagger_client = client
             logger.info("Dagger client initialized and stored in app state.")
             yield
@@ -58,14 +59,15 @@ async def read_root():
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Endpoint that uses the Dagger LLM module to generate a response"""
-    logger.info("/chat endpoint called. Using Dagger global client.")
+    logger.info("/chat endpoint called. Using Dagger client from app state.")
 
     try:
         if not os.environ.get("OPENAI_API_KEY"):
             logger.error("OPENAI_API_KEY not found in environment or .env file")
             raise HTTPException(status_code=400, detail="OPENAI_API_KEY not found")
         
-        llm = dag.llm().with_model(request.model).with_prompt(request.prompt)
+        client = app.state.dagger_client
+        llm = client.llm().with_model(request.model).with_prompt(request.prompt)
 
         result = await llm.last_reply()
         logger.info(f"Received response from LLM with model {request.model}")
@@ -83,13 +85,14 @@ def get_module_execution_command(module_name, class_name, method_name):
 @app.get("/echo")
 async def echo_endpoint(text: str = "Hello from Dagger"):
     """Endpoint that echoes the provided text using a Dagger container"""
-    logger.info(f"/echo endpoint called with text: {text}. Using Dagger global client.")
+    logger.info(f"/echo endpoint called with text: {text}. Using Dagger client from app state.")
 
     try:
         from dagger_tools import echo
         
-        # Use the functional approach
-        result = await echo(dag, text)
+        # Use the client from app state
+        client = app.state.dagger_client
+        result = await echo(client, text)
         
         logger.info(f"Received echo from container: {result}")
         return {"message": result}
@@ -101,13 +104,17 @@ async def echo_endpoint(text: str = "Hello from Dagger"):
 @app.get("/hello")
 async def hello_world_endpoint(name: str = "World"):
     """Endpoint that executes a simple hello-world function using a container with custom name"""
-    logger.info(f"/hello endpoint called with name: {name}. Using Dagger global client.")
+    logger.info(f"/hello endpoint called with name: {name}. Using Dagger client from app state.")
 
     try:
         from dagger_tools import hello_world
         
-        # Use the functional approach
-        message = await hello_world(dag, name)
+        # Use the client from app state
+        if not app.state.dagger_client:
+            raise HTTPException(status_code=500, detail="Dagger client not initialized")
+            
+        client = app.state.dagger_client
+        message = await hello_world(client, name)
         
         logger.info(f"Received message from hello-world function: {message}")
         return {"message": message}
@@ -119,7 +126,7 @@ async def hello_world_endpoint(name: str = "World"):
 @app.post("/process")
 async def process_data_endpoint(data: dict):
     """Endpoint that processes data using a Dagger container"""
-    logger.info("/process endpoint called with data. Using Dagger global client.")
+    logger.info("/process endpoint called with data. Using Dagger client from app state.")
 
     try:
         from dagger_tools import process_data
@@ -128,8 +135,9 @@ async def process_data_endpoint(data: dict):
         # Convert dict to JSON string for processing
         json_data = json.dumps(data)
         
-        # Use the functional approach
-        result = await process_data(dag, json_data)
+        # Use the client from app state
+        client = app.state.dagger_client
+        result = await process_data(client, json_data)
         
         # Parse result back to dict
         processed_data = json.loads(result)
@@ -153,8 +161,9 @@ async def analyze_text_endpoint(request: dict):
     try:
         from dagger_tools import analyze_text
         
-        # Use the functional approach
-        result = await analyze_text(dag, text)
+        # Use the client from app state
+        client = app.state.dagger_client
+        result = await analyze_text(client, text)
         
         # Parse result back to dict
         analysis_result = json.loads(result)
@@ -183,8 +192,9 @@ async def filter_csv_endpoint(request: dict):
     try:
         from dagger_tools import filter_csv
         
-        # Use the functional approach
-        result = await filter_csv(dag, csv_data, column, value)
+        # Use the client from app state
+        client = app.state.dagger_client
+        result = await filter_csv(client, csv_data, column, value)
         
         # Parse result back to dict
         filter_result = json.loads(result)
