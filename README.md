@@ -2,6 +2,10 @@
 
 This project is a minimal demo of an AI-powered API using FastAPI, Dagger, and OpenAI. The API runs entirely in Docker and exposes simple endpoints that leverage Dagger for containerized function execution.
 
+Dagger transforms complex software integrations into a clean, cacheable, and parallelizable directed acyclic graph (DAG) of containerized functions. Each node in this DAG is a purpose-built container with explicit inputs and outputs, creating natural dependencies between processing steps. This design ensures that containers are created on-demand, execute their specific tasks in complete isolation, and terminate after delivering their results, optimizing resource utilization and enhancing security through strict container boundaries. For example, the text analysis pipeline creates a clear flow from raw input → container creation → text processing → result extraction → client response, with each step isolated yet seamlessly connected. 
+
+With the introduction of LLM integration, Dagger extends its capabilities by allowing AI agents to interact with these containerized functions. The LLM core type enables native integration of LLMs into workflows, allowing them to automatically discover and use available Dagger Functions in the provided environment. This means that an LLM can analyze the available tools and select which ones to use to complete assigned tasks, effectively acting as an intelligent orchestrator within the DAG.
+
 <img width="1710" alt="Screenshot 2025-05-04 at 15 05 54" src="https://github.com/user-attachments/assets/8033e815-1c23-4662-9041-8e59c23f225c" />
 
 ## 🚀 Features
@@ -82,215 +86,29 @@ http://localhost:8000
 
 ## 📡 API Usage
 
-### `GET /hello`
+This project exposes several REST API endpoints that leverage Dagger containers for various operations.
 
-Get a simple greeting from a container.
+For detailed information about all available endpoints, request formats, and response examples, please refer to the [API Usage Documentation](./API_USAGE.md).
 
-#### Example Request:
-
-```bash
-# Default greeting
-curl -X GET http://localhost:8000/hello
-
-# Custom name
-curl -X GET "http://localhost:8000/hello?name=Dan"
-```
-
-#### Example Response:
-
-```json
-{
-  "message": "Hello, Dan!"
-}
-```
-
-### `GET /echo`
-
-Echo text from a container.
-
-#### Example Request:
-
-```bash
-curl -X GET "http://localhost:8000/echo?text=Hello%20from%20Dagger"
-```
-
-#### Example Response:
-
-```json
-{
-  "message": "Hello from Dagger"
-}
-```
-
-### `POST /chat`
-
-Send a prompt to the OpenAI model and get a response.
-
-#### Example Request:
-
-```bash
-curl -X POST http://localhost:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "What is the capital of China?"}'
-```
-
-#### Example Response:
-
-```json
-{
-  "response": "The capital of China is Beijing."
-}
-```
-
-You can optionally pass a specific model:
-
-```json
-{
-  "prompt": "Hello!",
-  "model": "gpt-4"
-}
-```
-
-### `POST /process`
-
-Process data using a container.
-
-#### Example Request:
-
-```bash
-curl -X POST http://localhost:8000/process \
-  -H "Content-Type: application/json" \
-  -d '{"name": "dan", "message": "hello"}'
-```
-
-#### Example Response:
-
-```json
-{
-  "result": {
-    "NAME": "DAN",
-    "MESSAGE": "HELLO"
-  }
-}
-```
-
-### `POST /analyze-text`
-
-Analyze text and get statistics.
-
-#### Example Request:
-
-```bash
-curl -X POST http://localhost:8000/analyze-text \
-  -H "Content-Type: application/json" \
-  -d '{"text": "This is a sample text for analysis. This sample contains repeated words."}'
-```
-
-#### Example Response:
-
-```json
-{
-  "analysis": {
-    "word_count": 12,
-    "character_count": 69,
-    "most_common_words": {
-      "this": 2,
-      "sample": 2,
-      "is": 1,
-      "a": 1,
-      "text": 1
-    },
-    "average_word_length": 4.75
-  }
-}
-```
-
-### `POST /filter-csv`
-
-Filter CSV data based on column values.
-
-#### Example Request:
-
-```bash
-curl -X POST http://localhost:8000/filter-csv \
-  -H "Content-Type: application/json" \
-  -d '{
-    "csv_data": "id,name,department,salary\n1,John,Engineering,75000\n2,Alice,Marketing,65000\n3,Bob,Engineering,80000\n4,Carol,HR,60000",
-    "column": "department",
-    "value": "Engineering"
-  }'
-```
-
-#### Example Response:
-
-```json
-{
-  "result": {
-    "filtered_csv": "id,name,department,salary\n1,John,Engineering,75000\n3,Bob,Engineering,80000\n",
-    "rows": [
-      {
-        "id": "1",
-        "name": "John",
-        "department": "Engineering",
-        "salary": "75000"
-      },
-      {
-        "id": "3",
-        "name": "Bob",
-        "department": "Engineering",
-        "salary": "80000"
-      }
-    ],
-    "count": 2
-  }
-}
-```
+Key endpoints include:
+- `GET /hello` - Simple greeting from a container
+- `GET /echo` - Echo text from a container
+- `POST /chat` - Interact with OpenAI models
+- `POST /process` - Process and transform JSON data
+- `POST /analyze-text` - Analyze text and get statistics
+- `POST /filter-csv` - Filter CSV data based on column values
 
 ## 🔧 Creating New Container Tools
 
-To add a new tool, follow this pattern:
+This project is designed to be easily extensible with new containerized tools.
 
-1. Create a script in the `scripts/` directory:
+For a comprehensive guide on how to create and integrate new tools, please refer to the [Container Tools Guide](./CONTAINER_TOOLS.md).
 
-```python
-# scripts/my_script.py
-import sys
-
-# Get arguments from command line
-input_data = sys.argv[1] if len(sys.argv) > 1 else "default"
-
-# Process the data
-result = input_data.upper()
-
-# Output the result
-print(result)
-```
-
-2. Add container functions in `dagger_tools.py`:
-
-```python
-# Container creation function
-def my_tool_container(client: dagger.Client, input: str) -> dagger.Container:
-    return client.container().from_("python:3.11-slim") \
-        .with_mounted_directory("/scripts", client.host().directory(SCRIPTS_DIR)) \
-        .with_workdir("/scripts") \
-        .with_exec(["python", "my_script.py", input])
-
-# Convenience execution function
-async def my_tool(client: dagger.Client, input: str) -> str:
-    container = my_tool_container(client, input)
-    return await run_container(container)
-```
-
-3. Add an endpoint in `main.py`:
-
-```python
-@app.get("/my-endpoint")
-async def my_endpoint(input: str):
-    from dagger_tools import my_tool
-    result = await my_tool(dag, input)
-    return {"message": result}
-```
+The guide includes:
+- Step-by-step instructions for creating new tools
+- Best practices for container configuration
+- Advanced patterns for complex use cases
+- Examples for various input types and processing needs
 
 ## 📁 Project Structure
 
@@ -308,12 +126,6 @@ DaggerFastAPIDemo/
 ├── ci/                 # CI/CD pipelines
 └── docker-compose.yml  # Docker configuration
 ```
-
-## 🔒 Security Notes
-
-- `.env` is in `.gitignore`; never commit your secrets.
-- Store sensitive credentials like `OPENAI_API_KEY` and `DAGGER_CLOUD_TOKEN` in environment variables or `.env`.
-- Dagger secures secret values and prevents them from leaking in logs or layers.
 
 ## ☁️ Dagger Cloud Integration
 
