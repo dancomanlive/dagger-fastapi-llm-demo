@@ -49,6 +49,159 @@ async def my_tool(
         image: Container image to use
         
     Returns:
+        Processed result
+    """
+    # Get a base container configured with our scripts directory
+    container = get_tool_base(
+        client=client,
+        image=image,
+        scripts_dir=SCRIPTS_DIR,
+    )
+    
+    # Add any dependencies if needed
+    container = container.with_exec(["pip", "install", "some-package"])
+    
+    # Run the script with the provided input
+    return await run_container_and_check(
+        container=container,
+        args=["python", "scripts/my_script.py", input]
+    )
+```
+
+### 3. Create a Pipeline (Optional)
+
+If your tool is part of a larger workflow, create a pipeline in the `pipelines/` directory:
+
+```python
+"""
+My pipeline - demonstrates a workflow that uses multiple tools.
+"""
+import json
+import dagger
+from tools.my_tool import my_tool
+from tools.text_embedder import embed_text
+
+async def my_pipeline(
+    client: dagger.Client,
+    input: str
+) -> dict:
+    """
+    Run a pipeline that combines multiple tools.
+    
+    Args:
+        client: Dagger client
+        input: Input text
+        
+    Returns:
+        Dict with pipeline results
+    """
+    # First process with my_tool
+    processed_data = await my_tool(client, input)
+    
+    # Then generate embeddings
+    embedding_result = await embed_text(client, [processed_data])
+    embedding_data = json.loads(embedding_result)
+    
+    # Return combined results
+    return {
+        "processed_text": processed_data,
+        "embeddings": embedding_data.get("embeddings", [])
+    }
+```
+
+### 4. Add an endpoint in `main.py`
+
+Finally, add an endpoint to expose your tool or pipeline:
+
+```python
+@app.post("/my-tool")
+async def my_tool_endpoint(request: dict):
+    """Endpoint that uses my_tool in a Dagger container"""
+    if "text" not in request:
+        raise HTTPException(status_code=400, detail="Text field is required")
+        
+    text = request["text"]
+    logger.info(f"Processing text with my_tool")
+
+    try:
+        from tools.my_tool import my_tool
+        
+        # Use the client from app state
+        client = app.state.dagger_client
+        result = await my_tool(client, text)
+        
+        logger.info("Processing completed")
+        return {"result": result}
+
+    except Exception as e:
+        logger.exception(f"Error processing with my_tool: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+## Example Tool: Hello World
+
+The hello world tool is a simple example that demonstrates the pattern:
+
+### Script: `scripts/hello_world.py`
+
+```python
+import sys
+
+def hello_world(name: str) -> str:
+    return f"Hello, {name}!"
+
+# Script expects one argument for the name
+name = sys.argv[1] if len(sys.argv) > 1 else "World"
+print(hello_world(name))
+```
+
+### Tool: `tools/hello.py`
+
+```python
+"""
+Hello world tool - demonstrates usage of the core utilities.
+"""
+import dagger
+from tools.core import get_tool_base, run_container_and_check, SCRIPTS_DIR
+
+async def hello_world(
+    client: dagger.Client, 
+    name: str = "World",
+    image: str = "python:3.11-slim"
+) -> str:
+    """
+    Run a hello world script in a container.
+    
+    Args:
+        client: Dagger client
+        name: Name to include in the greeting
+        image: Container image to use
+        
+    Returns:
+        The greeting message
+    """
+    # Get a base container configured with our scripts directory
+    container = get_tool_base(
+        client=client,
+        image=image,
+        scripts_dir=SCRIPTS_DIR,
+    )
+    
+    # Run the hello_world.py script with the provided name
+    return await run_container_and_check(
+        container=container,
+        args=["python", "scripts/hello_world.py", name]
+    )
+```
+
+## RAG Tools
+
+For more complex examples, see the RAG components which implement the pattern at scale:
+
+1. Text chunking: `tools/text_chunker_advanced.py` + `scripts/text_chunker_advanced.py`
+2. Text embedding: `tools/text_embedder.py` + `scripts/embed_text.py`
+3. Qdrant storage: `tools/superlinked_qdrant_connector.py` + `scripts/superlinked_qdrant.py`
+4. RAG pipeline: `pipelines/rag_pipeline.py`
         The processed result
     """
     # Get a base container configured with our scripts directory

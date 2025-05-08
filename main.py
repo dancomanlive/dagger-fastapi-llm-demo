@@ -1,18 +1,17 @@
 import os
 import logging
-import json
-from typing import Optional
+from typing import Optional, Dict, Any
 from contextlib import asynccontextmanager
 
-
-from fastapi import FastAPI, HTTPException # Added HTTPException
+from fastapi import FastAPI, HTTPException
 
 from pydantic import BaseModel
 
 from dotenv import load_dotenv
 
-
 import dagger
+
+from pipelines.document_schema import DocumentSchema
 
 
 load_dotenv()
@@ -77,26 +76,6 @@ async def chat(request: ChatRequest):
         logger.exception(f"Error during LLM execution: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-@app.get("/echo")
-async def echo_endpoint(text: str = "Hello from Dagger"):
-    """Endpoint that echoes the provided text using a Dagger container"""
-    logger.info(f"/echo endpoint called with text: {text}. Using Dagger client from app state.")
-
-    try:
-        from tools.echo import echo
-        
-        # Use the client from app state
-        client = app.state.dagger_client
-        result = await echo(client, text)
-        
-        logger.info(f"Received echo from container: {result}")
-        return {"message": result}
-
-    except Exception as e:
-        logger.exception(f"Error executing echo container: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 @app.get("/hello")
 async def hello_world_endpoint(name: str = "World"):
     """Endpoint that executes a simple hello-world function using a container with custom name"""
@@ -119,85 +98,96 @@ async def hello_world_endpoint(name: str = "World"):
         logger.exception(f"Error executing hello-world container: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/process")
-async def process_data_endpoint(data: dict):
-    """Endpoint that processes data using a Dagger container"""
-    logger.info("/process endpoint called with data. Using Dagger client from app state.")
+# RAG Models
+class DocumentIngestionRequest(BaseModel):
+    text: str
+    document_id: str
+    project_id: str
+    index_name: Optional[str] = "default_index"
+    chunk_size: Optional[int] = 1000
+    overlap: Optional[int] = 200
+    respect_sections: Optional[bool] = True
+    metadata: Optional[Dict[str, Any]] = None
+
+class RagQueryRequest(BaseModel):
+    query: str
+    project_id: str
+    index_name: Optional[str] = "default_index"
+    use_nlq: Optional[bool] = True
+    weights: Optional[Dict[str, float]] = None
+    filters: Optional[Dict[str, Any]] = None
+    limit: Optional[int] = 5
+    model: Optional[str] = None
+
+# RAG Endpoints
+@app.post("/rag/ingest")
+async def ingest_document_endpoint(request: DocumentIngestionRequest):
+    """Endpoint to ingest a document into the RAG system"""
+    logger.info(f"/rag/ingest endpoint called for document_id: {request.document_id}")
 
     try:
-        from tools.process_data import process_data
-        import json
-        
-        # Convert dict to JSON string for processing
-        json_data = json.dumps(data)
+        from pipelines.rag_pipeline import ingest_document
         
         # Use the client from app state
         client = app.state.dagger_client
-        result = await process_data(client, json_data)
         
-        # Parse result back to dict
-        processed_data = json.loads(result)
+        # Ingest document
+        result = await ingest_document(
+            client=client,
+            text=request.text,
+            document_id=request.document_id,
+            project_id=request.project_id,
+            index_name=request.index_name,
+            chunk_size=request.chunk_size,
+            overlap=request.overlap,
+            respect_sections=request.respect_sections,
+            metadata=request.metadata
+        )
         
-        logger.info("Processed data in container")
-        return {"result": processed_data}
+        logger.info(f"Document ingested: {request.document_id}")
+        return {"result": result}
 
     except Exception as e:
-        logger.exception(f"Error processing data: {str(e)}")
+        logger.exception(f"Error ingesting document: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/analyze-text")
-async def analyze_text_endpoint(request: dict):
-    """Endpoint that analyzes text using a Dagger container"""
-    if "text" not in request:
-        raise HTTPException(status_code=400, detail="Text field is required")
-        
-    text = request["text"]
-    logger.info(f"Analyzing text with {len(text)} characters")
+@app.post("/rag/query")
+async def query_rag_endpoint(request: RagQueryRequest):
+    """Endpoint to query the RAG system with citations"""
+    logger.info(f"/rag/query endpoint called with query: {request.query}")
 
     try:
-        from tools.analyze_text import analyze_text
+        from pipelines.rag_pipeline import query_rag
         
         # Use the client from app state
         client = app.state.dagger_client
-        result = await analyze_text(client, text)
         
-        # Parse result back to dict
-        analysis_result = json.loads(result)
+        # Set model from environment if not specified
+        model = request.model or os.environ.get("LLM_MODEL", DEFAULT_MODEL)
         
-        logger.info("Text analysis completed")
-        return {"analysis": analysis_result}
+        # Query RAG system with citations
+        result = await query_rag(
+            client=client,
+            query=request.query,
+            project_id=request.project_id,
+            index_name=request.index_name,
+            use_nlq=request.use_nlq,
+            weights=request.weights,
+            filters=request.filters,
+            limit=request.limit,
+            model=model
+        )
+        
+        logger.info(f"RAG query processed with citations: {request.query}")
+        return {"result": result}
 
     except Exception as e:
-        logger.exception(f"Error analyzing text: {str(e)}")
+        logger.exception(f"Error processing RAG query: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/filter-csv")
-async def filter_csv_endpoint(request: dict):
-    """Endpoint that filters CSV data using a Dagger container"""
-    required_fields = ["csv_data", "column", "value"]
-    for field in required_fields:
-        if field not in request:
-            raise HTTPException(status_code=400, detail=f"{field} field is required")
-    
-    csv_data = request["csv_data"]
-    column = request["column"]
-    value = request["value"]
-    
-    logger.info(f"Filtering CSV data on {column}={value}")
-
-    try:
-        from tools.filter_csv import filter_csv
-        
-        # Use the client from app state
-        client = app.state.dagger_client
-        result = await filter_csv(client, csv_data, column, value)
-        
-        # Parse result back to dict
-        filter_result = json.loads(result)
-        
-        logger.info(f"CSV filtering completed, found {filter_result.get('count', 0)} matching rows")
-        return {"result": filter_result}
-
-    except Exception as e:
-        logger.exception(f"Error filtering CSV: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/validate-document")
+async def validate_document_endpoint(document: DocumentSchema):
+    """
+    Endpoint to validate a document against the schema.
+    """
+    return {"status": "success", "document": document.dict()}

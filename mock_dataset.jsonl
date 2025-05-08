@@ -1,0 +1,3 @@
+{"document_id": "doc1", "text": "This is a sample document about AI.", "metadata": {"category": "technology", "author": "John Doe"}}
+{"document_id": "doc2", "text": "This document discusses the history of machine learning.", "metadata": {"category": "education", "author": "Jane Smith"}}
+{"document_id": "doc3", "text": "A guide to understanding neural networks.", "metadata": {"category": "tutorial", "author": "Alice Johnson"}}

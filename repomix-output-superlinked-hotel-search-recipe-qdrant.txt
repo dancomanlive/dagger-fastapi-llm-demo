@@ -1,0 +1,2551 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where security check has been disabled.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)
+
+Additional Info:
+----------------
+
+================================================================
+Directory Structure
+================================================================
+assets/
+  architecture.svg
+  superlinked-in-a-nutshell.svg
+  superlinked-index.svg
+frontend_app/
+  .streamlit/
+    config.toml
+  app/
+    frontend/
+      components.py
+      main.py
+    superlinked/
+      __init__.py
+      superlinked_client.py
+    utils/
+      logging.py
+      utils.py
+    __init__.py
+    config.py
+  .gitignore
+  pyproject.toml
+  settings.toml
+notebooks/
+  eda.ipynb
+  superlinked-queries.ipynb
+superlinked_app/
+  .env-example
+  .gitignore
+  api.py
+  config.py
+  index.py
+  nlq.py
+  query.py
+.gitignore
+README.md
+requirements.txt
+
+================================================================
+Files
+================================================================
+
+================
+File: assets/architecture.svg
+================
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 581.3044904524952 301.5685370876356" width="1162.6089809049904" height="603.1370741752712">
+  <!-- svg-source:excalidraw -->
+  
+  <defs>
+    <style class="style-fonts">
+      @font-face { font-family: Excalifont; src: url(data:font/woff2;base64,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); }
+    </style>
+    
+  </defs>
+  <rect x="0" y="0" width="581.3044904524952" height="301.5685370876356" fill="#ffffff"></rect><g stroke-linecap="round" transform="translate(251.2126492237153 10) rotate(0 70 110.00000000000011)"><path d="M32 0 C53.39 4.32, 67.37 0.74, 108 0 C125.87 -3.01, 141.7 8.86, 140 32 C136.14 89.45, 135.91 144.94, 140 188 C139.09 209.28, 130.04 218.55, 108 220 C80.01 218.31, 54.57 217.76, 32 220 C10.15 222.63, -0.87 212.44, 0 188 C0.23 141.43, -0.41 88.12, 0 32 C2.55 8.31, 14 -3.27, 32 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M32 0 C56.25 -1, 81 -1.24, 108 0 M32 0 C59.5 0.31, 87.73 0.31, 108 0 M108 0 C128.67 -1.1, 138.41 9.72, 140 32 M108 0 C130.85 1.41, 142.03 10.37, 140 32 M140 32 C142.33 68.63, 140.32 110.35, 140 188 M140 32 C139.84 72.96, 139.54 111.22, 140 188 M140 188 C138.53 209.56, 128.5 219.52, 108 220 M140 188 C137.91 209.36, 127.37 218.31, 108 220 M108 220 C85.73 219.09, 63.98 220.53, 32 220 M108 220 C81.86 220.39, 54.87 219.36, 32 220 M32 220 C11.65 218.23, -1.31 208.96, 0 188 M32 220 C9.7 219.36, -0.59 211.09, 0 188 M0 188 C1.71 151.72, -0.46 119.66, 0 32 M0 188 C1.03 142.6, 0.4 99.44, 0 32 M0 32 C0.97 12.52, 9.71 0.52, 32 0 M0 32 C1.41 10.28, 11.06 -1.38, 32 0" stroke="#fe542e" stroke-width="2" fill="none"></path></g><g transform="translate(267.95270049324654 15) rotate(0 53.25994873046875 25)"><text x="53.25994873046875" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">Superlinked</text><text x="53.25994873046875" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">server</text></g><g stroke-linecap="round" transform="translate(10 229.35089335956877) rotate(0 60 30)"><path d="M15 0 C36.25 -0.77, 56.07 -0.17, 105 0 M15 0 C48.9 -1.27, 82.68 -1.19, 105 0 M105 0 C116.32 1.22, 121.76 4.74, 120 15 M105 0 C113.79 2.05, 122.23 6.09, 120 15 M120 15 C118.97 21.22, 120.08 26.49, 120 45 M120 15 C119.08 27.03, 119.4 38.59, 120 45 M120 45 C118.18 55.02, 113.29 58.53, 105 60 M120 45 C119.79 53.31, 116.21 59.8, 105 60 M105 60 C84.76 59.96, 63.27 60.07, 15 60 M105 60 C76.73 58.37, 46.82 59.07, 15 60 M15 60 C4.16 59.45, -0.51 56.53, 0 45 M15 60 C3.25 58.04, 1.23 55.43, 0 45 M0 45 C-0.03 37.28, 0.09 31.93, 0 15 M0 45 C0.53 39.58, -0.43 32.57, 0 15 M0 15 C1.22 4.66, 5.34 -1.2, 15 0 M0 15 C-1.04 4.93, 3.15 1.3, 15 0" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(24.720016181468964 234.35089335956877) rotate(0 45.279983818531036 25)"><text x="45.279983818531036" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">Jupyter</text><text x="45.279983818531036" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">notebook</text></g><g stroke-linecap="round" transform="translate(10 149.35089335956854) rotate(0 60 30.000000000000114)"><path d="M15 0 C36.47 -0.07, 56.33 -0.22, 105 0 M15 0 C37.69 1.04, 59.94 0.3, 105 0 M105 0 C113.95 1.78, 121.94 5.95, 120 15 M105 0 C112.74 -1.23, 121.31 4, 120 15 M120 15 C121.98 23.07, 118.5 32.05, 120 45 M120 15 C118.96 24.36, 119.02 32.96, 120 45 M120 45 C119.81 53.53, 116.06 59.82, 105 60 M120 45 C118.5 55.19, 115.15 61.01, 105 60 M105 60 C78.84 58.33, 50.24 60.98, 15 60 M105 60 C85.56 59.56, 66.71 60.6, 15 60 M15 60 C3.48 58.3, 1.07 55.38, 0 45 M15 60 C3.47 57.95, 1.81 54.66, 0 45 M0 45 C-1.74 36.76, 0.95 30.12, 0 15 M0 45 C0.76 33.05, 0.32 20.85, 0 15 M0 15 C-0.91 4.94, 3.39 1.13, 15 0 M0 15 C2.06 2.87, 4.77 -2.22, 15 0" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(26.35002899169922 154.35089335956854) rotate(0 43.64997100830078 25.000000000000114)"><text x="43.64997100830078" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">Streamlit</text><text x="43.64997100830078" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">frontend</text></g><g transform="translate(510 69.35089335956854) rotate(0 21.329986572265625 12.5)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">VDB</text></g><g stroke-linecap="round" transform="translate(66.6259814492405 68.97618179895585) rotate(0 28.468544799830624 28.468544799830624)"><path d="M-0.32 0.93 L57.91 1.85 L55.98 57.46 L1.22 56.6" stroke="none" stroke-width="0" fill="#e6fcf5"></path><path d="M0 0 C15.03 -2.52, 27.11 0.59, 56.94 0 M0 0 C14.29 0.9, 28.6 -0.84, 56.94 0 M56.94 0 C56.52 11.07, 57.03 24.07, 56.94 56.94 M56.94 0 C57.41 12.82, 56.23 25.9, 56.94 56.94 M56.94 56.94 C39.98 56.92, 22.41 55.24, 0 56.94 M56.94 56.94 C43.93 56.25, 31.81 56.16, 0 56.94 M0 56.94 C-2.14 42.38, -0.06 24.36, 0 0 M0 56.94 C-0.8 44.85, 0.03 32.05, 0 0" stroke="#0c8599" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(70.1760974212084 72.0390921992946) rotate(0 28.468544799830624 28.468544799830624)"><path d="M0.97 1.85 L55.98 0.52 L58.16 56.6 L0.34 55.74" stroke="none" stroke-width="0" fill="#e6fcf5"></path><path d="M0 0 C21.53 1.7, 44.33 0.74, 56.94 0 M0 0 C17.18 -1.32, 34.81 -0.44, 56.94 0 M56.94 0 C56.82 12.99, 55.33 29.21, 56.94 56.94 M56.94 0 C56.58 12.98, 57.3 26.24, 56.94 56.94 M56.94 56.94 C40.53 55.27, 21.68 57.92, 0 56.94 M56.94 56.94 C44.49 56.55, 32.62 57.6, 0 56.94 M0 56.94 C0.86 42.85, -1.3 32.99, 0 0 M0 56.94 C0.68 39.81, 0.04 24.91, 0 0" stroke="#0c8599" stroke-width="2" fill="none"></path></g><g transform="translate(46.6259814492405 28.97618179895585) rotate(0 41.179969787597656 12.5)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">Dataset</text></g><g stroke-linecap="round"><g transform="translate(391.0252797670662 150.23052941405467) rotate(0 48.918727185204716 -0.24374942451254356)"><path d="M-1.03 -0.88 C15.63 -1.18, 82.09 -1.74, 98.86 -1.76 M0.64 1.27 C17.22 1.1, 81.43 -0.52, 97.86 -0.69" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(391.0252797670662 150.23052941405467) rotate(0 48.918727185204716 -0.24374942451254356)"><path d="M22.38 -9.66 C16.02 -8.21, 11.13 -5.13, -1.03 -0.88 M22.38 -9.66 C15.57 -6.65, 8.64 -4.28, -1.03 -0.88" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(391.0252797670662 150.23052941405467) rotate(0 48.918727185204716 -0.24374942451254356)"><path d="M22.55 7.44 C16.16 5.31, 11.22 4.81, -1.03 -0.88 M22.55 7.44 C15.81 5.47, 8.83 2.87, -1.03 -0.88" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(391.0252797670662 150.23052941405467) rotate(0 48.918727185204716 -0.24374942451254356)"><path d="M74.53 8.3 C77.94 6.43, 82.81 5.8, 97.86 -0.69 M74.53 8.3 C81.44 6.1, 88.12 3.3, 97.86 -0.69" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(391.0252797670662 150.23052941405467) rotate(0 48.918727185204716 -0.24374942451254356)"><path d="M74.21 -8.8 C77.69 -7.09, 82.63 -4.15, 97.86 -0.69 M74.21 -8.8 C81.11 -6.02, 87.88 -3.84, 97.86 -0.69" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(290 149.35089335956854) rotate(0 31.5999753177166 30.000000000000114)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">index.py</text><text x="0" y="34.096000000000004" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">query.py</text><text x="0" y="54.096000000000004" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">api.py</text></g><g mask="url(#mask-unP-H2aMiKOBrUxXB_mIJ)" stroke-linecap="round"><g transform="translate(128.11318702086965 109.16416816849141) rotate(0 61.44833417179666 1.0597415888521482)"><path d="M-0.62 0.68 C8.48 0.69, 33.46 0.21, 53.75 0.18 C74.04 0.16, 109.87 0.38, 121.13 0.54 M1.26 0 C10.82 0.21, 35.65 1.51, 56.02 1.82 C76.4 2.12, 112.66 2.31, 123.51 1.82" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(128.11318702086965 109.16416816849141) rotate(0 61.44833417179666 1.0597415888521482)"><path d="M100.18 10.78 C106.63 7.47, 111.11 5.2, 123.51 1.82 M100.18 10.78 C106.96 8.38, 112.98 4.8, 123.51 1.82" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(128.11318702086965 109.16416816849141) rotate(0 61.44833417179666 1.0597415888521482)"><path d="M99.87 -6.31 C106.41 -5.73, 110.97 -4.1, 123.51 1.82 M99.87 -6.31 C106.64 -3.69, 112.75 -2.23, 123.51 1.82" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask id="mask-unP-H2aMiKOBrUxXB_mIJ"><rect x="0" y="0" fill="#fff" width="350.2126492237153" height="209.76919704297734"></rect><rect x="153.113689848572" y="84.16416816849141" fill="#000" width="59.159942626953125" height="50" opacity="1"></rect></mask><g transform="translate(153.113689848572 84.16416816849141) rotate(0 36.44783134409431 26.059741588852148)"><text x="29.579971313476562" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">bulk</text><text x="29.579971313476562" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">ingest</text></g><g mask="url(#mask-X5fbwDY7hNEFzFl0ildXH)" stroke-linecap="round"><g transform="translate(130 189.35089335956854) rotate(0 59.798214729677056 0.33938687671820844)"><path d="M0.8 -1.01 C9.62 -0.88, 32.24 -0.21, 52.08 0.01 C71.92 0.23, 108.62 0.06, 119.83 0.3 M-0.24 1.07 C8.57 1.48, 31.67 1.48, 51.53 1.55 C71.38 1.62, 107.6 1.86, 118.87 1.49" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(130 189.35089335956854) rotate(0 59.798214729677056 0.33938687671820844)"><path d="M95.48 10.32 C99.21 9.38, 106.27 5.49, 118.87 1.49 M95.48 10.32 C101.94 7.85, 107.76 4.48, 118.87 1.49" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(130 189.35089335956854) rotate(0 59.798214729677056 0.33938687671820844)"><path d="M95.27 -6.78 C98.93 -3.8, 106.04 -3.78, 118.87 1.49 M95.27 -6.78 C101.67 -4.46, 107.55 -3.03, 118.87 1.49" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask id="mask-X5fbwDY7hNEFzFl0ildXH"><rect x="0" y="0" fill="#fff" width="350.2126492237153" height="289.8829198229241"></rect><rect x="155.24922445579978" y="176.85089335956877" fill="#000" width="52.1799710392952" height="25" opacity="1"></rect></mask><g transform="translate(155.24922445579978 176.85089335956854) rotate(0 34.54899027387728 12.839386876718208)"><text x="26.0899855196476" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">query</text></g><g stroke-linecap="round"><g transform="translate(144.51873521430525 266.812181748033) rotate(0 193.06644656002652 -45.717571950261345)"><path d="M0 0 C100.12 0.29, 202.36 -0.16, 370.03 0 M0 0 C142.13 1.33, 284.51 1.41, 370.03 0 M370.03 0 C380.91 -1.41, 386.96 -4.36, 386.03 -16 M370.03 0 C379.18 -1.2, 385.01 -3.67, 386.03 -16 M386.03 -16 C384.74 -32.83, 386.56 -50.25, 386.03 -92.46 M386.03 -16 C385.64 -44.36, 385.4 -70.72, 386.03 -92.46" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(144.51873521430525 266.812181748033) rotate(0 193.06644656002652 -45.717571950261345)"><path d="M394.18 -68.83 C390.92 -76.16, 390.93 -83.32, 386.03 -92.46 M394.18 -68.83 C390.87 -78.88, 387.96 -87.85, 386.03 -92.46" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(144.51873521430525 266.812181748033) rotate(0 193.06644656002652 -45.717571950261345)"><path d="M377.08 -69.12 C378.48 -76.31, 383.15 -83.4, 386.03 -92.46 M377.08 -69.12 C380.34 -78.92, 384.01 -87.78, 386.03 -92.46" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(306.2457807291662 103.45600627623435) rotate(0 13.986589400858975 0.6228618247520217)"><path d="M0 0 C-4.35 3.12, -6.12 7.03, -8.59 8.19 M0 0 C-1.72 2.66, -4.17 3.88, -8.59 8.19 M-8.59 8.19 C-3.42 15.18, 2.52 22.61, 14.06 31.18 M-8.59 8.19 C-4.33 12.27, 2.42 18.98, 14.06 31.18 M14.06 31.18 C22.71 23.68, 28.51 14.31, 36.49 7.99 M14.06 31.18 C21.84 23.17, 28.28 16.09, 36.49 7.99 M36.49 7.99 C28.29 2.65, 20.05 -6.76, 14.19 -14.9 M36.49 7.99 C28.88 -0.42, 19.64 -8.35, 14.19 -14.9 M14.19 -14.9 C10.85 -13.49, 9.14 -10.91, 6.46 -7.14 M14.19 -14.9 C11.67 -12.28, 9.77 -10.49, 6.46 -7.14 M6.46 -7.14 C11.45 -2.59, 14.72 4.36, 21.63 7.99 M6.46 -7.14 C11.94 -2.58, 16.07 2.97, 21.63 7.99 M21.63 7.99 C20.6 9.71, 18.18 10.57, 14.21 15.57 M21.63 7.99 C18.87 10.41, 16.09 12.93, 14.21 15.57 M14.21 15.57 C5.05 8.18, -3.25 -2.64, -8.48 -7.42 M14.21 15.57 C7.12 8.98, 0.84 1.64, -8.48 -7.42 M-8.48 -7.42 C-0.65 -13.72, 4 -20.89, 14.1 -29.93 M-8.48 -7.42 C-2.02 -14.34, 7.13 -22.33, 14.1 -29.93 M14.1 -29.93 C21.42 -22.38, 28.18 -16.66, 36.56 -7.3 M14.1 -29.93 C21.67 -22.18, 28.56 -15.55, 36.56 -7.3 M36.56 -7.3 C35.38 -6.62, 32.95 -3.47, 29.16 -0.04 M36.56 -7.3 C34.09 -4.84, 32.46 -3.34, 29.16 -0.04" stroke="#fe542e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round" transform="translate(119.51873521430525 256.91218174803294) rotate(0 10 10)"><path d="M-0.25 -0.01 L20.2 -0.4 L20.36 20.35 L-0.63 19.31" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M0 0 C6.39 0.01, 12.46 -0.83, 20 0 M0 0 C4.01 0, 8.47 -0.05, 20 0 M20 0 C19.23 6.02, 20.27 10.31, 20 20 M20 0 C19.9 4.17, 20.32 7.99, 20 20 M20 20 C15.24 19.57, 8.9 20.66, 0 20 M20 20 C14.11 19.92, 8.28 20.22, 0 20 M0 20 C-0.87 11.38, 0.57 3.92, 0 0 M0 20 C-0.42 12.62, -0.46 4.97, 0 0" stroke="#fe542e" stroke-width="2" fill="none"></path></g><g stroke-linecap="round"><g transform="translate(125.6938261789328 266.7104827396363) rotate(0 3.6380722598989905 0.16201350175060725)"><path d="M0 0 C-0.68 0.68, -1.61 1.38, -2.23 2.13 M0 0 C-0.52 0.42, -0.85 0.91, -2.23 2.13 M-2.23 2.13 C-0.57 4.14, 1.06 5.45, 3.66 8.11 M-2.23 2.13 C-0.97 3.4, 0.62 4.94, 3.66 8.11 M3.66 8.11 C5.09 6.91, 6.11 5.77, 9.49 2.08 M3.66 8.11 C5.88 5.72, 7.92 3.37, 9.49 2.08 M9.49 2.08 C7.61 0.54, 6.22 -1.68, 3.69 -3.88 M9.49 2.08 C7.82 0.34, 6.31 -1.17, 3.69 -3.88 M3.69 -3.88 C3.12 -3.38, 2.82 -3.04, 1.68 -1.86 M3.69 -3.88 C3.19 -3.36, 2.62 -2.76, 1.68 -1.86 M1.68 -1.86 C3.07 -0.44, 4.69 1.24, 5.63 2.08 M1.68 -1.86 C2.71 -0.93, 3.86 0.28, 5.63 2.08 M5.63 2.08 C5.06 2.66, 4.63 3.19, 3.7 4.05 M5.63 2.08 C5.02 2.8, 4.34 3.37, 3.7 4.05 M3.7 4.05 C2.15 2.94, 1.1 1, -2.21 -1.93 M3.7 4.05 C2.44 2.82, 1.16 1.4, -2.21 -1.93 M-2.21 -1.93 C-0.3 -4.04, 1.86 -6.24, 3.67 -7.79 M-2.21 -1.93 C-0.23 -3.58, 1.22 -5.52, 3.67 -7.79 M3.67 -7.79 C5.82 -6.22, 7.82 -4.35, 9.51 -1.9 M3.67 -7.79 C5.01 -6.31, 6.34 -4.92, 9.51 -1.9 M9.51 -1.9 C8.99 -1.39, 8.32 -0.63, 7.58 -0.01 M9.51 -1.9 C9.14 -1.47, 8.67 -1.16, 7.58 -0.01" stroke="#fe542e" stroke-width="1" fill="none"></path></g></g><mask></mask><g transform="translate(235.68336937748518 271.5685370876356) rotate(0 91.24793665111065 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">experiment with queries</text></g><g transform="translate(256.7744743643193 247.51808403649125) rotate(0 65.75195643305779 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">connect to index</text></g><g stroke-linecap="round" transform="translate(490 142.80924843019193) rotate(0 40.6522452262476 13.270822464688308)"><path d="M40.9 -0.71 L82.22 12.86 L40.29 25.53 L0.38 14.34" stroke="none" stroke-width="0" fill="#ffc9c9" fill-rule="evenodd"></path><path d="M41 0 C52.74 4.12, 65.1 7.46, 81.3 14 M41 0 C53.56 3.98, 68.48 10.64, 81.3 14 M81.3 14 C68.55 15.99, 56.87 20.41, 41 26.54 M81.3 14 C65.6 19.6, 49.82 23.82, 41 26.54 M41 26.54 C23.62 21.72, 8.91 18.93, 0 14 M41 26.54 C24.76 22, 9.09 16.12, 0 14 M0 14 C9.94 7.68, 22.77 6.45, 41 0 M0 14 C14.17 9.05, 26.96 4, 41 0" stroke="#c92a2a" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(490 131.6564634066508) rotate(0 40.6522452262476 13.270822464688308)"><path d="M41.92 -1.14 L80.59 12.99 L41.38 26.88 L1.39 12.45" stroke="none" stroke-width="0" fill="#ffc9c9" fill-rule="evenodd"></path><path d="M41 0 C53.73 3.81, 70.22 8.15, 81.3 14 M41 0 C50.72 4.58, 59.25 6.23, 81.3 14 M81.3 14 C67.96 16.62, 58.72 21.84, 41 26.54 M81.3 14 C65.44 18.69, 50.27 23.59, 41 26.54 M41 26.54 C24.21 23.15, 10.99 15.93, 0 14 M41 26.54 C28.82 22.34, 17.68 20.45, 0 14 M0 14 C15.45 9.78, 32.06 2.13, 41 0 M0 14 C13.34 8.79, 25.68 4.98, 41 0" stroke="#c92a2a" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(490 120.50367838310967) rotate(0 40.6522452262476 13.270822464688308)"><path d="M40.29 -1.01 L81.68 14.34 L42.39 24.99 L0.97 14.09" stroke="none" stroke-width="0" fill="#ffc9c9" fill-rule="evenodd"></path><path d="M41 0 C53.51 2.57, 63.31 6.86, 81.3 14 M41 0 C49.05 1.82, 57.26 4.7, 81.3 14 M81.3 14 C74.28 17.15, 65.56 19.4, 41 26.54 M81.3 14 C68.78 17.55, 55.53 21.2, 41 26.54 M41 26.54 C31.26 22.55, 17.84 18.59, 0 14 M41 26.54 C27.33 22.96, 14.73 17.11, 0 14 M0 14 C8.68 9.52, 16.79 10.04, 41 0 M0 14 C10.56 10.39, 21.74 6.53, 41 0" stroke="#c92a2a" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(490 109.35089335956854) rotate(0 40.6522452262476 13.270822464688308)"><path d="M41.38 0.34 L82.69 12.45 L41.97 26.63 L0.84 13.64" stroke="none" stroke-width="0" fill="#ffc9c9" fill-rule="evenodd"></path><path d="M41 0 C49.35 2.09, 58.49 8.29, 81.3 14 M41 0 C56.99 5.27, 72.14 10.8, 81.3 14 M81.3 14 C72.91 17.45, 61.22 20.7, 41 26.54 M81.3 14 C71.74 16.16, 60.12 19.87, 41 26.54 M41 26.54 C25.08 20.37, 10.56 15.63, 0 14 M41 26.54 C32.74 23.32, 21.78 21.11, 0 14 M0 14 C14.14 11.39, 26.9 5.91, 41 0 M0 14 C8.86 10.71, 16.43 7.91, 41 0" stroke="#c92a2a" stroke-width="2" fill="none"></path></g></svg>
+
+================
+File: assets/superlinked-in-a-nutshell.svg
+================
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 957.8219620606592 220" width="1915.6439241213184" height="440">
+  <!-- svg-source:excalidraw -->
+  
+  <defs>
+    <style class="style-fonts">
+      @font-face { font-family: Excalifont; src: url(data:font/woff2;base64,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); }
+    </style>
+    
+  </defs>
+  <rect x="0" y="0" width="957.8219620606592" height="220" fill="#ffffff"></rect><g stroke-linecap="round"><g transform="translate(410 90) rotate(0 70 -10.003280741279013)"><path d="M0 0 C15.87 -8.92, 30.21 -17.43, 40 -20 M0 0 C14.8 -8.06, 30.22 -15.89, 40 -20 M40 -20 C59.49 -19.77, 80.95 -18.26, 100 -20 M40 -20 C62.68 -20.08, 85.82 -19.39, 100 -20 M100 -20 C114.67 -10.72, 129.44 -5.73, 140 0 M100 -20 C108.43 -15.96, 117.78 -10.82, 140 0" stroke="#3bc9db" stroke-width="1" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(410 90) rotate(0 70 10.230260318425053)"><path d="M0 0 C7.28 5.63, 17.19 9.06, 40 20 M0 0 C12.39 5.76, 27.49 13.45, 40 20 M40 20 C64.47 18.61, 87.87 21.54, 100 20 M40 20 C55.9 19.78, 70.16 20.51, 100 20 M100 20 C115.65 11.33, 130.46 3.52, 140 0 M100 20 C116.09 13.54, 130.38 5.34, 140 0" stroke="#3bc9db" stroke-width="1" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(410 90) rotate(0 70 30.350605600582185)"><path d="M0 0 C11.45 17.82, 23.1 34.82, 40 60 M0 0 C9.47 15.45, 20.96 28.99, 40 60 M40 60 C60.65 62.11, 79.11 58.65, 100 60 M40 60 C53.18 60.06, 65.24 59.84, 100 60 M100 60 C112.5 40.51, 125.8 22.83, 140 0 M100 60 C111.95 44, 121.71 26.29, 140 0" stroke="#3bc9db" stroke-width="1" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(410 90) rotate(0 70 50)"><path d="M0 0 C13.31 35.72, 27.5 67.58, 40 100 M0 0 C11.41 27.52, 21.51 56.32, 40 100 M40 100 C64.86 99.01, 88.43 99.25, 100 100 M40 100 C61.59 99.5, 84.24 99.46, 100 100 M100 100 C109.44 77.66, 119.06 54.44, 140 0 M100 100 C109.98 77.91, 118.6 56.78, 140 0" stroke="#3bc9db" stroke-width="1" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(410 170) rotate(0 90 -30)"><path d="M0 0 C8.86 -13.29, 17.71 -26.57, 40 -60 M0 0 C9.13 -13.7, 18.27 -27.4, 40 -60 M40 -60 C55.96 -60, 71.92 -60, 100 -60 M40 -60 C62.9 -60, 85.81 -60, 100 -60 M100 -60 C112.39 -41.41, 124.79 -22.82, 140 0 M100 -60 C113.81 -39.28, 127.63 -18.56, 140 0 M140 0 C149.13 0, 158.27 0, 180 0 M140 0 C152.56 0, 165.12 0, 180 0" stroke="#fe542e" stroke-width="1" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(410 170) rotate(0 90 -50)"><path d="M0 0 C9.13 -22.83, 18.27 -45.67, 40 -100 M0 0 C12.56 -31.4, 25.12 -62.79, 40 -100 M40 -100 C63.69 -100, 87.37 -100, 100 -100 M40 -100 C57.74 -100, 75.47 -100, 100 -100 M100 -100 C111.33 -71.69, 122.65 -43.37, 140 0 M100 -100 C110.33 -74.17, 120.67 -48.33, 140 0 M140 0 C154.86 0, 169.73 0, 180 0 M140 0 C155.09 0, 170.17 0, 180 0" stroke="#fe542e" stroke-width="1" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(410 170) rotate(0 90 -10)"><path d="M0 0 C8.16 -4.08, 16.32 -8.16, 40 -20 M0 0 C12.38 -6.19, 24.77 -12.38, 40 -20 M40 -20 C56.83 -20, 73.65 -20, 100 -20 M40 -20 C58.31 -20, 76.62 -20, 100 -20 M100 -20 C110.05 -14.98, 120.1 -9.95, 140 0 M100 -20 C115.86 -12.07, 131.71 -4.14, 140 0 M140 0 C155.72 0, 171.45 0, 180 0 M140 0 C148.61 0, 157.23 0, 180 0" stroke="#fe542e" stroke-width="1" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(410 170) rotate(0 90 10)"><path d="M0 0 C15.75 7.88, 31.51 15.75, 40 20 M0 0 C10.23 5.12, 20.47 10.23, 40 20 M40 20 C53.18 20, 66.36 20, 100 20 M40 20 C62.81 20, 85.63 20, 100 20 M100 20 C112.27 13.86, 124.55 7.73, 140 0 M100 20 C108.16 15.92, 116.32 11.84, 140 0 M140 0 C152.38 0, 164.77 0, 180 0 M140 0 C151.22 0, 162.43 0, 180 0" stroke="#fe542e" stroke-width="1" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(550 90) rotate(0 19.608987645397406 0.17759503644424512)"><path d="M-0.05 0.07 C6.61 0.11, 33.23 0.09, 39.95 0.05 M-0.73 -0.37 C5.84 -0.22, 32.7 0.62, 39.5 0.73" stroke="#3bc9db" stroke-width="2" fill="none"></path></g><g transform="translate(550 90) rotate(0 19.608987645397406 0.17759503644424512)"><path d="M20.54 7.1 C26.48 5.07, 32.08 3.69, 39.5 0.73 M20.54 7.1 C25.7 5.56, 29.73 3.59, 39.5 0.73" stroke="#3bc9db" stroke-width="2" fill="none"></path></g><g transform="translate(550 90) rotate(0 19.608987645397406 0.17759503644424512)"><path d="M20.88 -6.57 C26.69 -4.42, 32.19 -1.61, 39.5 0.73 M20.88 -6.57 C25.93 -4.64, 29.87 -3.15, 39.5 0.73" stroke="#3bc9db" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(270 70) rotate(0 52.01996457576752 25)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#0c8599" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">structured</text><text x="0" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#0c8599" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">item</text></g><g transform="translate(10 150) rotate(0 33.78997069597244 25)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#c92a2a" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">natural</text><text x="0" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#c92a2a" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">query</text></g><g transform="translate(270 150) rotate(0 52.01996457576752 25)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#c92a2a" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">structured</text><text x="0" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#c92a2a" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">query</text></g><g stroke-linecap="round" transform="translate(126.25839050999468 64.49711227503394) rotate(0 23.142635930346387 23.142635930346387)"><path d="M-0.32 -0.59 L45.93 -0.54 L46.95 45.53 L-0.19 46.65" stroke="none" stroke-width="0" fill="#e6fcf5"></path><path d="M0 0 C12.81 0.68, 27.83 -0.16, 46.29 0 M0 0 C12.67 0.35, 25.05 0.02, 46.29 0 M46.29 0 C46.11 16.35, 46.98 33.06, 46.29 46.29 M46.29 0 C46.19 17.09, 45.72 33.08, 46.29 46.29 M46.29 46.29 C36.61 46.05, 26.14 46.85, 0 46.29 M46.29 46.29 C37 46.4, 27.65 45.96, 0 46.29 M0 46.29 C0.52 31.27, 0.7 16.05, 0 0 M0 46.29 C0.48 30.74, 0.06 15.35, 0 0" stroke="#0c8599" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(129.14434910139585 66.98701194432533) rotate(0 23.142635930346387 23.142635930346387)"><path d="M-0.36 -0.54 L46.95 -0.76 L46.09 46.65 L-0.67 46.54" stroke="none" stroke-width="0" fill="#e6fcf5"></path><path d="M0 0 C12.88 -0.4, 23.53 -0.96, 46.29 0 M0 0 C16.5 -0.06, 33.64 0.24, 46.29 0 M46.29 0 C46.67 14.3, 46.78 28.61, 46.29 46.29 M46.29 0 C45.81 17, 45.83 33.83, 46.29 46.29 M46.29 46.29 C30.09 46.7, 14.3 45.59, 0 46.29 M46.29 46.29 C32.71 46.04, 19.29 46.63, 0 46.29 M0 46.29 C0.68 30.56, 0.16 16.45, 0 0 M0 46.29 C-0.16 36.37, -0.38 26.64, 0 0" stroke="#0c8599" stroke-width="2" fill="none"></path></g><g transform="translate(110 30) rotate(0 40 12.141825323790954)"><text x="0" y="17.115116976415745" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="19.426920518065543px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">Dataset</text></g><g stroke-linecap="round" transform="translate(870 126.86468679972222) rotate(0 38.910981030329594 12.702391179293272)"><path d="M38.71 1.73 L77.02 13.97 L39.3 27.34 L-1.66 12.41" stroke="none" stroke-width="0" fill="#ffc9c9" fill-rule="evenodd"></path><path d="M39 0 C47.58 1.27, 58.24 4.75, 77.82 13 M39 0 C47.89 3.39, 58.54 6.81, 77.82 13 M77.82 13 C65.36 16.1, 50.74 21.82, 39 25.4 M77.82 13 C66.99 16.2, 56.44 19.38, 39 25.4 M39 25.4 C24.64 18.92, 10.49 16.95, 0 13 M39 25.4 C25.86 20.53, 11.3 16.65, 0 13 M0 13 C12.53 11.14, 22.75 6.18, 39 0 M0 13 C7.44 10.01, 15.34 7.03, 39 0" stroke="#c92a2a" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(870 116.18961082123406) rotate(0 38.910981030329594 12.702391179293272)"><path d="M38.19 0.97 L78.12 14.93 L37.34 24.82 L1.07 11.71" stroke="none" stroke-width="0" fill="#ffc9c9" fill-rule="evenodd"></path><path d="M39 0 C52.45 3.52, 67.17 9.67, 77.82 13 M39 0 C52.19 4.81, 66.64 8.6, 77.82 13 M77.82 13 C68.43 16.09, 56.31 21.01, 39 25.4 M77.82 13 C67.39 16.03, 59 20.28, 39 25.4 M39 25.4 C28.63 22.32, 16.08 15.65, 0 13 M39 25.4 C27.22 21.59, 14.95 16.77, 0 13 M0 13 C9.92 9.81, 15.69 6.62, 39 0 M0 13 C11.71 8.42, 23.8 6.04, 39 0" stroke="#c92a2a" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(870 105.51453484274634) rotate(0 38.910981030329594 12.702391179293272)"><path d="M39.3 1.93 L76.16 12.41 L40.07 24.11 L-1.74 12.08" stroke="none" stroke-width="0" fill="#ffc9c9" fill-rule="evenodd"></path><path d="M39 0 C46.18 2.61, 56.2 3.78, 77.82 13 M39 0 C52.24 3.7, 63.99 9.14, 77.82 13 M77.82 13 C68.08 17.48, 58.56 17.92, 39 25.4 M77.82 13 C66.8 17.72, 54.22 20.9, 39 25.4 M39 25.4 C31.74 21.2, 22.32 21.82, 0 13 M39 25.4 C28.76 21.36, 18.3 19.94, 0 13 M0 13 C12.45 7.98, 29.09 2.55, 39 0 M0 13 C10.17 10.73, 20.19 6.92, 39 0" stroke="#c92a2a" stroke-width="2" fill="none"></path></g><g stroke-linecap="round" transform="translate(870 94.83945886425681) rotate(0 38.910981030329594 12.702391179293272)"><path d="M37.34 -0.59 L78.89 11.71 L37.26 24.49 L1.28 12.18" stroke="none" stroke-width="0" fill="#ffc9c9" fill-rule="evenodd"></path><path d="M39 0 C48.26 0.87, 56.1 5.14, 77.82 13 M39 0 C51.83 5.33, 64.54 9.39, 77.82 13 M77.82 13 C65.24 16.06, 54.66 19.59, 39 25.4 M77.82 13 C66.84 17.36, 54.71 21.38, 39 25.4 M39 25.4 C25.2 22.16, 10.43 16.62, 0 13 M39 25.4 C26.11 22, 15.36 17.86, 0 13 M0 13 C12.08 8.33, 23.04 4.57, 39 0 M0 13 C8.43 10.21, 17.79 7.76, 39 0" stroke="#c92a2a" stroke-width="2" fill="none"></path></g><g transform="translate(888.325721877093 70) rotate(0 21.329986572265625 12.5)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">VDB</text></g><g stroke-linecap="round"><g transform="translate(731.0719304499589 111.73474996561163) rotate(0 58.91903853831809 -1.4292913777101148)"><path d="M0.25 -0.45 C20.05 -0.81, 98.95 -2.14, 118.91 -2.41 M-1.07 -1.73 C18.56 -1.93, 97.8 -1.36, 117.95 -1.22" stroke="#3bc9db" stroke-width="2" fill="none"></path></g><g transform="translate(731.0719304499589 111.73474996561163) rotate(0 58.91903853831809 -1.4292913777101148)"><path d="M94.4 7.17 C100.94 4.5, 107.85 3.74, 117.95 -1.22 M94.4 7.17 C100.57 5.21, 106.77 2.54, 117.95 -1.22" stroke="#3bc9db" stroke-width="2" fill="none"></path></g><g transform="translate(731.0719304499589 111.73474996561163) rotate(0 58.91903853831809 -1.4292913777101148)"><path d="M94.52 -9.93 C100.99 -7.32, 107.86 -2.79, 117.95 -1.22 M94.52 -9.93 C100.62 -7.2, 106.79 -5.19, 117.95 -1.22" stroke="#3bc9db" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(190 90) rotate(0 32.267154246595 0.8295750760926239)"><path d="M-0.29 0.58 C10.47 0.57, 53.86 0.47, 64.82 0.47 M1.76 -0.16 C12.3 -0.04, 53.12 1.5, 63.63 1.82" stroke="#3bc9db" stroke-width="2" fill="none"></path></g><g transform="translate(190 90) rotate(0 32.267154246595 0.8295750760926239)"><path d="M39.86 9.57 C48.43 6.36, 54.52 4.99, 63.63 1.82 M39.86 9.57 C46.43 8.2, 53.27 4.89, 63.63 1.82" stroke="#3bc9db" stroke-width="2" fill="none"></path></g><g transform="translate(190 90) rotate(0 32.267154246595 0.8295750760926239)"><path d="M40.44 -7.52 C48.9 -5.24, 54.8 -1.12, 63.63 1.82 M40.44 -7.52 C46.97 -4.15, 53.65 -2.71, 63.63 1.82" stroke="#3bc9db" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(91.77639202600346 171.59524211462622) rotate(0 78.68998965582807 -1.4963033971750974)"><path d="M-0.21 -0.46 C26.03 -1.06, 130.49 -2.26, 157.06 -2.54 M-1.78 -1.74 C24.84 -1.7, 132.37 -1.61, 159.16 -1.49" stroke="#fe542e" stroke-width="2" fill="none"></path></g><g transform="translate(91.77639202600346 171.59524211462622) rotate(0 78.68998965582807 -1.4963033971750974)"><path d="M135.64 7 C141.19 2.79, 146.75 4.06, 159.16 -1.49 M135.64 7 C141.9 5.56, 146.96 3.36, 159.16 -1.49" stroke="#fe542e" stroke-width="2" fill="none"></path></g><g transform="translate(91.77639202600346 171.59524211462622) rotate(0 78.68998965582807 -1.4963033971750974)"><path d="M135.68 -10.1 C141.37 -9.67, 146.92 -3.76, 159.16 -1.49 M135.68 -10.1 C141.92 -7.14, 146.97 -4.93, 159.16 -1.49" stroke="#fe542e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(730.4881235163659 150.90207247920353) rotate(0 60.114548706756864 -0.4072017280386717)"><path d="M-0.49 0.99 C19.27 0.71, 98.65 -1.69, 118.52 -1.8 M1.46 0.46 C21.58 0.32, 100.75 -0.43, 120.72 -0.74" stroke="#fe542e" stroke-width="2" fill="none"></path></g><g transform="translate(730.4881235163659 150.90207247920353) rotate(0 60.114548706756864 -0.4072017280386717)"><path d="M97.33 8.09 C105.94 3.91, 109.75 1.7, 120.72 -0.74 M97.33 8.09 C107.49 4.3, 116.08 0.47, 120.72 -0.74" stroke="#fe542e" stroke-width="2" fill="none"></path></g><g transform="translate(730.4881235163659 150.90207247920353) rotate(0 60.114548706756864 -0.4072017280386717)"><path d="M97.12 -9.01 C105.78 -8.1, 109.65 -5.23, 120.72 -0.74 M97.12 -9.01 C107.2 -5.97, 115.86 -2.97, 120.72 -0.74" stroke="#fe542e" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(770 70) rotate(0 23.663978576660156 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#0c8599" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">ingest</text></g><g transform="translate(750 170) rotate(0 41.10397660732269 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#c92a2a" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">knn-search</text></g><g stroke-linecap="round" transform="translate(450 50) rotate(0 30 20)"><path d="M10 0 C22.94 0.26, 34.17 -1.58, 50 0 C58.52 0.5, 57.58 6.43, 60 10 C61.81 16.53, 59.41 26.16, 60 30 C62.39 38.71, 57.54 40.27, 50 40 C33.3 40.45, 20.27 41.42, 10 40 C3.41 36.46, 1.2 38.8, 0 30 C3.01 20.56, 0.43 14.47, 0 10 C0.4 4.88, 5.56 2.39, 10 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M10 0 C20.33 1.2, 31.81 0.65, 50 0 M10 0 C19.79 0.79, 28.66 0, 50 0 M50 0 C56.05 -0.23, 61.4 1.34, 60 10 M50 0 C57.54 1.38, 62.16 4.49, 60 10 M60 10 C61.06 16.04, 61.02 24.72, 60 30 M60 10 C59.99 17.8, 60.23 25.2, 60 30 M60 30 C61.6 36.19, 56.98 39.3, 50 40 M60 30 C59.73 38.88, 58.18 42.11, 50 40 M50 40 C34.41 42.11, 17.3 39.56, 10 40 M50 40 C37.65 39.19, 25.09 39.86, 10 40 M10 40 C2.93 38.01, 0 37.62, 0 30 M10 40 C3.09 38.47, -2.01 36.97, 0 30 M0 30 C-0.2 22.94, 0.32 19.54, 0 10 M0 30 C-0.48 25.45, -0.56 21.06, 0 10 M0 10 C0.66 4.43, 2.93 1.44, 10 0 M0 10 C1.65 3.09, 1.63 2.15, 10 0" stroke="#1e1e1e" stroke-width="1" fill="none"></path></g><g transform="translate(463.0300064086914 57.5) rotate(0 16.969993591308594 12.5)"><text x="16.969993591308594" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">txt</text></g><g stroke-linecap="round" transform="translate(450 90) rotate(0 30 20)"><path d="M10 0 C22.93 3.74, 34.96 3.37, 50 0 C59.59 -2.31, 60.84 4.9, 60 10 C59.41 18.39, 60.96 18.66, 60 30 C60.17 37.64, 53.73 41.72, 50 40 C32.54 39.75, 22.15 41.45, 10 40 C1.7 42.18, 0.32 38.7, 0 30 C0.88 26.9, 3.17 16.46, 0 10 C-2 1.82, 5.15 0.65, 10 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M10 0 C19.32 -1.84, 29.76 -0.67, 50 0 M10 0 C26.5 -0.26, 42.24 0.57, 50 0 M50 0 C57.67 1.33, 61.43 4.05, 60 10 M50 0 C56.66 1.98, 60.67 5.4, 60 10 M60 10 C61.46 19.02, 60.85 24.07, 60 30 M60 10 C59.31 16.58, 59.51 20.82, 60 30 M60 30 C58.42 36.35, 58.41 39.22, 50 40 M60 30 C58.96 36.15, 56.41 40.44, 50 40 M50 40 C41.59 39.37, 31.29 38.43, 10 40 M50 40 C36.6 40.89, 24.43 40.46, 10 40 M10 40 C4.33 40.66, 1.05 37.08, 0 30 M10 40 C3.04 40.72, 0.97 35.77, 0 30 M0 30 C-0.28 23.89, -1.51 21.63, 0 10 M0 30 C0.93 26.6, 0.52 22.32, 0 10 M0 10 C-0.37 1.61, 1.91 -1.61, 10 0 M0 10 C-0.95 3.86, 1.86 -1.69, 10 0" stroke="#1e1e1e" stroke-width="1" fill="none"></path></g><g transform="translate(462.4900090098381 97.5) rotate(0 17.509990990161896 12.5)"><text x="17.509990990161896" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">num</text></g><g stroke-linecap="round" transform="translate(450 130) rotate(0 30 20)"><path d="M10 0 C21.01 -2.34, 32.28 -0.39, 50 0 C58.7 0.91, 63.38 0.18, 60 10 C59.81 14.67, 58.83 25.16, 60 30 C60.65 36.15, 55.77 39.74, 50 40 C38.73 39.52, 29.33 37.21, 10 40 C0.11 43.06, -2.63 33.24, 0 30 C-3.26 24.23, 0.26 19.63, 0 10 C1.22 3.81, 2.59 -0.42, 10 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M10 0 C25.05 -0.43, 38.09 -1.22, 50 0 M10 0 C19.36 -0.67, 29.95 0.99, 50 0 M50 0 C55.89 -0.9, 59.55 3.11, 60 10 M50 0 C57.1 -2.07, 57.99 5.06, 60 10 M60 10 C58.03 16.21, 61.18 22.59, 60 30 M60 10 C60.49 14.57, 60.48 18.67, 60 30 M60 30 C60.41 36.42, 57.29 40.85, 50 40 M60 30 C59.1 34.85, 57.51 38.2, 50 40 M50 40 C38.88 37.83, 26.74 39.68, 10 40 M50 40 C34.87 40.02, 17.78 39.49, 10 40 M10 40 C1.72 39.18, 0.46 35.39, 0 30 M10 40 C1.64 40, 1.25 35.37, 0 30 M0 30 C1.46 25.11, -1.47 17.43, 0 10 M0 30 C0.97 22.93, 0.89 16.49, 0 10 M0 10 C-1.19 3.43, 3.87 -1.63, 10 0 M0 10 C1.1 5.47, 1.52 1.58, 10 0" stroke="#1e1e1e" stroke-width="1" fill="none"></path></g><g transform="translate(463.6700134277344 137.5) rotate(0 16.329986572265625 12.5)"><text x="16.329986572265625" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">cat</text></g><g transform="translate(430 10) rotate(0 50.05996659398079 12.5)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">embedders</text></g><g stroke-linecap="round" transform="translate(450 170) rotate(0 30 20)"><path d="M10 0 C24.77 -2.94, 38.27 3.54, 50 0 C55.97 -1.82, 56.98 2.41, 60 10 C61.78 15.64, 62.41 18.61, 60 30 C60.97 36.47, 54.15 43.45, 50 40 C42.33 39.59, 29.87 39.9, 10 40 C3.02 40.46, -2.93 35.95, 0 30 C1.81 26.3, 0.22 16.87, 0 10 C2.64 5.56, 6.41 -1.57, 10 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M10 0 C19.8 -0.66, 25.86 -0.28, 50 0 M10 0 C23.31 -0.12, 35.61 -0.97, 50 0 M50 0 C56.38 0.74, 60.41 2.95, 60 10 M50 0 C55.92 0.32, 58.03 4.92, 60 10 M60 10 C59.01 15.14, 59.24 20.73, 60 30 M60 10 C59.64 15.61, 59.67 22.18, 60 30 M60 30 C61.7 36.5, 55.78 38.52, 50 40 M60 30 C61.3 36.83, 54.58 40.6, 50 40 M50 40 C38.62 38.73, 32.16 38.53, 10 40 M50 40 C37.06 39.86, 26.31 39.8, 10 40 M10 40 C4.72 38.07, -1.44 35.15, 0 30 M10 40 C3.35 41.11, -1.4 36.12, 0 30 M0 30 C-1.74 23.63, -1.2 15, 0 10 M0 30 C0.94 23.68, 0.37 15.15, 0 10 M0 10 C0.21 3.38, 2.55 -1.81, 10 0 M0 10 C-1.4 4.67, 1.65 0.31, 10 0" stroke="#1e1e1e" stroke-width="1" fill="none"></path></g><g transform="translate(465.38001251220703 177.5) rotate(0 14.619987487792969 12.5)"><text x="14.619987487792969" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">img</text></g><g stroke-linecap="round" transform="translate(130 150) rotate(0 30 20)"><path d="M10 0 C26.74 -0.67, 43.12 -3.17, 50 0 C58.1 -1.1, 59.78 3.72, 60 10 C60.09 18.64, 58.62 26.32, 60 30 C58.25 35.93, 57.86 42.39, 50 40 C36.55 38.12, 21.91 42.53, 10 40 C1.78 39.58, -2.82 37.31, 0 30 C0.32 20.92, 1.2 18.41, 0 10 C-1.7 0.99, 3.19 3.25, 10 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M10 0 C24.73 -0.64, 37.13 -1.31, 50 0 M10 0 C20.2 1.26, 31.98 -0.36, 50 0 M50 0 C55.44 1.26, 59.28 5.13, 60 10 M50 0 C56.23 1.48, 60.33 4.91, 60 10 M60 10 C60.27 15.59, 61.12 17.83, 60 30 M60 10 C60.18 15.93, 59.34 21.07, 60 30 M60 30 C59.8 35.48, 56.56 38.17, 50 40 M60 30 C62.11 36.54, 58.38 38.91, 50 40 M50 40 C40.47 38.97, 31.78 41.72, 10 40 M50 40 C38.49 41.15, 28.8 39.28, 10 40 M10 40 C2.38 39.5, -0.11 36.11, 0 30 M10 40 C5.05 40.61, -1.14 34.83, 0 30 M0 30 C-0.84 22.11, 2.03 15.34, 0 10 M0 30 C0.01 24.29, 0.26 19.81, 0 10 M0 10 C-0.6 2.44, 1.73 1.26, 10 0 M0 10 C-0.89 1.56, 1.4 -0.1, 10 0" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(141.48001861572266 157.5) rotate(0 18.519981384277344 12.5)"><text x="18.519981384277344" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">LLM</text></g><g transform="translate(610 70) rotate(0 48.26995849609375 25)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#0c8599" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">item</text><text x="0" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#0c8599" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">embedding</text></g><g transform="translate(610 150) rotate(0 48.26995849609375 25)"><text x="0" y="17.619999999999997" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#c92a2a" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">query</text><text x="0" y="42.62" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="20px" fill="#c92a2a" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">embedding</text></g><g stroke-linecap="round"><g transform="translate(550.0908848678367 169.90741937648727) rotate(0 19.54031097486154 0.42828449065245877)"><path d="M0.38 0.43 C6.81 0.38, 31.74 0.09, 38.16 0.09 M-0.09 0.17 C6.54 0.18, 32.71 0.86, 39.17 0.75" stroke="#fe542e" stroke-width="2" fill="none"></path></g><g transform="translate(550.0908848678367 169.90741937648727) rotate(0 19.54031097486154 0.42828449065245877)"><path d="M20.99 7.21 C25.82 4.95, 29.03 4.73, 39.17 0.75 M20.99 7.21 C27.66 4.55, 33.67 2.75, 39.17 0.75" stroke="#fe542e" stroke-width="2" fill="none"></path></g><g transform="translate(550.0908848678367 169.90741937648727) rotate(0 19.54031097486154 0.42828449065245877)"><path d="M21.09 -5.98 C25.94 -5.28, 29.13 -2.51, 39.17 0.75 M21.09 -5.98 C27.75 -4.06, 33.73 -1.27, 39.17 0.75" stroke="#fe542e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(390 170) rotate(0 10 0.09153795139491194)"><path d="M0 0 C6.28 1.03, 11.41 -0.66, 20 0 M0 0 C6.91 0.01, 13.48 -0.11, 20 0" stroke="#fe542e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(390 90.16443276923519) rotate(0 10 0.051777381491092456)"><path d="M0 0 C5.84 -0.64, 11.48 0.85, 20 0 M0 0 C6.69 -0.28, 14.2 0.46, 20 0" stroke="#3bc9db" stroke-width="2" fill="none"></path></g></g><mask></mask></svg>
+
+================
+File: assets/superlinked-index.svg
+================
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 753.5920260206271 220" width="1507.1840520412543" height="440">
+  <!-- svg-source:excalidraw -->
+  
+  <defs>
+    <style class="style-fonts">
+      @font-face { font-family: Excalifont; src: url(data:font/woff2;base64,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); }
+    </style>
+    
+  </defs>
+  <rect x="0" y="0" width="753.5920260206271" height="220" fill="#ffffff"></rect><g stroke-linecap="round" transform="translate(170.00525113591527 125.58402820497031) rotate(0 286.79338744235594 41.87083114163556)"><path d="M20.94 0 C148.27 0, 275.6 0, 552.65 0 C566.61 0, 573.59 6.98, 573.59 20.94 C573.59 32.99, 573.59 45.04, 573.59 62.81 C573.59 76.76, 566.61 83.74, 552.65 83.74 C431.71 83.74, 310.78 83.74, 20.94 83.74 C6.98 83.74, 0 76.76, 0 62.81 C0 49.33, 0 35.86, 0 20.94 C0 6.98, 6.98 0, 20.94 0" stroke="none" stroke-width="0" fill="#f8f9fa"></path><path d="M20.94 0 C214.43 0, 407.93 0, 552.65 0 M552.65 0 C566.61 0, 573.59 6.98, 573.59 20.94 M573.59 20.94 C573.59 37.15, 573.59 53.37, 573.59 62.81 M573.59 62.81 C573.59 76.76, 566.61 83.74, 552.65 83.74 M552.65 83.74 C401.32 83.74, 249.99 83.74, 20.94 83.74 M20.94 83.74 C6.98 83.74, 0 76.76, 0 62.81 M0 62.81 C0 50.48, 0 38.15, 0 20.94 M0 20.94 C0 6.98, 6.98 0, 20.94 0" stroke="#ced4da" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g><g stroke-linecap="round"><g transform="translate(189.89717553534535 150) rotate(0 200 0.5977588807047596)"><path d="M0 0 C156.51 1.97, 315.09 1.17, 400 0 M0 0 C111.21 1.04, 222.26 1.2, 400 0" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(269.89717553534535 170) rotate(0 42.59996795654297 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#099268" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">description</text></g><g transform="translate(189.89717553534535 170) rotate(0 18.295991361141205 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#c2255c" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">price</text></g><g transform="translate(509.89717553534535 170) rotate(0 22.719983845949173 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#e8590c" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">rating</text></g><g transform="translate(429.89717553534535 170) rotate(0 27.223977833986282 20)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#6741d9" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">ratings</text><text x="0" y="34.096000000000004" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#6741d9" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">count</text></g><g stroke-linecap="round"><g transform="translate(270.0800599514994 140) rotate(0 0.09134838670937029 10)"><path d="M0 0 C-0.4 7.98, -0.08 14.73, 0.37 20 M0 0 C0.31 7.75, 0.31 15.79, 0.37 20" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(389.89717553534535 34) rotate(0 41.215965270996094 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#6741d9" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">with many </text></g><g transform="translate(189.89717553534535 10) rotate(0 40.71195983886719 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#c2255c" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">Affordable</text></g><g transform="translate(281.89717553534535 10) rotate(0 162.95985814929008 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#099268" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">boutique hotels with view of Eiffel Tower</text></g><g transform="translate(580.8971755353454 34) rotate(0 45.96796417236328 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#846358" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">free parking</text></g><g transform="translate(475.89717553534535 34) rotate(0 49.255956798791885 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#e8590c" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">good ratings</text></g><g stroke-linecap="round"><g transform="translate(229.89717553534535 30) rotate(0 -0.6984301192943576 59.58510207384825)"><path d="M-0.64 0.36 C-0.8 20.15, -0.74 98.82, -0.76 118.81" stroke="#f783ac" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(309.89717553534535 30) rotate(0 -0.19344603270292282 60.56655539721237)"><path d="M0.78 1.05 C0.5 21.14, -0.9 100.15, -1.17 120.09" stroke="#38d9a9" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(449.89717553534535 50) rotate(0 0.3649544380809573 49.71883509531608)"><path d="M0.7 -0.18 C0.89 16.59, 0.15 82.75, 0 99.61" stroke="#9775fa" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(529.8971755353454 50) rotate(0 0.44585708662620505 49.96020694151525)"><path d="M-0.99 -1.14 C-0.82 15.57, 1.43 84.08, 1.88 101.06" stroke="#ffa94d" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(629.8971755353454 50) rotate(0 0.3691796528101108 39.95544650554666)"><path d="M0.73 0.4 C0.85 13.6, -0.18 66.25, 0.03 79.51" stroke="#d2bab0" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g></g><mask></mask><g transform="translate(49.897175535345355 10) rotate(0 53.53594970703125 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">Natural query:</text></g><g transform="translate(10 138) rotate(0 72.96794891357422 10)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">Superlinked vector:</text></g><g stroke-linecap="round" transform="translate(169.89717553534535 70) rotate(0 50 25)"><path d="M12.5 0 C30.28 0, 48.06 0, 87.5 0 C95.83 0, 100 4.17, 100 12.5 C100 20.79, 100 29.08, 100 37.5 C100 45.83, 95.83 50, 87.5 50 C68.46 50, 49.41 50, 12.5 50 C4.17 50, 0 45.83, 0 37.5 C0 31.94, 0 26.38, 0 12.5 C0 4.17, 4.17 0, 12.5 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M12.5 0 C39.36 0, 66.23 0, 87.5 0 M87.5 0 C95.83 0, 100 4.17, 100 12.5 M100 12.5 C100 19.41, 100 26.32, 100 37.5 M100 37.5 C100 45.83, 95.83 50, 87.5 50 M87.5 50 C70.18 50, 52.85 50, 12.5 50 M12.5 50 C4.17 50, 0 45.83, 0 37.5 M0 37.5 C0 29.72, 0 21.94, 0 12.5 M0 12.5 C0 4.17, 4.17 0, 12.5 0" stroke="#c2255c" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g><g transform="translate(189.99319106318978 75) rotate(0 29.90398447215557 20)"><text x="29.90398447215557" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#c2255c" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">number</text><text x="29.90398447215557" y="34.096000000000004" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#c2255c" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">encoder</text></g><g stroke-linecap="round" transform="translate(289.89717553534535 70) rotate(0 40 25)"><path d="M12.5 0 C27.65 0, 42.79 0, 67.5 0 C75.83 0, 80 4.17, 80 12.5 C80 19.45, 80 26.4, 80 37.5 C80 45.83, 75.83 50, 67.5 50 C45.66 50, 23.82 50, 12.5 50 C4.17 50, 0 45.83, 0 37.5 C0 32.32, 0 27.14, 0 12.5 C0 4.17, 4.17 0, 12.5 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M12.5 0 C29.93 0, 47.35 0, 67.5 0 M67.5 0 C75.83 0, 80 4.17, 80 12.5 M80 12.5 C80 21.31, 80 30.11, 80 37.5 M80 37.5 C80 45.83, 75.83 50, 67.5 50 M67.5 50 C52.43 50, 37.35 50, 12.5 50 M12.5 50 C4.17 50, 0 45.83, 0 37.5 M0 37.5 C0 29.43, 0 21.36, 0 12.5 M0 12.5 C0 4.17, 4.17 0, 12.5 0" stroke="#099268" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g><g transform="translate(299.9931910631898 75) rotate(0 29.90398447215557 20)"><text x="29.90398447215557" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#099268" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">text</text><text x="29.90398447215557" y="34.096000000000004" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#099268" text-anchor="middle" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">encoder</text></g><g stroke-linecap="round" transform="translate(429.89717553534535 90) rotate(0 20 10)"><path d="M5 0 C12.1 0, 19.2 0, 35 0 C38.33 0, 40 1.67, 40 5 C40 8.98, 40 12.95, 40 15 C40 18.33, 38.33 20, 35 20 C27.21 20, 19.42 20, 5 20 C1.67 20, 0 18.33, 0 15 C0 11, 0 7.01, 0 5 C0 1.67, 1.67 0, 5 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M5 0 C16.47 0, 27.93 0, 35 0 M35 0 C38.33 0, 40 1.67, 40 5 M40 5 C40 7.34, 40 9.68, 40 15 M40 15 C40 18.33, 38.33 20, 35 20 M35 20 C23.34 20, 11.67 20, 5 20 M5 20 C1.67 20, 0 18.33, 0 15 M0 15 C0 12.75, 0 10.5, 0 5 M0 5 C0 1.67, 1.67 0, 5 0" stroke="#6741d9" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g><g stroke-linecap="round" transform="translate(509.89717553534535 90) rotate(0 20 10)"><path d="M5 0 C16.55 0, 28.1 0, 35 0 C38.33 0, 40 1.67, 40 5 C40 7.31, 40 9.63, 40 15 C40 18.33, 38.33 20, 35 20 C24.93 20, 14.86 20, 5 20 C1.67 20, 0 18.33, 0 15 C0 11.22, 0 7.45, 0 5 C0 1.67, 1.67 0, 5 0" stroke="none" stroke-width="0" fill="#ffffff"></path><path d="M5 0 C12.13 0, 19.27 0, 35 0 M35 0 C38.33 0, 40 1.67, 40 5 M40 5 C40 8.08, 40 11.16, 40 15 M40 15 C40 18.33, 38.33 20, 35 20 M35 20 C23.19 20, 11.37 20, 5 20 M5 20 C1.67 20, 0 18.33, 0 15 M0 15 C0 11.29, 0 7.58, 0 5 M0 5 C0 1.67, 1.67 0, 5 0" stroke="#e8590c" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g><g stroke-linecap="round"><g transform="translate(429.9859885712996 140) rotate(0 0.29345585275478925 10)"><path d="M0 0 C0.57 7.03, 0.99 15.21, 0.37 20 M0 0 C-0.17 4.85, -0.11 8.38, 0.37 20" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(509.97609855352744 140) rotate(0 0.15224214049460727 10)"><path d="M0 0 C-0.34 5.64, 0.52 11.22, 0.37 20 M0 0 C0.24 7.48, 0.09 15.51, 0.37 20" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(579.7253274360345 140.55986866543435) rotate(0 6.479887812192132 8.95226480823817)"><path d="M0 0 C2.26 1.68, 13.69 7.12, 13.59 10.1 C13.48 13.08, 1.74 16.6, -0.63 17.9 M0 0 C2.26 1.68, 13.69 7.12, 13.59 10.1 C13.48 13.08, 1.74 16.6, -0.63 17.9" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(602.3555324749966 125.0628145393066) rotate(0 0 42.374316451324376)"><path d="M0 0 C0 14.12, 0 70.62, 0 84.75" stroke="#ced4da" stroke-width="1.5" fill="none" stroke-dasharray="8 9"></path></g></g><mask></mask><g transform="translate(624.0568130239324 137.20851121774467) rotate(0 51.175956293940544 30)"><text x="0" y="14.096" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#846358" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">hard-filters</text><text x="0" y="34.096000000000004" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#846358" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">- amenities</text><text x="0" y="54.096000000000004" font-family="Excalifont, Xiaolai, Segoe UI Emoji" font-size="16px" fill="#846358" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="alphabetic">- hotel types</text></g></svg>
+
+================
+File: frontend_app/.streamlit/config.toml
+================
+[theme]
+primaryColor="#fe552e"
+backgroundColor="#F6F5F3"
+secondaryBackgroundColor="#eeeae1"
+textColor="#363642"
+linkColor="#363642"
+baseRadius = "none"
+
+================
+File: frontend_app/app/frontend/components.py
+================
+UNCATEGORIZED = "UNCATEGORIZED"
+
+country_flags = {
+    "Argentina": "🇦🇷",
+    "Brazil": "🇧🇷",
+    "Canada": "🇨🇦",
+    "France": "🇫🇷",
+    "Georgia": "🇬🇪",
+    "Germany": "🇩🇪",
+    "Hungary": "🇭🇺",
+    "Indonesia": "🇮🇩",
+    "Israel": "🇮🇱",
+    "Italy": "🇮🇹",
+    "Japan": "🇯🇵",
+    "Malaysia": "🇲🇾",
+    "Norway": "🇳🇴",
+    "Spain": "🇪🇸",
+    "Sweden": "🇸🇪",
+    "Thailand": "🇹🇭",
+    "Turkey": "🇹🇷",
+    "USA": "🇺🇸",
+    "United Kingdom": "🇬🇧",
+}
+
+columns_list = [
+    "property_amenities",
+    "room_amenities",
+    "wellness_spa",
+    "accessibility",
+    "for_children",
+]
+
+amenity_emoji = {
+    "accomodation_types": "🏘️",
+    "property_amenities": "🏨",
+    "room_amenities": "🛏️",
+    "wellness_spa": "🧘",
+    "accessibility": "🧑‍🦯‍➡️",
+    "for_children": "👶",
+}
+
+
+def format_filters(params) -> str:
+
+    lines = []
+
+    for column in [
+        "accomodation_types",
+        "property_amenities",
+        "room_amenities",
+        "wellness_spa",
+        "accessibility",
+        "for_children",
+    ]:
+
+        column_nice = column.replace("_", " ").title()
+        column_emoji = amenity_emoji.get(column)
+        if column_emoji:
+            column_nice = column_emoji + " " + column_nice
+
+        options_highlighted = []
+
+        for suffix in ["include", "exclude", "include_all", "include_any"]:
+            key = f"{column}_{suffix}"
+            options = params.get(key)
+            if options is None:
+                continue
+
+            # Special handling for accommodation types - when options is a string (not a list)
+            if column == "accomodation_types" and isinstance(options, str):
+                if "include" in suffix:
+                    options_highlighted.append(f":blue-background[{options}]")
+                else:
+                    options_highlighted.append(f"~~:red-background[{options}]~~")
+            # Normal handling for other cases
+            else:
+                for option in options:
+                    if "include" in suffix:
+                        options_highlighted.append(f":blue-background[{option}]")
+                    else:
+                        options_highlighted.append(f"~~:red-background[{option}]~~")
+
+        if not options_highlighted:
+            continue
+
+        line = f"**{column_nice}**: " + ", ".join(options_highlighted)
+        lines.append(line)
+        lines.append("\n")
+
+    return "\n".join(lines)
+
+
+def format_header(row):
+    lines = []
+
+    flag = country_flags[row["country"]]
+    line = flag + " " + row["city"] + " "
+    line = line + f"**{row['id']}** ({row['accomodation_type']})"
+    lines.append(line)
+    lines.append("\n")
+
+    line = (
+        f"From **${row['price']}**\n\n"
+        f"Rating: **{row['rating']:.1f}** "
+        f"({row['rating_count']} total reviews)"
+    )
+    lines.append(line)
+    lines.append("\n")
+
+    return "\n".join(lines)
+
+
+def format_amenities(row, params):
+
+    lines = []
+
+    for column in [
+        "property_amenities",
+        "room_amenities",
+        "wellness_spa",
+        "accessibility",
+        "for_children",
+    ]:
+        options = [o for o in row[column] if o != UNCATEGORIZED]
+        column_emoji = amenity_emoji[column]
+        column_nice = column_emoji + " " + column.replace("_", " ").title()
+
+        options_highlighted = []
+        for option in options:
+
+            param_options = []
+
+            key = f"{column}_include_all"
+            include_all_options = params.get(key)
+            # key can be explicitly None
+            # so we don't do params.get(key, [])
+            if include_all_options is not None:
+                param_options.extend(include_all_options)
+
+            key = f"{column}_include_any"
+            include_any_options = params.get(key)
+            if include_any_options is not None:
+                param_options.extend(include_any_options)
+
+            if option in param_options:
+                options_highlighted.append(f":blue-background[{option}]")
+            else:
+                options_highlighted.append(option)
+
+        if not options_highlighted:
+            continue
+
+        line = f"**{column_nice}**: " + ", ".join(options_highlighted)
+        lines.append(line)
+        lines.append("\n")
+
+    return "\n".join(lines)
+
+================
+File: frontend_app/app/frontend/main.py
+================
+import uuid
+import json
+
+import streamlit as st
+
+from app.superlinked import SuperlinkedClient
+
+from app.utils.logging import setup_logging
+from app.utils.utils import (
+    load_image_urls,
+    get_kick_start_options,
+    flatten_response,
+    clean_knn_params,
+)
+from app.frontend.components import format_header, format_amenities, format_filters
+
+from app.config import settings
+
+
+logger = setup_logging()
+
+st.set_page_config(
+    page_title="Superlinked hotel search demo",
+    initial_sidebar_state="expanded",
+    layout="centered",
+    page_icon="app/frontend/favicon.png"
+    
+)
+
+
+# Custom CSS to remove rounded corners
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap');
+
+    /* Apply DM Mono to all headings */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'DM Mono', monospace !important;
+    }
+
+    /* Custom styling for the text input and its containers */
+    .stTextInput input {
+        height: 60px !important;
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+
+    div[data-testid="stTextInputRootElement"] {
+        min-height: 60px !important;
+    }
+
+            
+    /* Styling for number input to match text input */
+    .stNumberInput input {
+        height: 60px !important;
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+
+    div[data-testid="stNumberInputContainer"] {
+        min-height: 60px !important;
+    }
+
+            
+    /* Custom info box styling */
+    div[data-testid="stAlert"] {
+        background-color: #FFDDD5 !important;
+    }
+    
+    div[data-testid="stAlertContentInfo"] {
+        color: #FE552E !important;
+    }
+             
+</style>
+""", unsafe_allow_html=True)
+
+
+@st.cache_resource
+def load_resources():
+    sl_client = SuperlinkedClient()
+    id_to_image_url = load_image_urls(settings.path_dataset)
+    return sl_client, id_to_image_url
+
+
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
+
+
+sl_client, id_to_image_url = load_resources()
+
+# - - - Page header - - -
+
+st.title("Hotels search")
+
+# Add some space between the filters and the results
+st.text(" ")
+st.text(" ")
+
+
+kick_start_options = get_kick_start_options()
+
+
+cols = st.columns(len(kick_start_options))
+
+for option, col in zip(kick_start_options, cols):
+    if col.button(option, use_container_width=True):
+        st.session_state.text = option
+
+#Space
+st.text(" ")
+
+
+col_query_text, col_limit = st.columns([0.8, 0.2])
+with col_query_text:
+    st.write("**Natural Language Search**")
+    text = st.text_input(
+        label="🧠 **Natural Language Interface**",
+        value=kick_start_options[0],
+        placeholder="What are you searching for?",
+        key="text",
+        label_visibility="collapsed",
+    )
+
+with col_limit:
+    st.write("**Limit**")
+    limit = st.number_input(
+        "**Limit**", min_value=1, value=5, label_visibility="collapsed"
+    )
+    
+
+
+# # - - - Query - - -
+
+with st.sidebar:
+    st.subheader("Description")
+    st.text("Use this tool to search for hotels based on various criteria such as description, price, rating, and more, all through natural language queries.")
+    st.info(
+        (
+            "Read more about this demo [here]"
+            "(https://docs.superlinked.com/recipes/multi-modal-semantic-search/hotel-search)"
+            "!"
+        ),
+        icon="💡",
+    )
+
+    #Add some space
+    st.text(" ")
+    st.text(" ")
+
+    st.markdown("### Query params")
+    st.text("This are the query parameters that superlinked created from your natural language query")
+
+params = {"natural_query": text, "limit": limit}
+response = sl_client.query("hotel", params)
+response_flattened = flatten_response(response)
+knn_params = response["metadata"]["search_params"]
+
+with st.sidebar:
+    knn_params_clean = clean_knn_params(knn_params)
+    updated_query = st.text_area(
+        label="Query params",
+        value=json.dumps(knn_params_clean, indent=2),
+        height=700,
+        label_visibility="collapsed",
+    )
+
+# # - - - Logging - - -
+
+log_object = {
+    "session_id": st.session_state.session_id,
+    "params": knn_params,
+    "natural_query": text,
+    "response_ids": [x["id"] for x in response_flattened],
+}
+logger.info(log_object)
+
+
+# # - - - Rendering results - - -
+
+
+filters_formatted = format_filters(knn_params)
+
+st.markdown("---")
+
+
+if filters_formatted:
+    st.markdown("##### Applied filters")
+    st.markdown(filters_formatted)
+else:
+    st.markdown("##### No filters applied")
+
+# Add some space between the filters and the results
+st.text(" ")
+st.text(" ")
+
+if len(response_flattened) > 0:
+
+    for item in response_flattened:
+        with st.container(border=True):
+
+            col_main, col_amenities = st.columns([0.6, 0.4])
+
+            with col_main:
+                col_image, col_text = st.columns([0.4, 0.6])
+                with col_image:
+                    url = id_to_image_url[item["id"]]
+                    try:
+                        st.image(url)
+                    except Exception as e:
+                        st.write("🏙️ No image available")
+                with col_text:
+                    st.markdown(format_header(item))
+
+                description = item["description"]
+                if len(description.split()) < 3:
+                    description = "No description available"
+                st.markdown("*" + description + "*")
+
+            with col_amenities:
+                st.markdown(format_amenities(item, knn_params))
+
+else:
+    st.info("No results found. Please try another query.", icon="🔎")
+
+================
+File: frontend_app/app/superlinked/__init__.py
+================
+from .superlinked_client import SuperlinkedClient
+
+================
+File: frontend_app/app/superlinked/superlinked_client.py
+================
+import requests
+from typing import Any
+import logging
+
+from app.config import settings
+
+logger = logging.getLogger(__name__)
+
+
+class SuperlinkedClient:
+    def __init__(self, host: str | None = None, port: int | None = None):
+        if host is None:
+            host = settings.server.api_host
+        if port is None:
+            port = settings.server.api_port
+        self.base_url = f"http://{host}:{port}"
+        self.headers = {
+            "Accept": "*/*",
+            "Content-Type": "application/json",
+            "x-include-metadata": "true",
+        }
+
+    def ingest(self, schema_name: str, data: dict[str, Any]):
+        url = f"{self.base_url}/api/v1/ingest/{schema_name}"
+        response = requests.post(url, json=data, headers=self.headers)
+        if response.status_code != 202:
+            response.raise_for_status()
+
+    def query(self, query_name: str, data: dict[str, Any]) -> dict[str, Any]:
+        url = f"{self.base_url}/api/v1/search/{query_name}"
+        response = requests.post(url, json=data, headers=self.headers)
+        if response.status_code != 200:
+            response.raise_for_status()
+        return response.json()
+
+    def get_data_loaders(self) -> list[str]:
+        url = f"{self.base_url}/data-loader"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            response.raise_for_status()
+        result = list(response.json()["result"].keys())
+        return result
+
+    def run_data_loader(self, name: str):
+        url = f"{self.base_url}/data-loader/{name}/run"
+        response = requests.post(url, headers=self.headers)
+
+        if response.status_code == 409:
+            response_json = response.json()
+            info = response_json["result"]
+            assert info.startswith("Data load already running"), info
+            logger.warning(f"Data loader with name {name} already running")
+            return response_json
+
+        if response.status_code != 200:
+            response.raise_for_status()
+
+        return response.json()
+
+================
+File: frontend_app/app/utils/logging.py
+================
+import logging
+import os
+import json
+from datetime import datetime
+
+from app.config import settings
+
+
+class JSONLFormatter(logging.Formatter):
+    def format(self, record):
+        log_record = {
+            "timestamp": self.formatTime(record, self.datefmt),
+            "name": record.name,
+            "level": record.levelname,
+            "message": record.msg,
+        }
+        if record.exc_info:
+            log_record["exception"] = self.formatException(record.exc_info)
+        return json.dumps(log_record)
+
+
+def setup_logging():
+    logger_name = "frontend"
+
+    logger = logging.getLogger(logger_name)
+    if logger.handlers:
+        logger.debug(f"Logger '{logger_name}' is already initialized")
+        return logger
+
+    log_dir = "logs"
+    os.makedirs(log_dir, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_filename = f"{logger_name}_{timestamp}.jsonl"
+    log_filepath = os.path.join(log_dir, log_filename)
+
+    file_handler = logging.FileHandler(log_filepath)
+    file_handler.setLevel(logging.INFO)
+
+    jsonl_formatter = JSONLFormatter()
+    file_handler.setFormatter(jsonl_formatter)
+
+    logger.addHandler(file_handler)
+
+    logger.propagate = False
+
+    level = settings.log_level.upper()
+    logger.setLevel(level)
+
+    return logger
+
+================
+File: frontend_app/app/utils/utils.py
+================
+import pandas as pd
+
+
+def load_image_urls(path: str) -> dict:
+    return pd.read_json(path, lines=True).set_index("id")["image_src"]
+
+
+def get_kick_start_options() -> list[str]:
+    kick_start_options = [
+        "Cheap but highly rated hotels in London, no children",
+        "No pets affordable hotel in London",
+        "Cheapest hotels in London with free breakfast",
+        "Best hotels in Berlin",
+    ]
+    return kick_start_options
+
+
+def flatten_response(response: dict) -> list[dict]:
+    result = []
+
+    for entry in response["entries"]:
+
+        item = {
+            "id": entry["id"],
+            "score": entry["metadata"]["score"],
+            **entry["fields"],
+        }
+        result.append(item)
+
+    return result
+
+
+def clean_knn_params(knn_params: dict) -> dict:
+    knn_params_clean = {k: v for k, v in knn_params.items() if v is not None}
+    keys_remove = [
+        "similar_description_weight",
+        "limit",
+        "radius",
+        "natural_query",
+        "system_prompt_param__",
+        "select_param__",
+    ]
+    for key in keys_remove:
+        knn_params_clean.pop(key, None)
+    return knn_params_clean
+
+================
+File: frontend_app/app/__init__.py
+================
+from .config import settings
+
+================
+File: frontend_app/app/config.py
+================
+from dynaconf import Dynaconf
+
+settings = Dynaconf(
+    envvar_prefix="DYNACONF",
+    settings_files=['settings.toml', '.secrets.toml'],
+)
+
+# `envvar_prefix` = export envvars with `export DYNACONF_FOO=bar`.
+# `settings_files` = Load these files in the order.
+
+================
+File: frontend_app/.gitignore
+================
+# Ignore dynaconf secret files
+.secrets.*
+
+================
+File: frontend_app/pyproject.toml
+================
+[project]
+name = "app"
+version = "0.1.0"
+description = ""
+authors = [{ name = "Andrey Pikunov", email = "pikunov.andrew@gmail.com" }]
+dependencies = ["streamlit>=1.39.0", "requests>=2.32.3", "dynaconf>=3.2.6"]
+requires-python = ">=3.11"
+readme = "README.md"
+
+[tool.setuptools]
+packages = ["app"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+================
+File: frontend_app/settings.toml
+================
+path_categories = "https://storage.googleapis.com/superlinked-recipes-data/hotels-search/categories/categories.json"
+path_dataset = "https://storage.googleapis.com/superlinked-recipes-data/hotels-search/dataset/dataset.jsonl"
+
+log_level = "INFO"
+
+[server]
+api_host = "localhost"
+api_port = 8080
+
+================
+File: notebooks/eda.ipynb
+================
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# !pip install pandas"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>accomodation_type</th>\n",
+       "      <th>price</th>\n",
+       "      <th>image_src</th>\n",
+       "      <th>description</th>\n",
+       "      <th>rating_count</th>\n",
+       "      <th>rating</th>\n",
+       "      <th>property_amenities</th>\n",
+       "      <th>room_amenities</th>\n",
+       "      <th>wellness_spa</th>\n",
+       "      <th>accessibility</th>\n",
+       "      <th>for_children</th>\n",
+       "      <th>city</th>\n",
+       "      <th>country</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>2991</th>\n",
+       "      <td>Mercure Hotel Düsseldorf City Center</td>\n",
+       "      <td>Hotel</td>\n",
+       "      <td>46</td>\n",
+       "      <td>https://storage.googleapis.com/superlinked-rec...</td>\n",
+       "      <td>A modern, four-star hotel near Königsallee and...</td>\n",
+       "      <td>7439</td>\n",
+       "      <td>7.7</td>\n",
+       "      <td>[24-hour reception, Breakfast, Cashless paymen...</td>\n",
+       "      <td>[Air conditioning, Balcony, Cable TV, Central ...</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>[Accessible hotel, Accessible parking, Wheelch...</td>\n",
+       "      <td>[Childcare, Cot]</td>\n",
+       "      <td>Düsseldorf</td>\n",
+       "      <td>Germany</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5728</th>\n",
+       "      <td>Minel Hotel</td>\n",
+       "      <td>Hotel</td>\n",
+       "      <td>43</td>\n",
+       "      <td>https://storage.googleapis.com/superlinked-rec...</td>\n",
+       "      <td>At Minel Hotel, exceptional service and top-no...</td>\n",
+       "      <td>1174</td>\n",
+       "      <td>8.8</td>\n",
+       "      <td>[24-hour reception, 24-hour room service, Airp...</td>\n",
+       "      <td>[Air conditioning, Balcony, Central heating, D...</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>Istanbul</td>\n",
+       "      <td>Turkey</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>711</th>\n",
+       "      <td>Forest City Marina Hotel</td>\n",
+       "      <td>Hotel</td>\n",
+       "      <td>64</td>\n",
+       "      <td>https://storage.googleapis.com/superlinked-rec...</td>\n",
+       "      <td>As the first high standard hotel in Forest Cit...</td>\n",
+       "      <td>951</td>\n",
+       "      <td>8.3</td>\n",
+       "      <td>[24-hour reception, ATM, Breakfast, Business c...</td>\n",
+       "      <td>[Air conditioning, Balcony, Cable TV, Closet, ...</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>[Accessible parking, Wheelchair accessible]</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>Gelang Patah</td>\n",
+       "      <td>Malaysia</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6286</th>\n",
+       "      <td>Crowne Plaza London Ealing, an IHG Hotel</td>\n",
+       "      <td>Hotel</td>\n",
+       "      <td>129</td>\n",
+       "      <td>https://storage.googleapis.com/superlinked-rec...</td>\n",
+       "      <td>A stylish West London hotel with fast access t...</td>\n",
+       "      <td>8008</td>\n",
+       "      <td>8.3</td>\n",
+       "      <td>[24-hour room service, Breakfast, Café, Cashle...</td>\n",
+       "      <td>[Air conditioning, Cable TV, Central heating, ...</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>[Accessible hotel, Accessible parking, Wheelch...</td>\n",
+       "      <td>[Cot]</td>\n",
+       "      <td>London</td>\n",
+       "      <td>United Kingdom</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6072</th>\n",
+       "      <td>B&amp;B HOTEL Berlin-Adlershof</td>\n",
+       "      <td>Hotel</td>\n",
+       "      <td>89</td>\n",
+       "      <td>https://storage.googleapis.com/superlinked-rec...</td>\n",
+       "      <td>Location: Located in the centre of Berlin, thi...</td>\n",
+       "      <td>448</td>\n",
+       "      <td>8.3</td>\n",
+       "      <td>[24-hour reception, Breakfast, Cashless paymen...</td>\n",
+       "      <td>[Air conditioning, Cable TV, Central heating, ...</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>[Accessible hotel, Accessible parking, Wheelch...</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>Berlin</td>\n",
+       "      <td>Germany</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                            id accomodation_type  price  \\\n",
+       "2991      Mercure Hotel Düsseldorf City Center             Hotel     46   \n",
+       "5728                               Minel Hotel             Hotel     43   \n",
+       "711                   Forest City Marina Hotel             Hotel     64   \n",
+       "6286  Crowne Plaza London Ealing, an IHG Hotel             Hotel    129   \n",
+       "6072                B&B HOTEL Berlin-Adlershof             Hotel     89   \n",
+       "\n",
+       "                                              image_src  \\\n",
+       "2991  https://storage.googleapis.com/superlinked-rec...   \n",
+       "5728  https://storage.googleapis.com/superlinked-rec...   \n",
+       "711   https://storage.googleapis.com/superlinked-rec...   \n",
+       "6286  https://storage.googleapis.com/superlinked-rec...   \n",
+       "6072  https://storage.googleapis.com/superlinked-rec...   \n",
+       "\n",
+       "                                            description  rating_count  rating  \\\n",
+       "2991  A modern, four-star hotel near Königsallee and...          7439     7.7   \n",
+       "5728  At Minel Hotel, exceptional service and top-no...          1174     8.8   \n",
+       "711   As the first high standard hotel in Forest Cit...           951     8.3   \n",
+       "6286  A stylish West London hotel with fast access t...          8008     8.3   \n",
+       "6072  Location: Located in the centre of Berlin, thi...           448     8.3   \n",
+       "\n",
+       "                                     property_amenities  \\\n",
+       "2991  [24-hour reception, Breakfast, Cashless paymen...   \n",
+       "5728  [24-hour reception, 24-hour room service, Airp...   \n",
+       "711   [24-hour reception, ATM, Breakfast, Business c...   \n",
+       "6286  [24-hour room service, Breakfast, Café, Cashle...   \n",
+       "6072  [24-hour reception, Breakfast, Cashless paymen...   \n",
+       "\n",
+       "                                         room_amenities wellness_spa  \\\n",
+       "2991  [Air conditioning, Balcony, Cable TV, Central ...           []   \n",
+       "5728  [Air conditioning, Balcony, Central heating, D...           []   \n",
+       "711   [Air conditioning, Balcony, Cable TV, Closet, ...           []   \n",
+       "6286  [Air conditioning, Cable TV, Central heating, ...           []   \n",
+       "6072  [Air conditioning, Cable TV, Central heating, ...           []   \n",
+       "\n",
+       "                                          accessibility      for_children  \\\n",
+       "2991  [Accessible hotel, Accessible parking, Wheelch...  [Childcare, Cot]   \n",
+       "5728                                                 []                []   \n",
+       "711         [Accessible parking, Wheelchair accessible]                []   \n",
+       "6286  [Accessible hotel, Accessible parking, Wheelch...             [Cot]   \n",
+       "6072  [Accessible hotel, Accessible parking, Wheelch...                []   \n",
+       "\n",
+       "              city         country  \n",
+       "2991    Düsseldorf         Germany  \n",
+       "5728      Istanbul          Turkey  \n",
+       "711   Gelang Patah        Malaysia  \n",
+       "6286        London  United Kingdom  \n",
+       "6072        Berlin         Germany  "
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "\n",
+    "filename = \"https://storage.googleapis.com/superlinked-recipes-data/hotels-search/dataset/dataset.jsonl\"\n",
+    "\n",
+    "df = pd.read_json(filename, lines=True)\n",
+    "\n",
+    "df.sample(5, random_state=42)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>n_hotels</th>\n",
+       "      <th>n_cities</th>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>country</th>\n",
+       "      <th></th>\n",
+       "      <th></th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>France</th>\n",
+       "      <td>890</td>\n",
+       "      <td>244</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>United Kingdom</th>\n",
+       "      <td>783</td>\n",
+       "      <td>167</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Germany</th>\n",
+       "      <td>710</td>\n",
+       "      <td>144</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Spain</th>\n",
+       "      <td>554</td>\n",
+       "      <td>167</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>USA</th>\n",
+       "      <td>521</td>\n",
+       "      <td>452</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Italy</th>\n",
+       "      <td>471</td>\n",
+       "      <td>82</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Canada</th>\n",
+       "      <td>441</td>\n",
+       "      <td>270</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Sweden</th>\n",
+       "      <td>438</td>\n",
+       "      <td>163</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Turkey</th>\n",
+       "      <td>427</td>\n",
+       "      <td>46</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Norway</th>\n",
+       "      <td>332</td>\n",
+       "      <td>141</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Georgia</th>\n",
+       "      <td>231</td>\n",
+       "      <td>13</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Malaysia</th>\n",
+       "      <td>209</td>\n",
+       "      <td>40</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Indonesia</th>\n",
+       "      <td>200</td>\n",
+       "      <td>50</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Israel</th>\n",
+       "      <td>162</td>\n",
+       "      <td>22</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Argentina</th>\n",
+       "      <td>161</td>\n",
+       "      <td>15</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Thailand</th>\n",
+       "      <td>148</td>\n",
+       "      <td>47</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Japan</th>\n",
+       "      <td>143</td>\n",
+       "      <td>67</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Brazil</th>\n",
+       "      <td>140</td>\n",
+       "      <td>91</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>Hungary</th>\n",
+       "      <td>125</td>\n",
+       "      <td>16</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                n_hotels  n_cities\n",
+       "country                           \n",
+       "France               890       244\n",
+       "United Kingdom       783       167\n",
+       "Germany              710       144\n",
+       "Spain                554       167\n",
+       "USA                  521       452\n",
+       "Italy                471        82\n",
+       "Canada               441       270\n",
+       "Sweden               438       163\n",
+       "Turkey               427        46\n",
+       "Norway               332       141\n",
+       "Georgia              231        13\n",
+       "Malaysia             209        40\n",
+       "Indonesia            200        50\n",
+       "Israel               162        22\n",
+       "Argentina            161        15\n",
+       "Thailand             148        47\n",
+       "Japan                143        67\n",
+       "Brazil               140        91\n",
+       "Hungary              125        16"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pd.DataFrame(\n",
+    "    {\n",
+    "        \"n_hotels\": df.country.value_counts(),\n",
+    "        \"n_cities\": df.groupby(\"country\")[\"city\"].nunique(),\n",
+    "    }\n",
+    ").sort_values([\"n_hotels\", \"n_cities\"], ascending=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>price</th>\n",
+       "      <th>rating</th>\n",
+       "      <th>rating_count</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>count</th>\n",
+       "      <td>7086.000000</td>\n",
+       "      <td>7086.000000</td>\n",
+       "      <td>7086.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>mean</th>\n",
+       "      <td>102.367767</td>\n",
+       "      <td>8.305222</td>\n",
+       "      <td>3273.439035</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>std</th>\n",
+       "      <td>86.442627</td>\n",
+       "      <td>0.795191</td>\n",
+       "      <td>3907.836981</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>min</th>\n",
+       "      <td>6.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>25%</th>\n",
+       "      <td>59.000000</td>\n",
+       "      <td>7.900000</td>\n",
+       "      <td>791.250000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>50%</th>\n",
+       "      <td>82.000000</td>\n",
+       "      <td>8.400000</td>\n",
+       "      <td>2245.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>75%</th>\n",
+       "      <td>115.000000</td>\n",
+       "      <td>8.900000</td>\n",
+       "      <td>4371.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>max</th>\n",
+       "      <td>987.000000</td>\n",
+       "      <td>10.000000</td>\n",
+       "      <td>60524.000000</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "             price       rating  rating_count\n",
+       "count  7086.000000  7086.000000   7086.000000\n",
+       "mean    102.367767     8.305222   3273.439035\n",
+       "std      86.442627     0.795191   3907.836981\n",
+       "min       6.000000     1.000000      1.000000\n",
+       "25%      59.000000     7.900000    791.250000\n",
+       "50%      82.000000     8.400000   2245.000000\n",
+       "75%     115.000000     8.900000   4371.000000\n",
+       "max     987.000000    10.000000  60524.000000"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df[[\"price\", \"rating\", \"rating_count\"]].describe()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "22522.0"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.rating_count.quantile(0.995)\n",
+    "\n",
+    "# used for rating_count space\n",
+    "# check `superlinked_app/index.py` for details\n",
+    "#\n",
+    "# rating_count_space = sl.NumberSpace(\n",
+    "#     hotel_schema.rating_count,\n",
+    "#     min_value=0,\n",
+    "#     max_value=22500,  # <-\n",
+    "#     mode=sl.Mode.MAXIMUM,\n",
+    "#     scale=sl.LogarithmicScale(),\n",
+    "# )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>chars</th>\n",
+       "      <th>words</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>count</th>\n",
+       "      <td>7086.000000</td>\n",
+       "      <td>7086.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>mean</th>\n",
+       "      <td>818.996190</td>\n",
+       "      <td>129.242873</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>std</th>\n",
+       "      <td>338.545685</td>\n",
+       "      <td>54.722399</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>min</th>\n",
+       "      <td>102.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>25%</th>\n",
+       "      <td>608.000000</td>\n",
+       "      <td>94.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>50%</th>\n",
+       "      <td>855.000000</td>\n",
+       "      <td>136.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>75%</th>\n",
+       "      <td>999.000000</td>\n",
+       "      <td>157.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>max</th>\n",
+       "      <td>3303.000000</td>\n",
+       "      <td>582.000000</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "             chars        words\n",
+       "count  7086.000000  7086.000000\n",
+       "mean    818.996190   129.242873\n",
+       "std     338.545685    54.722399\n",
+       "min     102.000000     1.000000\n",
+       "25%     608.000000    94.000000\n",
+       "50%     855.000000   136.000000\n",
+       "75%     999.000000   157.000000\n",
+       "max    3303.000000   582.000000"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pd.DataFrame(\n",
+    "    {\n",
+    "        \"chars\": df.description.str.len().describe(),\n",
+    "        \"words\": df.description.str.split().str.len().describe(),\n",
+    "    }\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "property_amenities | # unique: 72\n",
+      "Top 5: {'Free WiFi': 7059, 'Non-smoking rooms': 6841, 'Free WiFi in public areas': 6525, 'New safety protocols': 5920, 'Response protocol': 5736} \n",
+      "\n",
+      "room_amenities | # unique: 39\n",
+      "Top 5: {'Free WiFi': 6548, 'Central heating': 5585, 'Television': 5508, 'WiFi': 5455, 'Air conditioning': 5289} \n",
+      "\n",
+      "wellness_spa | # unique: 10\n",
+      "Top 5: {'Sauna': 1430, 'Massage': 1231, 'Beauty salon': 1046, 'Hot tub': 884, 'Steam room': 613} \n",
+      "\n",
+      "accessibility | # unique: 6\n",
+      "Top 5: {'Accessible parking': 4510, 'Wheelchair accessible': 3937, 'Accessible hotel': 1696, 'Accessible bathroom': 602, 'In-room accessibility': 378} \n",
+      "\n",
+      "for_children | # unique: 6\n",
+      "Top 5: {'Cot': 2113, 'Playground': 685, 'Childcare': 673, 'Kids stay for free': 420, \"Kids' club\": 190} \n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "columns_categorical = [\n",
+    "    \"property_amenities\",\n",
+    "    \"room_amenities\",\n",
+    "    \"wellness_spa\",\n",
+    "    \"accessibility\",\n",
+    "    \"for_children\",\n",
+    "]\n",
+    "\n",
+    "for column in columns_categorical:\n",
+    "    print(f\"{column} | # unique: {df[column].explode().nunique()}\")\n",
+    "    n = 5\n",
+    "    print(f\"Top {n}:\", df[column].explode().value_counts()[:n].to_dict(), \"\\n\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": ".venv",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
+
+================
+File: notebooks/superlinked-queries.ipynb
+================
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Run this notebook in the same virtual environment with superlinked server\n",
+    "to ensure the same version of `superlinked` framework."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "superlinked==19.14.3\n",
+      "superlinked-server==1.5.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "!pip freeze | grep superlinked"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "project_dir is added to sys.path\n"
+     ]
+    }
+   ],
+   "source": [
+    "from pathlib import Path\n",
+    "import sys\n",
+    "\n",
+    "# depending on the user's setup\n",
+    "# we will try to find the superlinked_app directory\n",
+    "# and add it to the sys.path\n",
+    "\n",
+    "cwd = Path.cwd()\n",
+    "if cwd.name == \"superlinked-recipes\":\n",
+    "    project_dir = cwd / \"projects\" / \"hotel-search\"\n",
+    "elif cwd.name == \"notebooks\":\n",
+    "    project_dir = cwd.parent\n",
+    "else:\n",
+    "    project_dir = cwd\n",
+    "\n",
+    "superlinked_app_dir = project_dir / \"superlinked_app\"\n",
+    "assert superlinked_app_dir.exists(), (\n",
+    "    f\"{superlinked_app_dir} does not exist\\n\"\n",
+    "    \"are you sure you are in the hotel-search/notebooks directory?\"\n",
+    ")\n",
+    "\n",
+    "if str(project_dir) not in sys.path:\n",
+    "    sys.path.append(str(project_dir))\n",
+    "    print(\"project_dir is added to sys.path\")\n",
+    "else:\n",
+    "    print(\"project_dir is already in sys.path\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from superlinked import framework as sl\n",
+    "\n",
+    "from superlinked_app.index import index, hotel_schema\n",
+    "from superlinked_app.query import query\n",
+    "from superlinked_app.api import vector_database\n",
+    "\n",
+    "import pandas as pd"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "source = sl.InteractiveSource(hotel_schema)\n",
+    "executor = sl.InteractiveExecutor(\n",
+    "    sources=[source],\n",
+    "    indices=[index],\n",
+    "    vector_database=vector_database,\n",
+    ")\n",
+    "app = executor.run()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'price_weight': 0.0, 'rating_weight': 1.0, 'rating_count_weight': 0.0, 'description_weight': 1.0, 'description': 'Pet-friendly hotel with cozy interior.', 'limit': 3, 'select_param__': ['description', 'price', 'rating', 'rating_count', 'accomodation_type', 'property_amenities', 'room_amenities', 'wellness_spa', 'accessibility', 'for_children', 'city', 'country'], 'city': 'London', 'min_price': None, 'max_price': None, 'min_rating': None, 'max_rating': None, 'accomodation_types_include': 'Hotel', 'accomodation_types_exclude': None, 'property_amenities_include_all': ['Pets allowed'], 'property_amenities_include_any': None, 'property_amenities_exclude': None, 'room_amenities_include_all': None, 'room_amenities_include_any': None, 'room_amenities_exclude': None, 'wellness_spa_include_all': None, 'wellness_spa_include_any': None, 'wellness_spa_exclude': None, 'accessibility_include_all': None, 'accessibility_include_any': None, 'accessibility_exclude': None, 'for_children_include_all': None, 'for_children_include_any': None, 'for_children_exclude': None, 'natural_query': 'well rated pet friendly hotel in london, cozy interior', 'system_prompt_param__': \"Extract the search parameters from the user query.\\nAdvices:\\n**'include' and 'exclude' attributes**\\nUse relevant amenities, for example, include 'Cot' when user mentions 'baby',and exclude it when user mentions 'no children'.\\nIf no amenities are mentioned, use None for 'include' and 'exclude'.\\n**'accomodation_type'**\\nIf users searches for some hotels, include 'Hotel' in accomodation types, same for other accomodation types.\\n\", 'radius_param__': None, 'similar_description_weight': 1.0}\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>description</th>\n",
+       "      <th>price</th>\n",
+       "      <th>rating</th>\n",
+       "      <th>rating_count</th>\n",
+       "      <th>accomodation_type</th>\n",
+       "      <th>property_amenities</th>\n",
+       "      <th>room_amenities</th>\n",
+       "      <th>wellness_spa</th>\n",
+       "      <th>accessibility</th>\n",
+       "      <th>for_children</th>\n",
+       "      <th>city</th>\n",
+       "      <th>country</th>\n",
+       "      <th>id</th>\n",
+       "      <th>similarity_score</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Welcome to Canopy by Hilton London City, an im...</td>\n",
+       "      <td>145.0</td>\n",
+       "      <td>9.4</td>\n",
+       "      <td>3119</td>\n",
+       "      <td>Hotel</td>\n",
+       "      <td>[24-hour reception, 24-hour room service, Busi...</td>\n",
+       "      <td>[Air conditioning, Bathtub, Cable TV, Central ...</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>[Accessible bathroom, Accessible hotel, In-roo...</td>\n",
+       "      <td>[Cot]</td>\n",
+       "      <td>London</td>\n",
+       "      <td>United Kingdom</td>\n",
+       "      <td>Canopy by Hilton London City</td>\n",
+       "      <td>0.798498</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Begin your day with a scrumptious on-site brea...</td>\n",
+       "      <td>120.0</td>\n",
+       "      <td>9.1</td>\n",
+       "      <td>1867</td>\n",
+       "      <td>Hotel</td>\n",
+       "      <td>[24-hour reception, Café, Cashless payment, Co...</td>\n",
+       "      <td>[Air conditioning, Balcony, Central heating, F...</td>\n",
+       "      <td>[]</td>\n",
+       "      <td>[Wheelchair accessible]</td>\n",
+       "      <td>[Cot]</td>\n",
+       "      <td>London</td>\n",
+       "      <td>United Kingdom</td>\n",
+       "      <td>The Gantry London, Curio Collection By Hilton</td>\n",
+       "      <td>0.793067</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>The Marylebone is centrally located in the hea...</td>\n",
+       "      <td>327.0</td>\n",
+       "      <td>8.9</td>\n",
+       "      <td>7258</td>\n",
+       "      <td>Hotel</td>\n",
+       "      <td>[24-hour reception, Breakfast, Business centre...</td>\n",
+       "      <td>[Air conditioning, Bathtub, Cable TV, Central ...</td>\n",
+       "      <td>[Sauna]</td>\n",
+       "      <td>[Accessible hotel, Wheelchair accessible]</td>\n",
+       "      <td>[Childcare]</td>\n",
+       "      <td>London</td>\n",
+       "      <td>United Kingdom</td>\n",
+       "      <td>The Marylebone Hotel</td>\n",
+       "      <td>0.789340</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                         description  price  rating  \\\n",
+       "0  Welcome to Canopy by Hilton London City, an im...  145.0     9.4   \n",
+       "1  Begin your day with a scrumptious on-site brea...  120.0     9.1   \n",
+       "2  The Marylebone is centrally located in the hea...  327.0     8.9   \n",
+       "\n",
+       "   rating_count accomodation_type  \\\n",
+       "0          3119             Hotel   \n",
+       "1          1867             Hotel   \n",
+       "2          7258             Hotel   \n",
+       "\n",
+       "                                  property_amenities  \\\n",
+       "0  [24-hour reception, 24-hour room service, Busi...   \n",
+       "1  [24-hour reception, Café, Cashless payment, Co...   \n",
+       "2  [24-hour reception, Breakfast, Business centre...   \n",
+       "\n",
+       "                                      room_amenities wellness_spa  \\\n",
+       "0  [Air conditioning, Bathtub, Cable TV, Central ...           []   \n",
+       "1  [Air conditioning, Balcony, Central heating, F...           []   \n",
+       "2  [Air conditioning, Bathtub, Cable TV, Central ...      [Sauna]   \n",
+       "\n",
+       "                                       accessibility for_children    city  \\\n",
+       "0  [Accessible bathroom, Accessible hotel, In-roo...        [Cot]  London   \n",
+       "1                            [Wheelchair accessible]        [Cot]  London   \n",
+       "2          [Accessible hotel, Wheelchair accessible]  [Childcare]  London   \n",
+       "\n",
+       "          country                                             id  \\\n",
+       "0  United Kingdom                   Canopy by Hilton London City   \n",
+       "1  United Kingdom  The Gantry London, Curio Collection By Hilton   \n",
+       "2  United Kingdom                           The Marylebone Hotel   \n",
+       "\n",
+       "   similarity_score  \n",
+       "0          0.798498  \n",
+       "1          0.793067  \n",
+       "2          0.789340  "
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "params = {\n",
+    "    \"natural_query\": \"well rated pet friendly hotel in london, cozy interior\",\n",
+    "    \"limit\": 3,\n",
+    "}\n",
+    "\n",
+    "result = app.query(query, **params)\n",
+    "print(result.metadata.search_params)\n",
+    "sl.PandasConverter.to_pandas(result)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>description</th>\n",
+       "      <th>price</th>\n",
+       "      <th>rating</th>\n",
+       "      <th>rating_count</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Canopy by Hilton London City</td>\n",
+       "      <td>0.300717</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.497781</td>\n",
+       "      <td>0.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>The Gantry London, Curio Collection By Hilton</td>\n",
+       "      <td>0.298055</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.495012</td>\n",
+       "      <td>0.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>The Marylebone Hotel</td>\n",
+       "      <td>0.296786</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.492555</td>\n",
+       "      <td>0.0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                              id  description  price  \\\n",
+       "0                   Canopy by Hilton London City     0.300717    0.0   \n",
+       "1  The Gantry London, Curio Collection By Hilton     0.298055    0.0   \n",
+       "2                           The Marylebone Hotel     0.296786    0.0   \n",
+       "\n",
+       "     rating  rating_count  \n",
+       "0  0.497781           0.0  \n",
+       "1  0.495012           0.0  \n",
+       "2  0.492555           0.0  "
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rows = []\n",
+    "\n",
+    "space_names = [\"description\", \"price\", \"rating\", \"rating_count\"]\n",
+    "# order of spaces is the same as during index creation\n",
+    "\n",
+    "for entry in result.entries:\n",
+    "    partial_scores = dict(zip(space_names, entry.metadata.partial_scores))\n",
+    "    row = {\"id\": entry.id, **partial_scores}\n",
+    "    rows.append(row)\n",
+    "\n",
+    "df = pd.DataFrame(rows)\n",
+    "df"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": ".venv",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.11"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
+
+================
+File: superlinked_app/.env-example
+================
+TEXT_EMBEDDER_NAME="sentence-transformers/all-mpnet-base-v2"
+CHUNK_SIZE=1000    
+
+PATH_CATEGORIES=https://storage.googleapis.com/superlinked-recipes-data/hotels-search/categories/categories.json
+PATH_DATASET=https://storage.googleapis.com/superlinked-recipes-data/hotels-search/dataset/dataset.jsonl
+
+OPENAI_API_KEY=sk-proj-...
+OPENAI_MODEL=gpt-4o
+
+QDRANT_URL=https://...
+QDRANT_API_KEY=...
+
+================
+File: superlinked_app/.gitignore
+================
+.env
+
+================
+File: superlinked_app/api.py
+================
+from superlinked import framework as sl
+
+from superlinked_app.index import hotel_schema, index
+from superlinked_app.query import query, query_debug
+from superlinked_app.config import settings
+
+rest_source_speech = sl.RestSource(hotel_schema)
+
+vector_database = sl.QdrantVectorDatabase(
+    url=settings.qdrant_url, api_key=settings.qdrant_api_key
+)
+
+config = sl.DataLoaderConfig(
+    settings.path_dataset,
+    sl.DataFormat.JSON,
+    pandas_read_kwargs={"lines": True, "chunksize": settings.chunk_size},
+)
+loader_source_speech = sl.DataLoaderSource(hotel_schema, config)
+
+executor = sl.RestExecutor(
+    sources=[
+        rest_source_speech,
+        loader_source_speech,
+    ],
+    indices=[index],
+    queries=[
+        sl.RestQuery(sl.RestDescriptor("hotel"), query),
+        sl.RestQuery(sl.RestDescriptor("hotel-debug"), query_debug),
+    ],
+    vector_database=vector_database,
+)
+
+sl.SuperlinkedRegistry.register(executor)
+
+================
+File: superlinked_app/config.py
+================
+import os
+
+from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+DEFAULT_ENV_FILENAME = ".env"
+
+
+class Settings(BaseSettings):
+    text_embedder_name: str = "sentence-transformers/all-mpnet-base-v2"
+    chunk_size: int = 1000
+    path_categories: str = (
+        "https://storage.googleapis.com/superlinked-recipes-data/hotels-search/categories/categories.json"
+    )
+    path_dataset: str = (
+        "https://storage.googleapis.com/superlinked-recipes-data/hotels-search/dataset/dataset.jsonl"
+    )
+    openai_model: str = "gpt-4o"
+    openai_api_key: SecretStr
+    qdrant_url: str = "https://582c83bf-e97f-401a-9ff7-8480522f5e88.europe-west3-0.gcp.cloud.qdrant.io"
+    qdrant_api_key: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.0hEkwzpfBRRQxXnDky4G0Hiuou6yfnWmvATWODEnVnM"
+    model_config = SettingsConfigDict(
+        env_file=DEFAULT_ENV_FILENAME, env_file_encoding="utf-8"
+    )
+
+
+def get_env_file_path() -> str:
+    dirname = os.path.dirname(__file__)
+    rel_path = os.path.join(dirname, DEFAULT_ENV_FILENAME)
+    abs_path = os.path.abspath(rel_path)
+    return abs_path
+
+
+settings = Settings(_env_file=get_env_file_path())
+
+================
+File: superlinked_app/index.py
+================
+from superlinked import framework as sl
+
+from superlinked_app.config import settings
+
+
+@sl.schema
+class Hotel:
+    # `id` is obligatory field
+    id: sl.IdField
+    #
+    # the fields below are embedded into spaces
+    # and used for for semantic search
+    description: sl.String
+    price: sl.Float
+    rating: sl.Float
+    rating_count: sl.Integer
+    #
+    # this attributes are not embedded
+    # and used only for hard-filtering
+    accomodation_type: sl.String
+    property_amenities: sl.StringList
+    room_amenities: sl.StringList
+    wellness_spa: sl.StringList
+    accessibility: sl.StringList
+    for_children: sl.StringList
+    city: sl.String
+    country: sl.String
+
+
+hotel_schema = Hotel()
+
+# desciption is embedded using sentence-transformer model
+# model_name is defined in `config.py`
+description_space = sl.TextSimilaritySpace(
+    text=hotel_schema.description,
+    model=settings.text_embedder_name,
+)
+
+# rating is embedded using linear scale
+rating_space = sl.NumberSpace(
+    hotel_schema.rating,
+    min_value=0,
+    max_value=10,
+    mode=sl.Mode.MAXIMUM,
+)
+
+# price and rating_count are embedded using logarithmic scale
+# because their distribution spans multiple orders of magnitude
+price_space = sl.NumberSpace(
+    hotel_schema.price,
+    min_value=0,
+    max_value=1000,
+    mode=sl.Mode.MAXIMUM,
+    scale=sl.LogarithmicScale(),
+)
+
+
+rating_count_space = sl.NumberSpace(
+    hotel_schema.rating_count,
+    min_value=0,
+    # max_value is calculated from the dataset as 99.5% quantile
+    # check `notebooks/eda.ipynb` for details
+    max_value=22500,
+    mode=sl.Mode.MAXIMUM,
+    scale=sl.LogarithmicScale(),
+)
+
+# index is a composition of spaces
+index = sl.Index(
+    spaces=[
+        description_space,
+        price_space,
+        rating_space,
+        rating_count_space,
+    ],
+    #
+    # the fields below are used for hard-filtering
+    fields=[
+        hotel_schema.price,
+        hotel_schema.rating,
+        hotel_schema.city,
+        hotel_schema.country,
+        hotel_schema.accomodation_type,
+        hotel_schema.property_amenities,
+        hotel_schema.room_amenities,
+        hotel_schema.wellness_spa,
+        hotel_schema.accessibility,
+        hotel_schema.for_children,
+    ],
+)
+
+================
+File: superlinked_app/nlq.py
+================
+import json
+import urllib.request
+
+from superlinked import framework as sl
+
+from superlinked_app.config import settings
+
+openai_config = sl.OpenAIClientConfig(
+    api_key=settings.openai_api_key.get_secret_value(),
+    model=settings.openai_model,
+)
+
+
+def get_cat_options() -> dict[list[str]]:
+    with urllib.request.urlopen(settings.path_categories) as url:
+        return json.load(url)
+
+
+description_description = (
+    "'description' should be one or two normalized sentences that describe the desired hotel.\n"
+    "Don't include price, rating, and rating count mentions in the 'description'.\n"
+    "Some examples of what should be captured in 'description': "
+    "reinnovated bathroom, comfortable beds, close to museums, "
+    "good connectivity, airport shuttle, elegant design, traditional cuisine.\n"
+    "In case of all and every requirement is captured by other sl.Parameters (accomodation type, amenities, etc.), "
+    "description should be empty.\n"
+    "Examples of 'description' generation: \n"
+    "1. user_query: 'hotels in historical center of London, close to museums, cheapest options' "
+    "-> description: 'Hotel is located in historical center of London, close to museums.' \n"
+    "2. user_query: 'not expensive apartment in calm area of Paris for a family trip, airport shuttle, many reviews' "
+    "-> description: 'Apartment is located in calm area in Paris, suitable for a family trip. Airport shuttle is available.' \n"
+    "3. user_query: 'hostels in Berlin centre for huge company' "
+    "-> description: 'Hostel is located in the center of Berlin, suitable for a huge company.' \n"
+    "4. user_query: 'Affordable dog-friendly hotels with few reviews' "
+    "-> description: '' \n"
+)
+
+city_description = (
+    "Name of the city like 'London' or 'Paris'.\n"
+    "If famous toponim is mentioned, use relevant city, for example: "
+    "'London' for Trafalgar Sq or 'Paris' for Eiffel Tower.\n"
+    "If city can't be determined, use None for 'city'.\n"
+)
+
+price_description = (
+    "Weight of the price. "
+    "Higher value means more expensive hotels, "
+    "lower value means cheaper ones. "
+    "Weight depends on the adjective or noun used to describe the price. "
+    "For example: "
+    "positive weight: 'expensive', 'not cheap', 'high price', 'luxurious', 'very expensive', 'the most expensive', 'highest price'; "
+    "negative weight: 'cheap', 'not expensive', 'affordable', 'low price', 'the cheapest', 'lowest price'; "
+    "0 should be used if no preference for the price."
+)
+
+rating_description = (
+    "Weight of the rating. "
+    "Higher value means higher rating, "
+    "lower value means lower rating. "
+    "Weight depends on the adjective or noun used to describe the rating. "
+    "For example: "
+    "positive weight: 'high rating', 'good', 'higly-rated', 'highest rating', 'best', 'top-rated'; "
+    "negative weight: 'low rating', 'poor', 'not recommended', 'lowest rating', 'worst', 'not recommended'; "
+    "0 should be used if no preference for the rating."
+)
+
+rating_count_description = (
+    "Weight of the rating count. "
+    "Higher value means more reviews, "
+    "lower value means fewer reviews. "
+    "Weight depends on the adjective or noun used to describe the rating count. "
+    "For example: "
+    "positive weight: 'many reviews', 'popular', 'highly reviewed', 'most reviewed', 'most popular', 'highest reviews'; "
+    "negative weight: 'few reviews', 'not popular', 'seldom reviewed', 'least reviewed', 'least popular', 'lowest reviews'; "
+    "0 should be used if no preference for the rating count."
+)
+
+accomodation_type_description = (
+    "If users searches for some hotels, include 'Hotel' in accomodation types, "
+    "same for other accomodation types."
+)
+
+system_prompt = (
+    "Extract the search parameters from the user query.\n"
+    "Advices:\n"
+    "**'include' and 'exclude' attributes**\n"
+    "Use relevant amenities, for example, include 'Cot' when user mentions 'baby',"
+    "and exclude it when user mentions 'no children'.\n"
+    "If no amenities are mentioned, use None for 'include' and 'exclude'.\n"
+    "**'accomodation_type'**\n"
+    "If users searches for some hotels, include 'Hotel' in accomodation types, "
+    "same for other accomodation types.\n"
+)
+
+================
+File: superlinked_app/query.py
+================
+from collections import namedtuple
+
+from superlinked import framework as sl
+
+from superlinked_app.index import (
+    description_space,
+    hotel_schema,
+    index,
+    price_space,
+    rating_count_space,
+    rating_space,
+)
+from superlinked_app.nlq import (
+    city_description,
+    description_description,
+    get_cat_options,
+    openai_config,
+    price_description,
+    rating_count_description,
+    rating_description,
+    system_prompt,
+)
+
+cat_options = get_cat_options()
+
+# query_debug is a simple way to check if server has some data ingested:
+query_debug = sl.Query(index).find(hotel_schema).limit(3).select_all()
+
+# Let's define a main query that will be used for multi-modal semantic search:
+query = (
+    sl.Query(
+        index,
+        weights={
+            price_space: sl.Param(
+                "price_weight",
+                description=price_description,
+            ),
+            rating_space: sl.Param(
+                "rating_weight",
+                description=rating_description,
+            ),
+            rating_count_space: sl.Param(
+                "rating_count_weight",
+                description=rating_count_description,
+            ),
+            description_space: sl.Param("description_weight", default=1.0),
+        },
+    )
+    .find(hotel_schema)
+    .similar(
+        description_space.text,
+        sl.Param("description", description=description_description),
+        weight=sl.Param("similar_description_weight", default=1.0),
+    )
+)
+
+# We can specify number of retreved results like this:
+query = query.limit(sl.Param("limit", default=4))
+
+# We want all fields to be returned
+query = query.select_all()
+
+# .. and all the metadata including knn_params and partial_scores
+query = query.include_metadata()
+
+# Now let's add hard-filtering
+# for city:
+query = query.filter(
+    hotel_schema.city.in_(sl.Param("city", description=city_description))
+)
+
+# ... for numerical attributes:
+query = (
+    query.filter(hotel_schema.price >= sl.Param("min_price"))
+    .filter(hotel_schema.price <= sl.Param("max_price"))
+    .filter(hotel_schema.rating >= sl.Param("min_rating"))
+    .filter(hotel_schema.rating <= sl.Param("max_rating"))
+)
+
+# ... and for all categorical attributes:
+CategoryFilter = namedtuple(
+    "CategoryFilter", ["operator", "param_name", "category_name", "description"]
+)
+
+filters = [
+    CategoryFilter(
+        operator=hotel_schema.accomodation_type.in_,
+        param_name="accomodation_types_include",
+        category_name="accomodation_type",
+        description="Accomodation types that should be included.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.accomodation_type.not_in_,
+        param_name="accomodation_types_exclude",
+        category_name="accomodation_type",
+        description="Accomodation types that should be excluded.",
+    ),
+    # Property amenities
+    CategoryFilter(
+        operator=hotel_schema.property_amenities.contains_all,
+        param_name="property_amenities_include_all",
+        category_name="property_amenities",
+        description="User wants all of the following property amenities.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.property_amenities.contains,
+        param_name="property_amenities_include_any",
+        category_name="property_amenities",
+        description="User wants at least one of the following property amenities.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.property_amenities.not_contains,
+        param_name="property_amenities_exclude",
+        category_name="property_amenities",
+        description="User does not want any of the following property amenities.",
+    ),
+    # Room amenities
+    CategoryFilter(
+        operator=hotel_schema.room_amenities.contains_all,
+        param_name="room_amenities_include_all",
+        category_name="room_amenities",
+        description="User wants all of the following room amenities.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.room_amenities.contains,
+        param_name="room_amenities_include_any",
+        category_name="room_amenities",
+        description="User wants at least one of the following room amenities.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.room_amenities.not_contains,
+        param_name="room_amenities_exclude",
+        category_name="room_amenities",
+        description="User does not want any of the following room amenities.",
+    ),
+    # Wellness_spa
+    CategoryFilter(
+        operator=hotel_schema.wellness_spa.contains_all,
+        param_name="wellness_spa_include_all",
+        category_name="wellness_spa",
+        description="User wants all of the following wellness and spa amenities.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.wellness_spa.contains,
+        param_name="wellness_spa_include_any",
+        category_name="wellness_spa",
+        description="User wants at least one of the following wellness and spa amenities.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.wellness_spa.not_contains,
+        param_name="wellness_spa_exclude",
+        category_name="wellness_spa",
+        description="User does not want any of the following wellness and spa amenities.",
+    ),
+    # Accessibility
+    CategoryFilter(
+        operator=hotel_schema.accessibility.contains_all,
+        param_name="accessibility_include_all",
+        category_name="accessibility",
+        description="User wants all of the following accessibility amenities.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.accessibility.contains,
+        param_name="accessibility_include_any",
+        category_name="accessibility",
+        description="User wants at least one of the following accessibility amenities.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.accessibility.not_contains,
+        param_name="accessibility_exclude",
+        category_name="accessibility",
+        description="User does not want any of the following accessibility amenities.",
+    ),
+    # For children
+    CategoryFilter(
+        operator=hotel_schema.for_children.contains_all,
+        param_name="for_children_include_all",
+        category_name="for_children",
+        description="User wants all of the following amenities for children.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.for_children.contains,
+        param_name="for_children_include_any",
+        category_name="for_children",
+        description="User wants at least one of the following amenities for children.",
+    ),
+    CategoryFilter(
+        operator=hotel_schema.for_children.not_contains,
+        param_name="for_children_exclude",
+        category_name="for_children",
+        description="User does not want any of the following amenities for children.",
+    ),
+]
+
+for filter_item in filters:
+    param = sl.Param(
+        filter_item.param_name,
+        description=filter_item.description,
+        options=cat_options[filter_item.category_name],
+    )
+    query = query.filter(filter_item.operator(param))
+
+# And finally, let's add natural language interface on top
+# that will call LLM to parse user natural query
+# into structured superlinked query, i.e. suggest parameters values.
+query = query.with_natural_query(
+    natural_query=sl.Param("natural_query"),
+    client_config=openai_config,
+    system_prompt=system_prompt,
+)
+
+================
+File: .gitignore
+================
+.venv*
+superlinked_app/__pycache__
+superlinked_app/.env
+**/.DS_Store
+frontend_app/.venv_frontend
+frontend_app/app.egg-info
+frontend_app/logs
+
+================
+File: README.md
+================
+# Hotel Search
+
+## Overview
+
+This project is a demonstration of a hotel search system built using Superlinked implemented in Qdrant Basically this is a clone of the [hotel-search-recipe](https://github.com/superlinked/superlinked-recipes/tree/main/projects/hotel-search) but implemented in Qdrant.
+
+- **Natural Language Queries:** Search for hotels using everyday language.
+- **Multi-modal Semantic Search:** Utilize different data types for comprehensive search results.
+
+### Query examples:
+- Cheap but highly rated hotels in Paris, no children
+- No pets, posh hotel in Berlin
+- Popular hotels in center of London with free breakfast
+
+### Modalities:
+- **Text:** Hotel descriptions.
+- **Numbers:** Price, rating, and number of reviews.
+
+### Hard-filters:
+- **Location:** City.
+- **Numbers:** Price, ratings.
+- **Amenities:** Options for property and room amenities; 
+  wellnes and spa; accessibility; children.
+
+### Data example (hotel entity):
+
+```json
+{
+    "id": "Lovely Hotel",
+    "country": "Germany",
+    "city": "Berlin",
+    "accomodation_type": "Hotel",
+    "price": 42,
+    "image_src": "...",
+    "description": "A family hotel close to city center ...",
+    "rating_count": 6543,
+    "rating": 8.9,
+    "property_amenities": ["Free parking", "Breakfast"],
+    "room_amenities": ["Air conditioning", "Balcony"],
+    "wellness_spa": [],
+    "accessibility": ["Wheelchair accessible"],
+    "for_children": ["Childcare", "Cot"],
+}
+```
+### How it works in a nutshell
+
+<div align="center">
+  <img src="./assets/superlinked-in-a-nutshell.svg" alt="Superlinked in a nutshell">
+</div>
+
+## Quick Start
+
+This section provides a step-by-step guide on how to run the whole system locally.
+
+More details are provided below, in the **Tutorial** section.
+
+<div align="center">
+  <img src="./assets/architecture.svg" alt="System Architecture" width="50%">
+</div>
+
+### Qrant VDB
+Visit [Qdrant Cloud](https://qdrant.tech/) to start working with your own VDB. 
+Local and cloud VDBs are supported.
+
+If you are interested in running the project on our DB, please contact us at.
+
+
+### Superlinked server
+
+Use [`superlinked_app/.env-example`](./superlinked_app/.env-example) as a template, create `superlinked_app/.env` and set `OPENAI_API_KEY` required for Natural Query Interface, `QDRANT_URL` and `QDRANT_API_KEY` required for Qdrant Vector Database.
+
+```shell
+python3.11 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+APP_MODULE_PATH=superlinked_app python -m superlinked.server
+```
+
+It will take some time (depending on the network) to download the sentence-transformers model for the very first time.
+
+API docs will be available at [localhost:8080/docs](http://localhost:8080/docs).
+
+To ingest the dataset, run this command in your terminal:
+```shell
+curl -X 'POST' \
+  'http://localhost:8080/data-loader/hotel/run' \
+  -H 'accept: application/json' \
+  -d ''
+```
+Please waite until the ingestion is finished. You will see the message.
+### Streamlit frontend
+
+```shell
+cd frontend_app
+python3.11 -m venv .venv-frontend
+. .venv-frontend/bin/activate
+pip install -e .
+python -m streamlit run app/frontend/main.py
+```
+
+The Streamlit UI will be available at [localhost:8501](http://localhost:8501).
+
+### Jupyter notebook
+
+Attach to VDB and experiment with different superlinked queries from the jupyter notebook: [superlinked-queries.ipynb](./notebooks/superlinked-queries.ipynb).
+
+## Cloud
+
+The `superlinked cli` is a one-package solution to deploy the Superlinked cluster on your GCP cloud.
+Via `superlinked cli` you will be able to run superlinked application at scale with additional important components such as batch engine, logging and more, utilizing the same superlinked configuration you used in your local setup!
+
+Want to try it now? Contact us at [superlinked.com](https://superlinked.typeform.com/to/LXMRzHWk?typeform-source=hotel-search-recipe).
+
+## Tutorial
+
+To configure your superlinked application you need to create a simple python package with few files, we will go though them one by one.
+All files contain necessary inline comments, check them out!
+Also, feel free to read our docs: [docs.superlinked.com](https://docs.superlinked.com/run-in-production/index/configuring-your-app).
+
+Once you are happy with your local Superlinked setup, you can use config files without changes for your Cloud deployent.
+To make transition to the cloud smooth, we provide Superlinked CLI.
+[Contact us](https://superlinked.typeform.com/to/LXMRzHWk?typeform-source=hotel-search-recipe) if you want to try it now!
+
+---
+
+[**`__init__.py`**](./superlinked_app/__init__.py)
+
+It's needed just to make a python package, you can keep it empty.
+
+---
+
+[**`config.py`**](./superlinked_app/config.py)
+
+Settings of our application are read from `.env` file.
+You can create one simply by copying [`.env-example`](./superlinked_app/.env-example) and setting `openai_api_key` which is needed for NLQ.
+
+The embedder model used in this example is `sentence-transformers/all-mpnet-base-v2` which balances speed and accuracy, if you want a more accurate model,
+you can use `Alibaba-NLP/gte-large-en-v1.5` (used in our hosted demo) however be mindful that this will slow things down!
+
+
+---
+
+[**`index.py`**](./superlinked_app/index.py)
+
+This file defines three important things:
+- object schema: declares names and types of raw attributes
+- vector spaces: bind embedders to schema fields
+- index: combines spaces for multi-modal vector search
+
+<div align="center">
+  <img src="./assets/superlinked-index.svg" alt="Graphical abstract">
+</div>
+
+In our superlinked application, we will embed one textual field (hotel `description`) and three numeric fields (`price`, `rating`, `rating_count`).
+Description is embedded using [all-mpnet-base-v2](https://huggingface.co/sentence-transformers/all-mpnet-base-v2).
+If you need faster model, you can try [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2).
+Or if you are aiming for better retrieval quality, bigger models like [gte-large-en-v1.5](https://huggingface.co/Alibaba-NLP/gte-large-en-v1.5) are worth checking out.
+
+**Note.** Apart from texts and numbers, out-of-the-box Superlinked can embed images, categories, recency.
+It also supports arbitrary embeddings via custom spaces.
+Learn more about Superlinked embeddings in [our github](https://github.com/superlinked/superlinked/tree/main?tab=readme-ov-file#features)!
+
+Attribues like city, hotel-type, and amenities are used for hard-filtering.
+
+---
+
+[**`query.py`**](./superlinked_app/query.py) and [**`nlq.py`**](./superlinked_app/nlq.py)
+
+These two files define superlinked queries used for multi-modal semantic search with Natural Language Interface (NLI) on top.
+Our github contains many helpful notebooks that show how to configure superlinked queries:
+- [query time weights](https://github.com/superlinked/superlinked/blob/main/notebook/feature/query_time_weights.ipynb)
+- [querying options](https://github.com/superlinked/superlinked/blob/main/notebook/feature/querying_options.ipynb)
+- [dynamic parameters](https://github.com/superlinked/superlinked/blob/main/notebook/feature/dynamic_parameters.ipynb)
+- [natural language interface](https://github.com/superlinked/superlinked/blob/main/notebook/feature/natural_language_querying.ipynb)
+
+---
+
+[**`api.py`**](./superlinked_app/api.py)
+
+This file sets the following components:
+- vector database: in current application we are using Qdrant.
+- data loader: our data is ingested from gcp bucket
+- REST API: our app will provide endpoints for ingestion (bulk and one-by-one) and for querying. More information is in [our docs](https://docs.superlinked.com/run-in-production/index/interacting-with-app-via-api).
+
+## What's next
+
+We publish our recipes as a starting point for your own projects.
+There are many things you might want to try:
+- **Experiment with superlinked queries.**
+  Try to come up with more queries focused on different search scenarios fitting your use-case.
+- **Bring your own dataset.**
+  Want to run Natural Language Query with your data?
+  Define your schema, spaces, index, queries, and data-sources based on this recipe.
+  In case of questions, don't hesitate to [contact us](https://superlinked.typeform.com/to/LXMRzHWk?typeform-source=hotel-search-recipe)!
+- **Try different VDBs.**
+  Depending on your needs you can choose one of the [VDBs we currently support](https://docs.superlinked.com/run-in-production/index-1).
+  More to come!
+- **Try other text embedding models.**
+  There are a ton of different text embedding models out there.
+  Discover [sentence-transformers](https://sbert.net/docs/sentence_transformer/pretrained_models.html), [hugging-face](https://huggingface.co/sentence-transformers) and select models that suit your use-case best.
+- **Explore additional use-cases.** Check out our [notebooks](https://github.com/superlinked/superlinked/tree/main/notebook) and [docs](https://docs.superlinked.com/).
+
+================
+File: requirements.txt
+================
+superlinked==22.15.0
+superlinked-server==1.23.0
+
+
+
+================================================================
+End of Codebase
+================================================================

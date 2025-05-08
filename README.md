@@ -1,8 +1,8 @@
-# 🧠 Dagger + FastAPI + OpenAI Chat API
+# 🧠 Dagger + FastAPI + OpenAI Chat API + RAG
 
-This project is a minimal demo of an AI-powered API using FastAPI, Dagger, and OpenAI. The API runs entirely in Docker and exposes simple endpoints that leverage Dagger for containerized function execution.
+This project is a demonstration of an AI-powered API using FastAPI, Dagger, and OpenAI, with a Retrieval-Augmented Generation (RAG) pipeline using Superlinked and Qdrant. The API runs entirely in Docker and exposes endpoints that leverage Dagger for containerized function execution.
 
-Dagger transforms complex software integrations into a clean, cacheable, and parallelizable directed acyclic graph (DAG) of containerized functions. Each node in this DAG is a purpose-built container with explicit inputs and outputs, creating natural dependencies between processing steps. This design ensures that containers are created on-demand, execute their specific tasks in complete isolation, and terminate after delivering their results, optimizing resource utilization and enhancing security through strict container boundaries. For example, the text analysis pipeline creates a clear flow from raw input → container creation → text processing → result extraction → client response, with each step isolated yet seamlessly connected. 
+Dagger transforms complex software integrations into a clean, cacheable, and parallelizable directed acyclic graph (DAG) of containerized functions. Each node in this DAG is a purpose-built container with explicit inputs and outputs, creating natural dependencies between processing steps. This design ensures that containers are created on-demand, execute their specific tasks in complete isolation, and terminate after delivering their results, optimizing resource utilization and enhancing security through strict container boundaries.
 
 With the introduction of LLM integration, Dagger extends its capabilities by allowing AI agents to interact with these containerized functions. The LLM core type enables native integration of LLMs into workflows, allowing them to automatically discover and use available Dagger Functions in the provided environment. This means that an LLM can analyze the available tools and select which ones to use to complete assigned tasks, effectively acting as an intelligent orchestrator within the DAG.
 
@@ -16,18 +16,42 @@ With the introduction of LLM integration, Dagger extends its capabilities by all
 - **Lightweight FastAPI backend** to send prompts and receive completions
 - **Functional approach to Dagger containers** for simpler, more composable tool execution
 - **Integrated with Dagger Cloud** for observability, sharing, and secure CI/CD workflows
+- **RAG pipeline** with Superlinked + Qdrant for knowledge retrieval
+- **Multi-modal vector search** for improved query relevance
+- **Natural language query processing** for structured search parameters
+- **Intelligent document chunking** with section awareness
+- **Response generation with citations** for attribution and verification
 
 ## 🧩 Architecture
 
-### Functional Dagger Container Tools with External Scripts
+### Pipelines and Tools Structure
 
-This project demonstrates a functional approach to using Dagger containers with external scripts. Instead of embedding scripts directly in the code, we:
+This project is organized around a clear separation of concerns:
 
-1. Store scripts in a dedicated `scripts/` directory
-2. Mount these scripts into containers at runtime
-3. Execute them with appropriate arguments
+1. **Tools** (`/tools/`) - Individual, reusable components that perform specific tasks
+2. **Pipelines** (`/pipelines/`) - Orchestrated workflows that combine multiple tools
+3. **Scripts** (`/scripts/`) - Standalone scripts that run inside containers
 
-The key components are:
+### RAG Pipeline with Superlinked and Qdrant
+
+The project includes a comprehensive RAG (Retrieval-Augmented Generation) implementation using:
+
+1. **Superlinked** - For knowledge graph capabilities and advanced semantic search
+2. **Qdrant** - As the vector database for storing and retrieving embeddings
+3. **Dagger** - For orchestrating the containerized RAG pipeline components
+
+The RAG pipeline follows a builder + executor pattern with the following key components:
+
+- **Text Chunking** - Intelligent document splitting with section awareness
+- **Vector Embedding** - Converts text to vector representations
+- **Knowledge Storage** - Stores content and embeddings in Qdrant via Superlinked
+- **Semantic Retrieval** - Multi-modal weighted search for relevant information
+- **Response Generation** - Creates responses with source citations
+
+For detailed information about the RAG implementation, see:
+- [RAG Usage Guide](./RAG_USAGE.md)
+- [RAG Module Usage](./RAG_MODULE_USAGE.md)
+- [RAG Implementation Patterns](./RAG_IMPLEMENTATION_PATTERNS.md)
 
 - **`scripts/`**: Contains Python scripts to be executed in containers
 - **`tools/`**: Contains modular tool implementations using shared utilities

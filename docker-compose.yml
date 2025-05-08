@@ -10,10 +10,12 @@ services:
     environment:
       - DAGGER_HOST=unix:///run/dagger/engine.sock
       - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock
+      - QDRANT_URL=http://qdrant:6333
     env_file:
       - .env
     depends_on:
       - dagger-engine
+      - qdrant
     networks:
       - dagger-net
 
@@ -25,9 +27,20 @@ services:
       - dagger-socket:/run/dagger
     networks:
       - dagger-net
+      
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - dagger-net
 
 volumes:
   dagger-socket:
+  qdrant-data:
 
 networks:
   dagger-net:

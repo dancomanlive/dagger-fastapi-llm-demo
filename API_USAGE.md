@@ -26,24 +26,6 @@ curl -X GET "http://localhost:8000/hello?name=Dan"
 }
 ```
 
-### `GET /echo`
-
-Echo text from a container.
-
-#### Example Request:
-
-```bash
-curl -X GET "http://localhost:8000/echo?text=Hello%20from%20Dagger"
-```
-
-#### Example Response:
-
-```json
-{
-  "message": "Hello from Dagger"
-}
-```
-
 ### `POST /chat`
 
 Send a prompt to the OpenAI model and get a response.
