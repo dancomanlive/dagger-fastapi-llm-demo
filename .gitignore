@@ -7,6 +7,7 @@ env/
 venv/
 .env
 .venv/
+.new_venv/
 *.env.*
 !.env.example
 
@@ -16,4 +17,4 @@ dagger-work/
 
 # IDE folders
 .idea/
-.vscode/ 
+.vscode/

@@ -11,7 +11,7 @@ class DocumentSchema(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata for the document")
     
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "document_id": "doc123",
                 "text": "This is a sample document.",
