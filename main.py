@@ -82,7 +82,7 @@ async def hello_world_endpoint(name: str = "World"):
     logger.info(f"/hello endpoint called with name: {name}. Using Dagger client from app state.")
 
     try:
-        from tools.hello import hello_world
+        from modules.tools.hello import hello_world
         
         # Use the client from app state
         if not app.state.dagger_client:
@@ -105,3 +105,44 @@ async def validate_document_endpoint(document: DocumentSchema):
     Endpoint to validate a document against the schema.
     """
     return {"status": "success", "document": document.dict()}
+
+
+class QdrantConnectionRequest(BaseModel):
+    qdrant_url: Optional[str] = None
+
+class QdrantConnectionResponse(BaseModel):
+    status: str
+    message: str
+
+@app.post("/test-qdrant", response_model=QdrantConnectionResponse)
+async def test_qdrant_endpoint(request: QdrantConnectionRequest = QdrantConnectionRequest()):
+    """
+    Endpoint to test the connection to Qdrant vector database.
+    Optionally specify a custom Qdrant URL, otherwise uses the environment configuration.
+    """
+    logger.info("/test-qdrant endpoint called. Using Dagger client from app state.")
+
+    try:
+        from modules.tools.qdrant import test_qdrant_connection
+        
+        # Use the client from app state
+        if not app.state.dagger_client:
+            raise HTTPException(status_code=500, detail="Dagger client not initialized")
+            
+        client = app.state.dagger_client
+        
+        # Pass the custom URL if provided
+        output = await test_qdrant_connection(client, request.qdrant_url)
+        
+        logger.info(f"Qdrant connection test completed: {output}")
+        return QdrantConnectionResponse(
+            status="success", 
+            message=f"Qdrant connection successful: {output}"
+        )
+
+    except Exception as e:
+        logger.exception(f"Error testing Qdrant connection: {str(e)}")
+        return QdrantConnectionResponse(
+            status="error", 
+            message=f"Qdrant connection test failed: {str(e)}"
+        )

@@ -2,7 +2,7 @@
 Hello world tool - demonstrates usage of the core utilities.
 """
 import dagger
-from tools.core import get_tool_base, run_container_and_check, SCRIPTS_DIR
+from .core import get_tool_base, run_container_and_check, SCRIPTS_DIR
 
 async def hello_world(
     client: dagger.Client, 
