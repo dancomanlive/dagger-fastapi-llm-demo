@@ -82,7 +82,7 @@ async def hello_world_endpoint(name: str = "World"):
     logger.info(f"/hello endpoint called with name: {name}. Using Dagger client from app state.")
 
     try:
-        from modules.tools.hello import hello_world
+        from modules.tools.hello_tool import hello_world
         
         # Use the client from app state
         if not app.state.dagger_client:
@@ -123,7 +123,7 @@ async def test_qdrant_endpoint(request: QdrantConnectionRequest = QdrantConnecti
     logger.info("/test-qdrant endpoint called. Using Dagger client from app state.")
 
     try:
-        from modules.tools.qdrant import test_qdrant_connection
+        from modules.tools.qdrant_tool import test_qdrant_connection
         
         # Use the client from app state
         if not app.state.dagger_client:

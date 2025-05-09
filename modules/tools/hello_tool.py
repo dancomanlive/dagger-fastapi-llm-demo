@@ -27,8 +27,8 @@ async def hello_world(
         scripts_dir=SCRIPTS_DIR,
     )
     
-    # Run the hello_world.py script with the provided name
+    # Run the hello_script.py script with the provided name
     return await run_container_and_check(
         container=container,
-        args=["python", "scripts/hello_world.py", name]
+        args=["python", "scripts/hello_script.py", name]
     )

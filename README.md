@@ -1,6 +1,6 @@
-# 🧠 Dagger + FastAPI + OpenAI Chat API + RAG
+# 🧠 Dagger + FastAPI + OpenAI Chat API
 
-This project is a demonstration of an AI-powered API using FastAPI, Dagger, and OpenAI, with a Retrieval-Augmented Generation (RAG) pipeline using Superlinked and Qdrant. The API runs entirely in Docker and exposes endpoints that leverage Dagger for containerized function execution.
+This project is a demonstration of an AI-powered API using FastAPI, Dagger, and OpenAI. The API runs entirely in Docker and exposes endpoints that leverage Dagger for containerized function execution.
 
 Dagger transforms complex software integrations into a clean, cacheable, and parallelizable directed acyclic graph (DAG) of containerized functions. Each node in this DAG is a purpose-built container with explicit inputs and outputs, creating natural dependencies between processing steps. This design ensures that containers are created on-demand, execute their specific tasks in complete isolation, and terminate after delivering their results, optimizing resource utilization and enhancing security through strict container boundaries.
 
@@ -16,68 +16,72 @@ With the introduction of LLM integration, Dagger extends its capabilities by all
 - **Lightweight FastAPI backend** to send prompts and receive completions
 - **Functional approach to Dagger containers** for simpler, more composable tool execution
 - **Integrated with Dagger Cloud** for observability, sharing, and secure CI/CD workflows
-- **RAG pipeline** with Superlinked + Qdrant for knowledge retrieval
-- **Multi-modal vector search** for improved query relevance
-- **Natural language query processing** for structured search parameters
-- **Intelligent document chunking** with section awareness
-- **Response generation with citations** for attribution and verification
+- **Standardized module structure** with clear naming conventions
+- **Isolated container execution** for enhanced security
 
 ## 🧩 Architecture
 
-### Pipelines and Tools Structure
+### Modules Structure
 
-This project is organized around a clear separation of concerns:
+This project follows a clear and consistent naming convention for its modules:
 
-1. **Tools** (`/tools/`) - Individual, reusable components that perform specific tasks
-2. **Pipelines** (`/pipelines/`) - Orchestrated workflows that combine multiple tools
-3. **Scripts** (`/scripts/`) - Standalone scripts that run inside containers
+1. **Modules** (`/modules/`) - The main directory containing:
+   - **Scripts** (`/modules/scripts/`) - Standalone Python scripts that run inside Dagger containers
+   - **Tools** (`/modules/tools/`) - Functions that orchestrate Dagger containers and execute the scripts
 
-### RAG Pipeline with Superlinked and Qdrant
+Each file follows a consistent naming pattern:
+- Script files: `<functionality>_script.py`
+- Tool files: `<functionality>_tool.py`
 
-The project includes a comprehensive RAG (Retrieval-Augmented Generation) implementation using:
+For detailed information about the naming conventions, see:
+- [Module Naming Convention](./MODULE_NAMING_CONVENTION.md)
 
-1. **Superlinked** - For knowledge graph capabilities and advanced semantic search
-2. **Qdrant** - As the vector database for storing and retrieving embeddings
-3. **Dagger** - For orchestrating the containerized RAG pipeline components
+### How It Works
 
-The RAG pipeline follows a builder + executor pattern with the following key components:
+The project is built around a simple but powerful pattern:
 
-- **Text Chunking** - Intelligent document splitting with section awareness
-- **Vector Embedding** - Converts text to vector representations
-- **Knowledge Storage** - Stores content and embeddings in Qdrant via Superlinked
-- **Semantic Retrieval** - Multi-modal weighted search for relevant information
-- **Response Generation** - Creates responses with source citations
+1. **FastAPI Endpoints**: Handle HTTP requests and call tool functions
+2. **Tool Functions**: Orchestrate Dagger containers to perform specific tasks
+3. **Script Files**: Execute inside Dagger containers to do the actual work
 
-For detailed information about the RAG implementation, see:
-- [RAG Usage Guide](./RAG_USAGE.md)
-- [RAG Module Usage](./RAG_MODULE_USAGE.md)
-- [RAG Implementation Patterns](./RAG_IMPLEMENTATION_PATTERNS.md)
-
-- **`scripts/`**: Contains Python scripts to be executed in containers
-- **`tools/`**: Contains modular tool implementations using shared utilities
-- **`tools/core.py`**: Provides shared container setup and execution logic
-- **FastAPI endpoints**: Use these tools to handle HTTP requests
+This separation provides several benefits:
+- Clean separation of concerns
+- Better testability
+- Improved security through container isolation
+- Simplified development workflow
 
 ### Architecture Components
 
-The project has a modular architecture:
+The project uses two main components to manage container-based operations:
 
-1. **Core Utilities**: Centralized container creation and execution logic
+1. **Core Container Utilities** (`modules/tools/core.py`):
+   - Provides shared functions to set up and run containers
+   - Handles container creation, script mounting, and execution
+   - Example:
    ```python
-   # From tools/core.py
-   def get_tool_base(client, image, scripts_dir, workdir="/workspace") -> dagger.Container:
-       # Create a standardized container base
+   # Creates a base container with scripts mounted
+   def get_tool_base(client, image, scripts_dir, workdir="/workspace"):
+       return client.container().from_(image)
+           .with_mounted_directory(workdir + "/scripts", scripts_dir)
+           .with_workdir(workdir)
    
-   async def run_container_and_check(container, args) -> str:
-       # Execute container and handle errors consistently
+   # Executes a container and returns its output
+   async def run_container_and_check(container, args):
+       return await container.with_exec(args).stdout()
    ```
 
-2. **Tool Modules**: Individual tool implementations using core utilities
+2. **Tool Implementations** (e.g., `modules/tools/hello_tool.py`):
+   - Use the core utilities to perform specific tasks
+   - Handle input validation and output processing
+   - Example:
    ```python
-   # From tools/hello.py
-   async def hello_world(client: dagger.Client, name: str) -> str:
+   # A simple hello world tool
+   async def hello_world(client, name="World"):
        container = get_tool_base(client, "python:3.11-slim", SCRIPTS_DIR)
-       return await run_container_and_check(container, ["python", "scripts/hello_world.py", name])
+       return await run_container_and_check(
+           container,
+           ["python", "scripts/hello_script.py", name]
+       )
    ```
 
 ## 🛠️ Setup & Usage
@@ -118,15 +122,14 @@ http://localhost:8000
 
 This project exposes several REST API endpoints that leverage Dagger containers for various operations.
 
-For detailed information about all available endpoints, request formats, and response examples, please refer to the [API Usage Documentation](./API_USAGE.md).
-
 Key endpoints include:
-- `GET /hello` - Simple greeting from a container
-- `GET /echo` - Echo text from a container
+- `GET /` - Welcome message
+- `GET /hello?name=World` - Simple greeting from a Dagger container
 - `POST /chat` - Interact with OpenAI models
-- `POST /process` - Process and transform JSON data
-- `POST /analyze-text` - Analyze text and get statistics
-- `POST /filter-csv` - Filter CSV data based on column values
+- `POST /validate-document` - Validate documents against a schema
+- `POST /test-qdrant` - Test connection to Qdrant vector database
+
+Each endpoint demonstrates how to use Dagger containers to perform specific tasks in a secure, isolated environment.
 
 ## 🔧 Creating New Container Tools
 
@@ -165,17 +168,25 @@ This approach sidesteps the SDK limitations while still leveraging Dagger's powe
 
 ```
 DaggerFastAPIDemo/
-├── dagger_tools.py     # Functional container tool implementations
-├── main.py             # FastAPI application and endpoints
-├── requirements.txt    # Python dependencies
-├── scripts/            # External scripts for container execution
-│   ├── csv_filter.py   # CSV filtering tool
-│   ├── echo.py         # Simple echo script
-│   ├── hello_world.py  # Hello world with Dagger function
-│   ├── process_data.py # Data processing example
-│   └── text_analyzer.py # Text analysis tool
-├── ci/                 # CI/CD pipelines
-└── docker-compose.yml  # Docker configuration
+├── main.py                 # FastAPI application and endpoints
+├── requirements.txt        # Python dependencies
+├── docker-compose.yml      # Docker configuration
+├── Dockerfile              # Docker image definition
+├── MODULE_NAMING_CONVENTION.md # Documentation for module naming
+├── modules/                # Main modules directory
+│   ├── scripts/            # Standalone scripts for container execution
+│   │   ├── __init__.py     # Package initialization
+│   │   ├── hello_script.py # Hello world script
+│   │   └── qdrant_script.py # Qdrant connection testing script
+│   └── tools/              # Container orchestration tools
+│       ├── __init__.py     # Package initialization
+│       ├── core.py         # Shared container utilities
+│       ├── hello_tool.py   # Hello world with Dagger
+│       └── qdrant_tool.py  # Qdrant connection testing tool
+├── schemas/                # Data schemas
+│   └── document_schema.py  # Document validation schema
+└── ci/                     # CI/CD pipelines
+    └── ci_pipeline.py      # CI pipeline definition
 ```
 
 ## ☁️ Dagger Cloud Integration

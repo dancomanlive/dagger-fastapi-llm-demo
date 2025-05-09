@@ -51,7 +51,7 @@ async def test_qdrant_connection(client: dagger.Client, qdrant_url: str = None):
     # Run the script and return results
     output = await run_container_and_check(
         container, 
-        ["python", "scripts/qdrant_test.py"]
+        ["python", "scripts/qdrant_script.py"]
     )
     
     # Return the output for debugging purposes
