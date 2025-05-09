@@ -10,8 +10,8 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 import dagger
+from schemas.document_schema import DocumentSchema
 
-from pipelines.document_schema import DocumentSchema
 
 
 load_dotenv()
@@ -98,26 +98,6 @@ async def hello_world_endpoint(name: str = "World"):
         logger.exception(f"Error executing hello-world container: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# RAG Models
-class DocumentIngestionRequest(BaseModel):
-    text: str
-    document_id: str
-    project_id: str
-    index_name: Optional[str] = "default_index"
-    chunk_size: Optional[int] = 1000
-    overlap: Optional[int] = 200
-    respect_sections: Optional[bool] = True
-    metadata: Optional[Dict[str, Any]] = None
-
-class RagQueryRequest(BaseModel):
-    query: str
-    project_id: str
-    index_name: Optional[str] = "default_index"
-    use_nlq: Optional[bool] = True
-    weights: Optional[Dict[str, float]] = None
-    filters: Optional[Dict[str, Any]] = None
-    limit: Optional[int] = 5
-    model: Optional[str] = None
 
 @app.post("/validate-document")
 async def validate_document_endpoint(document: DocumentSchema):
@@ -125,80 +105,3 @@ async def validate_document_endpoint(document: DocumentSchema):
     Endpoint to validate a document against the schema.
     """
     return {"status": "success", "document": document.dict()}
-
-@app.post("/rag/ingest")
-async def ingest_document_endpoint(request: DocumentIngestionRequest):
-    """
-    Endpoint to ingest a document into the RAG pipeline.
-    """
-    logger.info(f"/rag/ingest endpoint called for document ID: {request.document_id}")
-    
-    try:
-        from pipelines.rag_pipeline import RagPipeline
-        
-        # Create RAG pipeline
-        client = app.state.dagger_client
-        rag_pipeline = RagPipeline(
-            client,
-            os.environ.get("QDRANT_URL", "http://qdrant:6333"),
-            os.environ.get("QDRANT_API_KEY", "")
-        )
-        
-        # Initialize pipeline
-        await rag_pipeline.initialize()
-        
-        # Ingest document
-        result = await rag_pipeline.ingest_document(
-            text=request.text,
-            document_id=request.document_id,
-            metadata={
-                "project_id": request.project_id,
-                "index_name": request.index_name,
-                **request.metadata or {}
-            },
-            chunk_size=request.chunk_size,
-            chunk_overlap=request.overlap
-        )
-        
-        logger.info(f"Document ingestion result: {result}")
-        return result
-        
-    except Exception as e:
-        logger.exception(f"Error during document ingestion: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/rag/query")
-async def query_rag_endpoint(request: RagQueryRequest):
-    """
-    Endpoint to query the RAG pipeline.
-    """
-    logger.info(f"/rag/query endpoint called with query: {request.query}")
-    
-    try:
-        from pipelines.rag_pipeline import RagPipeline
-        
-        # Create RAG pipeline
-        client = app.state.dagger_client
-        rag_pipeline = RagPipeline(
-            client,
-            os.environ.get("QDRANT_URL", "http://qdrant:6333"),
-            os.environ.get("QDRANT_API_KEY", ""),
-            model=request.model or DEFAULT_MODEL
-        )
-        
-        # Process query through the complete RAG pipeline
-        result = await rag_pipeline.process_query(
-            query_text=request.query,
-            index_name=request.index_name,
-            weights=request.weights,
-            filters=request.filters,
-            limit=request.limit,
-            use_nlq=request.use_nlq
-        )
-        
-        logger.info(f"RAG query processed successfully")
-        return result
-        
-    except Exception as e:
-        logger.exception(f"Error during RAG query processing: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
