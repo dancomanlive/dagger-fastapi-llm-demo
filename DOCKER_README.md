@@ -56,6 +56,8 @@ All communication between modules happens through Docker volumes and networks, e
 
 - **API Endpoint**: http://127.0.0.1:8000/rag
 - **Health Check**: http://127.0.0.1:8000/
+- **Qdrant Health Check**: http://127.0.0.1:6333/healthz
+
 
 Example curl command:
 ```bash
@@ -66,22 +68,10 @@ curl -X POST http://127.0.0.1:8000/rag \
 
 ## 🧰 Managing the System
 
-### Viewing Logs
-
-```bash
-docker-compose logs -f
-```
-
-### Stopping the System
-
-```bash
-docker-compose down
-```
-
 ### Restarting the System
 
 ```bash
-docker-compose restart
+docker-compose down && docker-compose up -d
 ```
 
 ### Checking System Status
