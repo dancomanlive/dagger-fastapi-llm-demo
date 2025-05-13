@@ -28,7 +28,7 @@ The system is built around a modular container-based architecture:
 - Docker Engine 20.10+
 - Docker Compose 2.0+ 
 - At least 4GB of available RAM
-- Docker Hub account (for CI/CD)
+- Docker Hub account (for CI/CD and for publishing Dagger modules)
 
 ## 🚀 Getting Started
 
