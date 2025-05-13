@@ -26,7 +26,7 @@ This script will:
 4. Verify network connectivity between containers
 5. Initialize Qdrant with test data
 6. Test the complete RAG pipeline
-7. Provide access information for the dashboard and API
+7. Provide access information for the API
 
 ## 📦 Container Architecture
 
@@ -54,7 +54,6 @@ All communication between modules happens through Docker volumes and networks, e
 
 ## 🌐 Accessing the System
 
-- **Dashboard**: http://127.0.0.1:8000/dashboard
 - **API Endpoint**: http://127.0.0.1:8000/rag
 - **Health Check**: http://127.0.0.1:8000/
 

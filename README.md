@@ -58,7 +58,6 @@ The script will:
 
 ### Accessing the System
 
-- **Dashboard**: http://127.0.0.1:8000/dashboard
 - **API Endpoint**: http://127.0.0.1:8000/rag
 - **Health Check**: http://127.0.0.1:8000/
 

@@ -91,7 +91,6 @@ docker-compose exec fastapi python test_rag_pipeline.py
 if [ $? -ne 0 ]; then
     echo -e "${RED}RAG pipeline test failed. Please check the logs for errors:${NC}"
     echo -e "${YELLOW}docker-compose logs fastapi${NC}"
-    echo -e "You can still proceed to use the dashboard, but some features may not work properly."
 else
     echo -e "${GREEN}RAG pipeline test completed successfully!${NC}"
 fi
@@ -117,11 +116,9 @@ fi
 echo -e "\n${YELLOW}Step 9: How to access the system${NC}"
 echo -e "Since everything is running inside Docker containers, access is only available via the exposed ports."
 echo -e "\n${GREEN}Access Methods:${NC}"
-echo -e "1. ${YELLOW}Interactive Dashboard:${NC} Open this URL in your browser:"
-echo -e "   ${GREEN}http://127.0.0.1:8000/dashboard${NC}"
-echo -e "2. ${YELLOW}API Endpoint:${NC} The API is available at:"
+echo -e "1. ${YELLOW}API Endpoint:${NC} The API is available at:"
 echo -e "   ${GREEN}http://127.0.0.1:8000${NC}"
-echo -e "3. ${YELLOW}RAG Query:${NC} Send POST requests to:"
+echo -e "2. ${YELLOW}RAG Query:${NC} Send POST requests to:"
 echo -e "   ${GREEN}http://127.0.0.1:8000/rag${NC}"
 echo -e "\nExample curl command for querying the RAG system:"
 echo -e "${YELLOW}curl -X POST http://127.0.0.1:8000/rag -H \"Content-Type: application/json\" -d '{\"query\": \"How does RAG solve LLM problems?\", \"collection\": \"default\"}'${NC}"
