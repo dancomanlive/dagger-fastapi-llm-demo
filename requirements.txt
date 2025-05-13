@@ -4,11 +4,10 @@ dagger-io==0.18.6
 pydantic>=2.5.0
 python-dotenv>=1.0.0
 anyio>=4.2.0
-numpy>=1.24.0
-openai>=1.0.0
-qdrant-client>=1.7.0
+docker>=7.0.0
 requests>=2.31.0
-sentence-transformers>=2.3.0
-pytest==8.3.5
 superlinked==23.1.0
-sentence-transformers
+qdrant-client>=1.7.0
+# Dependencies below might be needed for testing or other purposes
+pytest==8.3.5
+sentence-transformers>=2.3.0

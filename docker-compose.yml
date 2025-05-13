@@ -1,10 +1,13 @@
 services:
   fastapi:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
       - .:/app
       - dagger-socket:/run/dagger
-    command: uvicorn main:app --host 0.0.0.0 --reload
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: uvicorn rag_app:app --host 0.0.0.0 --reload
     ports:
       - "8000:8000"
     environment:
@@ -19,6 +22,11 @@ services:
       - qdrant
     networks:
       - dagger-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   dagger-engine:
     image: registry.dagger.io/engine:v0.18.6
@@ -28,7 +36,7 @@ services:
       - dagger-socket:/run/dagger
     networks:
       - dagger-net
-      
+
   qdrant:
     image: qdrant/qdrant:latest
     ports:
@@ -38,6 +46,12 @@ services:
       - qdrant-data:/qdrant/storage
     networks:
       - dagger-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:6333/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 
 volumes:
   dagger-socket:
