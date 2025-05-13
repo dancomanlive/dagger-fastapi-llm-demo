@@ -214,15 +214,15 @@ async def run_rag_pipeline(query: str, collection: str = "default") -> str:
         retrieve_input_payload = {
             "query": query,
             "collection": collection,
-            "qdrant_host": "http://host.docker.internal:6333",
+            "qdrant_host": "http://172.17.0.1:6333",
             "top_k": 5
         }
         retrieved_file = await run_rag_step(
             client, "retrieve", "retrieve", retrieve_input_payload, wrapper_script_file
         )
         # For logging/debugging, let's see what was retrieved
-        # retrieved_contents = await retrieved_file.contents()
-        # logger.info(f"Retrieve step output sample: {retrieved_contents[:200]}...")
+        retrieved_contents = await retrieved_file.contents()
+        logger.info(f"Retrieve step output sample: {retrieved_contents[:200]}...")
 
         generated_file = await run_rag_step(
             client, "generate", "generate", retrieved_file, wrapper_script_file

@@ -61,6 +61,8 @@ def main():
             limit=top_k
         )
         
+        #logger.info(f"Raw search results: {search_results}")
+        
         # Process results
         results = []
         for result in search_results:
@@ -83,6 +85,8 @@ def main():
             "collection": collection,
             "results": results
         }
+
+        #logger.info(f"Final output data: {json.dumps(output_data, indent=2)}")
 
         with open(args.output, "w") as f:
             json.dump(output_data, f, indent=2)
