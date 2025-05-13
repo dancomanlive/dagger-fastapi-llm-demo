@@ -23,8 +23,6 @@ The system is built around a modular container-based architecture:
    - **Retrieve**: Fetches relevant documents from Qdrant
    - **Generate**: Creates responses using an LLM based on retrieved documents
 
-![Architecture Diagram](https://via.placeholder.com/800x400?text=RAG+Pipeline+Architecture)
-
 ## 🧰 Prerequisites
 
 - Docker Engine 20.10+
