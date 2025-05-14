@@ -1,15 +1,16 @@
 # 🚀 Dagger FastAPI RAG Demo
 
-A containerized Retrieval-Augmented Generation (RAG) system built with FastAPI and orchestrated by Dagger. This project demonstrates how to create a modular, maintainable RAG pipeline using Docker containers.
+A containerized Retrieval-Augmented Generation (RAG) system built with FastAPI and orchestrated by Dagger. This project demonstrates how to create a modular, maintainable RAG pipeline using direct Python execution in containers without wrapper scripts.
 
 ## 📋 Overview
 
 This project showcases a modern approach to building RAG systems with:
 
 - **FastAPI** for the web service layer
-- **Dagger** for container orchestration
+- **Dagger** for direct container orchestration (no custom images required)
 - **Qdrant** for vector storage
-- **Docker** for containerization
+- **Python scripts** executed directly in standard containers
+- **Environment configuration** via `.env` file
 - **Modular Architecture** for maintainability and reusability
 
 ## 🏗️ Architecture
@@ -17,7 +18,7 @@ This project showcases a modern approach to building RAG systems with:
 The system is built around a modular container-based architecture:
 
 1. **FastAPI Service**: Handles HTTP requests and orchestrates the RAG pipeline
-2. **Dagger Engine**: Coordinates container execution
+2. **Dagger Engine**: Coordinates container execution without wrapper scripts - directly mounting code and running Python
 3. **Qdrant**: Vector database for document storage and retrieval
 4. **RAG Module Containers**:
    - **Retrieve**: Fetches relevant documents from Qdrant
@@ -71,12 +72,16 @@ curl -X POST http://127.0.0.1:8000/rag \
 
 ```
 ├── ci/                      # CI/CD pipelines with Dagger
-├── modules/                 # Containerized RAG modules
+├── modules/                 # RAG module code
 │   ├── retrieve/            # Document retrieval module
+│   │   ├── main.py          # Retrieval implementation
+│   │   └── requirements.txt # Retrieve module dependencies
 │   └── generate/            # Response generation module
+│       ├── main.py          # Generation implementation
+│       └── requirements.txt # Generate module dependencies
 ├── docker-compose.yml       # Service configuration
 ├── Dockerfile               # Main application container
-├── rag_app.py               # FastAPI application
+├── rag_app.py               # FastAPI application with Dagger orchestration
 ├── requirements.txt         # Python dependencies
 └── run_demo.sh              # Startup script
 ```
@@ -86,15 +91,18 @@ curl -X POST http://127.0.0.1:8000/rag \
 ### Creating a New RAG Module
 
 1. Create a directory in `modules/` with your module name
-2. Add a `Dockerfile`, `main.py`, and `requirements.txt`
-3. Implement module logic in `main.py`
-4. Build and push to Docker Hub:
+2. Add a `main.py` and `requirements.txt`
+3. Implement module logic in `main.py` with standard input/output file parameters:
+   ```python
+   def main():
+       parser = argparse.ArgumentParser()
+       parser.add_argument("--input", required=True)
+       parser.add_argument("--output", default="output.json")
+       # ...
+   ```
+4. Update the Dagger pipeline in `rag_app.py` to include your new module
 
-```bash
-cd modules/your-module
-docker build -t yourusername/your-module:latest .
-docker push yourusername/your-module:latest
-```
+No need to build and push custom Docker images - the pipeline uses standard Python images and mounts your code directly.
 
 ### Continuous Integration
 

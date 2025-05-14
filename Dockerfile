@@ -28,9 +28,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy your FastAPI app
 COPY . .
 
-# Make sure script files are executable
-RUN chmod +x check_network.sh check_rag_system.sh init_qdrant_docker.sh build_and_push_modules.sh run_demo.sh docker_health_check.sh
-
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV DOCKER_HOST=unix:///var/run/docker.sock
