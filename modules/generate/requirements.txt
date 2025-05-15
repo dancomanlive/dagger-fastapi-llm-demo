@@ -1,4 +1,4 @@
-# Dependencies for the generate module
-# Add your dependencies here
-openai>=1.0.0
-tenacity>=8.2.0
+# modules/generate/requirements.txt
+# (empty for now)
+# If you add an LLM client, e.g.:
+# openai>=1.0.0,<2.0.0

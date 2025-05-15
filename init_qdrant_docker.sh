@@ -35,7 +35,6 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
 fi
 
 # Run the init script inside the FastAPI container
-# python init_qdrant.py --qdrant_url "http://localhost:6333"
 python init_qdrant.py --qdrant_url $QDRANT_URL
 
 if [ $? -ne 0 ]; then

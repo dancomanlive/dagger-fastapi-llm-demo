@@ -16,9 +16,8 @@ load_dotenv()
 # This cache is for the entire pipeline's output, not for intermediate Dagger objects.
 RESULT_QUERY_CACHE = {}
 
-# Determine platform (Mac M1/M2 would be arm64)
-PLATFORM = platform.machine()
-IS_ARM = PLATFORM == "arm64"
+# Default model name, ensure this matches what your retrieve script expects/uses.
+DEFAULT_EMBEDDING_MODEL_FOR_PRECACHE = "sentence-transformers/all-MiniLM-L6-v2" 
 
 async def get_or_build_deps_image(
     client: dagger.Client,
@@ -29,68 +28,77 @@ async def get_or_build_deps_image(
     Defines a Dagger container with dependencies installed from requirements.txt.
     Leverages Dagger CacheVolumes for pip's cache, Hugging Face model cache,
     and a generic /tmp/module_cache for custom script caching.
-    Dagger's engine also caches layers resulting from pip install.
+    Optionally pre-caches embedding models for the 'retrieve' module.
     """
     print(f"Defining dependency image structure for {module_name} using base {python_base_image}...")
+    # ... (base, container_app_dir, cache volume definitions remain the same) ...
     base = client.container().from_(python_base_image)
-    container_app_dir = "/app" # Consistent app directory for workdir and code
+    container_app_dir = "/app" 
 
-    # --- Dagger CacheVolumes Definitions ---
-    # 1. Pip cache (shared across all modules using this function)
     pip_cache_volume = client.cache_volume("global-python-pip-cache")
-    pip_cache_dir_in_container = "/root/.cache/pip" # Common for root user in slim images
+    pip_cache_dir_in_container = "/root/.cache/pip" 
 
-    # 2. Hugging Face cache (for models, datasets, etc., shared)
     hf_cache_volume = client.cache_volume("global-huggingface-cache")
-    hf_cache_dir_in_container = "/root/.cache/huggingface" # Default HF cache location
+    hf_cache_dir_in_container = "/root/.cache/huggingface"
 
-    # 3. Generic temporary cache for module-specific script data (e.g., pickled embeddings)
-    # Modules should write to /tmp/module_cache/ if they want to use this.
     script_temp_cache_volume = client.cache_volume("global-script-temp-cache")
     script_temp_cache_dir_in_container = "/tmp/module_cache"
 
-    # --- Mount Caches and Set ENV Variables to the Base Container ---
-    # These caches are available before and after pip install.
     container_with_caches = (
         base
         .with_mounted_cache(pip_cache_dir_in_container, pip_cache_volume)
         .with_mounted_cache(hf_cache_dir_in_container, hf_cache_volume)
         .with_mounted_cache(script_temp_cache_dir_in_container, script_temp_cache_volume)
-        # Set environment variables to guide libraries to use these cache paths.
-        # HF_HOME tells Hugging Face libraries (transformers, datasets, sentence-transformers etc.)
-        # where to look for and store cached models/datasets.
         .with_env_variable("HF_HOME", hf_cache_dir_in_container)
-        # Optionally, for sentence-transformers specifically if HF_HOME isn't enough,
-        # though HF_HOME should generally cover it.
-        # .with_env_variable("SENTENCE_TRANSFORMERS_HOME", f"{hf_cache_dir_in_container}/sentence_transformers")
     )
 
-    # --- Pip Install Dependencies (if requirements.txt exists) ---
     requirements_path_on_host = f"modules/{module_name}/requirements.txt"
     requirements_filename_in_container = "requirements.txt"
     
-    final_container = container_with_caches # Start with the cache-enabled container
+    current_container_state = container_with_caches 
 
     if os.path.exists(requirements_path_on_host):
         requirements_file_from_host = client.host().file(requirements_path_on_host)
         
-        final_container = (
-            container_with_caches # Use the one with caches already mounted
-            .with_workdir(container_app_dir) # Set workdir before mounting/executing
+        current_container_state = (
+            current_container_state # Use the one with caches already mounted
+            .with_workdir(container_app_dir) 
             .with_mounted_file(f"{container_app_dir}/{requirements_filename_in_container}", requirements_file_from_host)
             .with_exec([
                 "pip", "install",
-                "--cache-dir", pip_cache_dir_in_container, # Tell pip to use this mounted directory
+                "--cache-dir", pip_cache_dir_in_container, 
                 "-r", requirements_filename_in_container
             ])
         )
-        print(f"Pip install step defined for {module_name} using pip cache volume. Dagger will use its layer cache if inputs are identical.")
+        print(f"Pip install step defined for {module_name} using pip cache volume.")
+
+        # --- Model Pre-caching for 'retrieve' module ---
+        if module_name == "retrieve":
+            # This model name should match the one used by your retrieve script (or be configurable)
+            model_to_precache = os.getenv("EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL_FOR_PRECACHE)
+            print(f"Defining model pre-caching step for {module_name} with model {model_to_precache}...")
+            
+            # fastembed uses HF_HOME, which is already set and mounted.
+            # This command will download model files to HF_HOME during image build if not present.
+            # The import path for DefaultEmbedding assumes fastembed is installed as a top-level package
+            # (which it is when qdrant-client[fastembed] is used).
+            python_script_for_precache = (
+                f'import os; from fastembed.embedding import DefaultEmbedding; '
+                f'print(f"Pre-caching model: {{os.getenv(\'MODEL_NAME_FOR_PRECACHE\')}}"); '
+                f'DefaultEmbedding(model_name=os.getenv("MODEL_NAME_FOR_PRECACHE"))'
+            )
+
+            current_container_state = (
+                current_container_state
+                .with_env_variable("MODEL_NAME_FOR_PRECACHE", model_to_precache)
+                .with_exec(["python", "-c", python_script_for_precache])
+            )
+            print(f"Model pre-caching defined for {module_name}. Model files will be downloaded to HF_HOME if not already cached there.")
     else:
-        # If no requirements, still set workdir for consistency if code is mounted later.
-        final_container = container_with_caches.with_workdir(container_app_dir)
+        current_container_state = current_container_state.with_workdir(container_app_dir)
         print(f"No requirements.txt found for {module_name} at {requirements_path_on_host}, using base Python image with pre-mounted caches.")
 
-    return final_container
+    return current_container_state
 
 async def run_rag_pipeline(query: str, collection: str = "default") -> str:
     # Generate a cache key from the query and collection for the *final result*

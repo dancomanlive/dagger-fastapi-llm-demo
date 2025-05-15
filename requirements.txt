@@ -6,8 +6,3 @@ python-dotenv>=1.0.0
 anyio>=4.2.0
 docker>=7.0.0
 requests>=2.31.0
-superlinked==23.1.0
-qdrant-client>=1.7.0
-# Dependencies below might be needed for testing or other purposes
-pytest==8.3.5
-sentence-transformers>=2.3.0

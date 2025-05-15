@@ -2,6 +2,45 @@
 
 A containerized Retrieval-Augmented Generation (RAG) system built with FastAPI and orchestrated by Dagger. This project demonstrates how to create a modular, maintainable RAG pipeline using direct Python execution in containers without wrapper scripts.
 
+## 🧠 RAG Pipeline & Qdrant Initialization
+
+This project includes a modular RAG pipeline orchestrated by Dagger, with Qdrant as the vector database. The pipeline consists of two main modules:
+
+- **Retrieve**: Fetches relevant documents from Qdrant using vector search
+- **Generate**: Uses an LLM to generate answers based on retrieved context
+
+### Qdrant Initialization
+
+Before running the pipeline, you must initialize Qdrant with sample data:
+
+```bash
+python init_qdrant.py
+```
+
+This script will connect to your Qdrant instance and upload test documents. You can configure the Qdrant URL, collection name, and embedding model via environment variables or command-line arguments.
+
+
+#### Environment Variables
+
+All required environment variables are documented in `.env.example`. Copy this file to `.env` and edit as needed for your setup.
+
+### Running the RAG Pipeline
+
+The pipeline is orchestrated by Dagger and can be triggered via the FastAPI endpoint or by calling the relevant Python functions. The pipeline will:
+
+1. Use the `retrieve` module to fetch relevant documents from Qdrant
+2. Use the `generate` module to create a response based on the retrieved context
+
+The pipeline uses dependency and model caching for efficiency. See `rag_pipeline.py` for details.
+
+#### Troubleshooting
+
+- Ensure Qdrant is running and accessible at the configured URL
+- If you see connection errors, check your `QDRANT_URL` and Docker network settings
+- For model download or embedding issues, verify your `EMBEDDING_MODEL` and Hugging Face cache
+
+---
+
 ## 📋 Overview
 
 This project showcases a modern approach to building RAG systems with:
