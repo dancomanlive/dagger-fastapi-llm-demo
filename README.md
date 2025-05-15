@@ -147,3 +147,36 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🛠️ Dependency Caching
+
+This project leverages **Dagger's caching mechanism** to optimize dependency installation and reduce latency during pipeline execution. Here’s how it works:
+
+1. **Pip Cache**:
+   - Dependencies for the `retrieve` and `generate` modules are installed using `pip`.
+   - A shared cache volume (`global-python-pip-cache`) is mounted to `/root/.cache/pip` in the container to store pip's cache.
+   - This ensures that subsequent runs reuse cached dependencies, reducing installation time.
+
+2. **Hugging Face Cache**:
+   - Models and datasets are cached using a shared volume (`global-huggingface-cache`) mounted to `/root/.cache/huggingface`.
+   - This speeds up operations involving Hugging Face libraries.
+
+3. **Temporary Script Cache**:
+   - Module-specific temporary data (e.g., pickled embeddings) is stored in `/tmp/module_cache` using the `global-script-temp-cache` volume.
+
+### Debugging Dependency Caching
+
+If dependency caching is not working as expected:
+
+- Ensure the `requirements.txt` files for the `retrieve` and `generate` modules are present and correctly formatted.
+- Verify that the cache volumes are being mounted correctly in the Dagger pipeline.
+- Add debug logs to print the hash of the `requirements.txt` file to confirm it is not changing between runs.
+
+Example Debugging Command:
+```bash
+# Check if requirements.txt is consistent
+md5sum modules/retrieve/requirements.txt
+md5sum modules/generate/requirements.txt
+```
+
+For more details, see the `get_or_build_deps_image` function in `rag_pipeline.py`.
