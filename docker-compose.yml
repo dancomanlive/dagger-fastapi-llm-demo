@@ -14,6 +14,7 @@ services:
       - DAGGER_HOST=unix:///run/dagger/engine.sock
       - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock
       - QDRANT_URL=http://qdrant:6333
+      - QDRANT_URL_FOR_DAGGER=http://host.docker.internal:6333
       - PYTHONPATH=/app
     env_file:
       - .env

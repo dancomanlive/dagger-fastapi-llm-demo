@@ -1,0 +1,5 @@
+# Dependencies for the retrieve module
+# Add your dependencies here
+requests>=2.31.0
+qdrant-client>=1.6.0
+sentence-transformers>=2.2.0

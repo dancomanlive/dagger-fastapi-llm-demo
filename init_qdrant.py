@@ -4,13 +4,19 @@ Utility script to initialize Qdrant with test data for the RAG pipeline
 """
 import json
 import argparse
+import os
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Default Qdrant connection settings
-DEFAULT_QDRANT_URL = "http://qdrant:6333"  # Use container name by default
+DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://qdrant:6333")  # Use container name by default
+DEFAULT_QDRANT_URL_FOR_DAGGER = os.environ.get("QDRANT_URL_FOR_DAGGER", "http://host.docker.internal:6333")
 DEFAULT_COLLECTION = "default"
 
 # Sample RAG documents about retrieval-augmented generation
@@ -98,10 +104,13 @@ def initialize_qdrant(qdrant_url, collection_name, documents, embeddings):
 def main():
     parser = argparse.ArgumentParser(description="Initialize Qdrant with test data for RAG pipeline")
     parser.add_argument("--qdrant_url", default=DEFAULT_QDRANT_URL, help="Qdrant server URL")
+    parser.add_argument("--qdrant_url_for_dagger", default=DEFAULT_QDRANT_URL_FOR_DAGGER, 
+                        help="Qdrant server URL for Dagger containers (using host.docker.internal)")
     parser.add_argument("--collection", default=DEFAULT_COLLECTION, help="Collection name")
     args = parser.parse_args()
     
     print(f"Connecting to Qdrant at {args.qdrant_url}")
+    print(f"Dagger containers will connect to Qdrant at {args.qdrant_url_for_dagger}")
     print("Loading embedding model...")
     model = SentenceTransformer('all-MiniLM-L6-v2')
     

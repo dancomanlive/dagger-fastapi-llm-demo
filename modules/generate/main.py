@@ -25,6 +25,11 @@ def main():
 
         # Remove augmented results and simplify processing
         results = data.get("results", [])
+        
+        # Sort results by score for better answer quality
+        if results:
+            results.sort(key=lambda x: x.get("score", 0), reverse=True)
+        
         logger.info(f"Generating response from {len(results)} results")
 
         if results:
@@ -37,14 +42,17 @@ def main():
 
                 logger.info(f"Using result {i+1} with relevance score: {relevance_score:.2f}")
 
-                response += f"Result {i+1} (Relevance: {relevance_score:.2f}%):\n"
-                response += f"Source: {source}\n"
-                response += f"Content: {text[:200]}...\n\n"
+                # Format with more concise output
+                response += f"• Source ({source}): {text[:150]}...\n"
 
-            response += "\nSummary: This information was retrieved and processed through a RAG pipeline consisting of retrieval and generation steps."
+            response += "\nSummary: This information was retrieved and processed through a RAG pipeline."
         else:
-            response = "No relevant information found to answer your query. Please try a different question or check if the knowledge base contains related information."
-            logger.warning("No results found to generate a response from")
+            if "error" in data:
+                response = f"Error during retrieval process: {data['error']}"
+                logger.error(f"Error data received from retrieval module: {data['error']}")
+            else:
+                response = "No relevant information found to answer your query. Please try a different question or check if the knowledge base contains related information."
+                logger.warning("No results found to generate a response from")
 
         final_output = {
             "query": query,

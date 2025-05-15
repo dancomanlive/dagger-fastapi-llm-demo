@@ -1,0 +1,4 @@
+# Dependencies for the generate module
+# Add your dependencies here
+openai>=1.0.0
+tenacity>=8.2.0
