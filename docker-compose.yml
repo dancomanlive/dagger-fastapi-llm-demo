@@ -16,11 +16,15 @@ services:
       - QDRANT_URL=http://qdrant:6333
       - QDRANT_URL_FOR_DAGGER=http://host.docker.internal:6333
       - PYTHONPATH=/app
+      - RETRIEVER_SERVICE_URL=http://retriever-service:8000 # For container-to-container
+      - RETRIEVER_SERVICE_URL_FOR_HOST=http://localhost:8001 # For host access
+      - RETRIEVER_SERVICE_URL_FOR_DAGGER=http://host.docker.internal:8001 # For Dagger containers
     env_file:
       - .env
     depends_on:
       - dagger-engine
       - qdrant
+      - retriever-service
     networks:
       - dagger-net
     healthcheck:
@@ -35,6 +39,22 @@ services:
     privileged: true
     volumes:
       - dagger-socket:/run/dagger
+    networks:
+      - dagger-net
+
+  retriever-service:
+    build:
+      context: ./modules/retriever_service
+      args:
+        EMBEDDING_MODEL_ARG: "sentence-transformers/all-MiniLM-L6-v2"
+    ports:
+      - "8001:8000" # Expose on host port 8001
+    environment:
+      - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333 # Service discovery within Docker Compose
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-} # Get from .env or empty if not set
+    depends_on:
+      - qdrant
+    restart: unless-stopped
     networks:
       - dagger-net
 

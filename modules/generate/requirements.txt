@@ -1,4 +1,4 @@
 # modules/generate/requirements.txt
-# (empty for now)
+requests>=2.31.0,<3.0.0
 # If you add an LLM client, e.g.:
 # openai>=1.0.0,<2.0.0

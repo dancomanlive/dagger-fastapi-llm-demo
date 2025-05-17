@@ -2,6 +2,25 @@
 
 A containerized Retrieval-Augmented Generation (RAG) system built with FastAPI and orchestrated by Dagger. This project demonstrates how to create a modular, maintainable RAG pipeline using direct Python execution in containers without wrapper scripts.
 
+## 🔄 Deployment Patterns
+
+The project supports two different deployment patterns:
+
+### Pattern 1: Integrated Retriever (Original)
+The original approach where the retriever service is started as part of the Dagger pipeline. This works well for scenarios where you don't mind the model being loaded for each query.
+
+### Pattern 2: Standalone Retriever Service (Recommended)
+A more efficient pattern where the retriever service runs as a long-lived Docker container, keeping the embedding model loaded in memory between queries. This significantly improves response times for subsequent queries.
+
+To use Pattern 2:
+```bash
+# Deploy the standalone retriever service
+./deploy_retriever_service.sh
+
+# Run queries using the external retriever service
+python rag_pipeline.py "your query"
+```
+
 ## 🧠 RAG Pipeline & Qdrant Initialization
 
 This project includes a modular RAG pipeline orchestrated by Dagger, with Qdrant as the vector database. The pipeline consists of two main modules:
@@ -32,6 +51,31 @@ The pipeline is orchestrated by Dagger and can be triggered via the FastAPI endp
 2. Use the `generate` module to create a response based on the retrieved context
 
 The pipeline uses dependency and model caching for efficiency. See `rag_pipeline.py` for details.
+
+### Standalone Retriever Service (Pattern 2)
+
+For improved performance, you can use the standalone retriever service pattern:
+
+1. **One-time setup**: Deploy the retriever service using the provided script:
+   ```bash
+   ./deploy_retriever_service.sh
+   ```
+   This will:
+   - Build the Docker image for the retriever service with the model cached
+   - Start Qdrant and the retriever service using Docker Compose
+   - The service will be accessible at http://localhost:8001
+
+2. **Benefits**:
+   - The embedding model remains loaded in memory between queries
+   - Significantly faster response times for subsequent queries
+   - Model is pre-warmed during Docker image build
+
+3. **Architecture**:
+   - The retriever service runs in its own container (port 8001)
+   - Qdrant runs in its own container (ports 6333/6334)
+   - The Dagger pipeline calls the external retriever service instead of starting its own
+
+To use this pattern, make sure your environment has `RETRIEVER_SERVICE_URL` set to `http://localhost:8001` when running outside Docker, or to `http://retriever-service:8000` when running from another container.
 
 #### Troubleshooting
 

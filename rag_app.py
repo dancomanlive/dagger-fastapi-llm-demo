@@ -16,6 +16,11 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Log important environment variables at startup
+retriever_service_url = os.getenv("RETRIEVER_SERVICE_URL", "http://localhost:8001")
+logger.info(f"Using Retriever Service URL: {retriever_service_url}")
+logger.info(f"QDRANT_URL: {os.getenv('QDRANT_URL', 'not set')}")
+
 
 # --- FastAPI App ---
 app = FastAPI(
