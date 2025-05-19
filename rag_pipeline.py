@@ -5,25 +5,18 @@ import os
 import sys
 import time
 import hashlib
-# platform import removed as it wasn't used
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
 RESULT_QUERY_CACHE = {}
-DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-# This is the field name in Qdrant payload that the retriever service expects to find text.
-# Ensure this matches PAYLOAD_TEXT_FIELD_NAME in retriever_service/main.py and
-# TEXT_FIELD_NAME_FOR_PAYLOAD in your init_qdrant.py script.
-DEFAULT_PAYLOAD_TEXT_FIELD_NAME = "document"
 
 
 async def get_or_build_deps_image(
     client: dagger.Client,
     module_name: str,
     python_base_image: str = "python:3.11-slim"
-    # precache_model_name removed as it's not relevant here for this pattern
 ) -> dagger.Container:
     """
     Defines a Dagger container with dependencies.
@@ -34,7 +27,6 @@ async def get_or_build_deps_image(
     container_app_dir = "/app"
 
     pip_cache_volume = client.cache_volume("global-python-pip-cache")
-    # HF_HOME cache not strictly needed for the generator unless it loads models too
     
     container_with_caches = (
         base
@@ -77,129 +69,50 @@ async def run_rag_pipeline(query: str, collection: str = "default") -> str:
     # Need to use host.docker.internal from Dagger containers to access services on host
     retriever_service_url = os.getenv("RETRIEVER_SERVICE_URL_FOR_DAGGER", "http://host.docker.internal:8001")
     openai_api_key = os.getenv("OPENAI_API_KEY")
-    # embedding_model & payload_text_field are now configurations of the external service
 
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
         
-        # --- 1. Get/Build Generator Image ---
-        print("Getting dependency container definition for generate module...")
-        # No precaching needed for generator image itself unless it loads its own models
+        # --- Get/Build Generator Image (which now includes retriever call logic) ---
+        print("Getting dependency container definition for generate module (now with integrated retrieval call)...")
+        # The 'generate' module's requirements.txt now includes 'requests'
         generate_deps_container = await get_or_build_deps_image(client, "generate")
         generate_code_dir = client.host().directory("modules/generate")
         
-        script_input_filename = "input.json" 
-        generate_output_filename = "generate_output.json"
+        final_output_filename = "final_rag_output.json"
         container_app_dir = "/app" 
 
-        # --- 2. Define the "Caller" Logic (to call the external retriever service) ---
-        retrieve_payload = {
-            "query": query,
-            "collection": collection,
-            "top_k": 5
-        }
-        
-        # The caller script now uses the externally configured RETRIEVER_SERVICE_URL
-        caller_script_content = f"""
-import requests
-import json
-import sys
-import os
-
-# RETRIEVER_SERVICE_URL will be passed as an env var to this script's container
-service_base_url = os.getenv("RETRIEVER_SERVICE_URL_FOR_CALLER", "{retriever_service_url}")
-service_url = f"{{service_base_url}}/retrieve"
-payload = {json.dumps(retrieve_payload)}
-output_file = "{script_input_filename}" 
-
-print(f"Caller script: Sending POST to {{service_url}} with payload: {{payload}}")
-try:
-    response = requests.post(service_url, json=payload, timeout=30) # Shorter timeout now expected
-    response.raise_for_status()
-    print(f"Caller script: Received response status {{response.status_code}} from external service")
-    with open(output_file, 'w') as f_out:
-        f_out.write(response.text)
-    print("Caller script: Service response written to output file")
-    sys.exit(0)
-except requests.exceptions.Timeout:
-    print(f"Caller script: Timeout calling retriever service at {{service_url}}", file=sys.stderr)
-    error_output = json.dumps({{"error": "Timeout calling retriever service", "original_query": "{query}"}})
-    with open(output_file, 'w') as f_out:
-        f_out.write(error_output)
-    sys.exit(1)
-except requests.exceptions.RequestException as e:
-    print(f"Caller script: Error calling retriever service at {{service_url}}: {{e}}", file=sys.stderr)
-    error_output = json.dumps({{"error": f"Failed to call retriever service: {{str(e)}}", "original_query": "{query}"}})
-    with open(output_file, 'w') as f_out:
-        f_out.write(error_output)
-    sys.exit(1)
-except Exception as e:
-    print(f"Caller script: Unexpected error: {{e}}", file=sys.stderr)
-    error_output = json.dumps({{"error": f"Unexpected error in caller script: {{str(e)}}", "original_query": "{query}"}})
-    with open(output_file, 'w') as f_out:
-        f_out.write(error_output)
-    sys.exit(1)
-"""
-        # This container will execute the caller script and then the generator
-        # It no longer uses with_service_binding
-        final_pipeline_runner = (
-            generate_deps_container # Base image with 'requests' and 'generate' script deps
+        # --- Define and Run the Refactored Generator Container ---
+        # This container will run the script from modules/generate/main.py
+        processing_container_base = (
+            generate_deps_container
             .with_env_variable("PYTHONUNBUFFERED", "1")
-            .with_env_variable("RETRIEVER_SERVICE_URL_FOR_CALLER", retriever_service_url) # Pass URL to script
+            .with_env_variable("RETRIEVER_SERVICE_URL", retriever_service_url) # Pass URL to the script
             .with_workdir(container_app_dir)
-            .with_new_file(f"{container_app_dir}/call_service.py", contents=caller_script_content)
-            .with_directory(f"{container_app_dir}/generator_module_code", generate_code_dir, exclude=["__pycache__", "*.pyc", ".env"])
+            # Mount the entire 'generate' module code into the container
+            .with_directory(container_app_dir, generate_code_dir, exclude=["__pycache__", "*.pyc", ".env"])
         )
 
         if openai_api_key:
-            openai_secret = client.set_secret("openai_api_key_secret_for_generator", openai_api_key)
-            final_pipeline_runner = final_pipeline_runner.with_secret_variable("OPENAI_API_KEY", openai_secret)
+            openai_secret = client.set_secret("openai_api_key_for_generator", openai_api_key)
+            processing_container_base = processing_container_base.with_secret_variable("OPENAI_API_KEY", openai_secret)
         
-        # Step 2a: Execute the caller script
-        print(f"Executing call to external retriever service at {time.time() - start_time:.2f}s")
-        caller_execution = final_pipeline_runner.with_exec(["python", "call_service.py"])
+        # Execute the refactored generate script
+        # It now takes --query and --collection as direct arguments
+        processing_container_exec = processing_container_base.with_exec([
+            "python", "main.py",
+            "--query", query,
+            "--collection", collection,
+            "--top_k", "5",
+            "--output", final_output_filename
+        ])
         
-        try:
-            retrieved_data_file_contents = await caller_execution.file(f"{container_app_dir}/{script_input_filename}").contents()
-            retrieved_data_as_dagger_file = client.directory().with_new_file(script_input_filename, retrieved_data_file_contents).file(script_input_filename)
-            print("External retriever service call script completed. Output for generator prepared.")
-        except dagger.ExecError as e:
-            # Error handling for caller script
-            stdout_content = e.stdout if hasattr(e, 'stdout') and e.stdout is not None else ""
-            stderr_content = e.stderr if hasattr(e, 'stderr') and e.stderr is not None else ""
-            exit_code = e.exit_code if hasattr(e, 'exit_code') else "unknown"
-            print(f"Error executing the service caller script. Exit code: {exit_code}", file=sys.stderr)
-            if stdout_content:
-                print(f"Caller STDOUT:\n{stdout_content}", file=sys.stderr)
-            if stderr_content:
-                print(f"Caller STDERR:\n{stderr_content}", file=sys.stderr)
-            
-            # Since we can't access e.container, we'll create a fallback error message
-            print("CRITICAL: Service caller script failed. Creating fallback error message.", file=sys.stderr)
-            error_json_for_generator = json.dumps({
-                "error": f"Retriever service call failed: {str(e)}",
-                "original_query": query
-            })
-            retrieved_data_as_dagger_file = client.directory().with_new_file(script_input_filename, error_json_for_generator).file(script_input_filename)
-
-        print(f"Call to external retrieve service completed at {time.time() - start_time:.2f}s")
-
-        # Step 2b: Execute the generator script
-        generate_main_py_path_in_container = f"{container_app_dir}/generator_module_code/main.py"
+        print(f"Starting RAG processing (integrated retrieval+generation) at {time.time() - start_time:.2f}s")
         
-        generate_container_exec = (
-            final_pipeline_runner 
-            .with_mounted_file(f"{container_app_dir}/{script_input_filename}", retrieved_data_as_dagger_file)
-            .with_exec([
-                "python", generate_main_py_path_in_container, 
-                "--input", script_input_filename, 
-                "--output", generate_output_filename
-            ])
-        )
-        
-        print(f"Starting generate step at {time.time() - start_time:.2f}s")
-        final_result_file = generate_container_exec.file(f"{container_app_dir}/{generate_output_filename}")
+        # Get the final output file
+        final_result_file = processing_container_exec.file(f"{container_app_dir}/{final_output_filename}")
         result_str = await final_result_file.contents()
-        print(f"Generate step completed. Total pipeline time: {time.time() - start_time:.2f}s")
+        
+        print(f"RAG processing completed. Total pipeline time: {time.time() - start_time:.2f}s")
             
         RESULT_QUERY_CACHE[cache_hash] = result_str
         return result_str
@@ -217,7 +130,10 @@ if __name__ == "__main__":
     try:
         final_answer = asyncio.run(run_rag_pipeline(query=user_query, collection=user_collection))
         print("\n--- Final RAG Pipeline Output ---")
-        print(json.dumps(json.loads(final_answer), indent=2))
+        try:
+            print(json.dumps(json.loads(final_answer), indent=2))
+        except json.JSONDecodeError:
+            print(final_answer) # Print as is if not valid JSON
     except dagger.DaggerError as e:
         # Attempt to print more detailed error information if available
         if hasattr(e, 'stderr') and e.stderr:

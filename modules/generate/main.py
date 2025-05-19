@@ -2,10 +2,22 @@
 import json
 import argparse
 import logging
-import os # For OPENAI_API_KEY, though not used in this version's logic
+import os # For OPENAI_API_KEY and RETRIEVER_SERVICE_URL
+import sys
+import requests # For calling the retriever service
+from dotenv import load_dotenv # Optional: for local development
+
+# Load .env if your generator logic relies on it directly
+# Dagger will pass secrets like OPENAI_API_KEY as env vars anyway
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# --- Configuration (from Environment Variables) ---
+# URL of the independently running retriever service (passed by Dagger)
+RETRIEVER_SERVICE_URL = os.getenv("RETRIEVER_SERVICE_URL")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # For generator
 
 # --- FAKE LLM Call (Placeholder) ---
 # In a real RAG pipeline, this function would interact with an LLM
@@ -41,77 +53,86 @@ def generate_response_from_contexts(query: str, contexts: list) -> str:
     return "\n".join(response_parts)
 
 def main():
-    logger.info("Generate module started")
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--input", required=True, help="Path to the input JSON file from the retrieve step.")
-    parser.add_argument("--output", default="generate_output.json", help="Path to save the final JSON output.")
+    parser = argparse.ArgumentParser(description="Retrieves contexts by calling a service and then generates a response.")
+    # Arguments for the RAG task, previously split, now handled by this script
+    parser.add_argument("--query", required=True, help="The user's query.")
+    parser.add_argument("--collection", default="default", help="The Qdrant collection to query via the retriever service.")
+    parser.add_argument("--top_k", type=int, default=5, help="Number of results for the retriever service to fetch.")
+    parser.add_argument("--output", default="final_rag_output.json", help="Path to save the final RAG output JSON.")
     args = parser.parse_args()
 
-    # Check for API keys if an LLM were to be used (good practice for future extension)
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    if openai_api_key:
-        logger.info("OPENAI_API_KEY found in environment (though not used by current template generation).")
-    else:
-        logger.info("OPENAI_API_KEY not found (not required for current template generation).")
+    logger.info(f"Generate module (with integrated retrieval) started. Query: '{args.query}', Collection: '{args.collection}'")
 
-    try:
-        with open(args.input) as f:
-            retriever_output_data = json.load(f)
-        logger.info(f"Input data read successfully from {args.input}")
-
-        # Extract data based on the new retriever output structure
-        original_query = retriever_output_data.get("original_query", "")
-        retrieved_contexts = retriever_output_data.get("retrieved_contexts", [])
-        collection_used = retriever_output_data.get("collection_used", "N/A")
-
-        logger.info(f"Processing query: '{original_query}' for collection: '{collection_used}'")
-        logger.info(f"Received {len(retrieved_contexts)} contexts from retriever.")
-
-        # The retriever already sorts by score, but an explicit sort here is harmless
-        # and good practice if the upstream contract isn't guaranteed.
-        if retrieved_contexts:
-            retrieved_contexts.sort(key=lambda x: x.get("score", 0), reverse=True)
-            logger.info(f"Top context score: {retrieved_contexts[0].get('score', 0):.4f}" if retrieved_contexts else "No contexts to score.")
-        
-        # Use the placeholder generation function
-        generated_answer = generate_response_from_contexts(original_query, retrieved_contexts)
-        
-        final_output = {
-            "query": original_query,
-            "answer": generated_answer, # Changed "response" to "answer" for clarity
-            "source_collection": collection_used,
-            "num_contexts_received": len(retrieved_contexts),
-            "contexts_used_in_generation": [
-                {"id": ctx.get("id"), "score": ctx.get("score")} for ctx in retrieved_contexts[:3]
-            ] if retrieved_contexts else []
-        }
-
+    if not RETRIEVER_SERVICE_URL:
+        logger.error("RETRIEVER_SERVICE_URL environment variable is not set. Cannot proceed.")
+        final_output = {"query": args.query, "error": "Configuration error: Retriever service URL not set."}
         with open(args.output, "w") as f:
             json.dump(final_output, f, indent=2)
-        logger.info(f"Processing complete. Output written to {args.output}")
-        
-    except json.JSONDecodeError:
-        error_message = f"Error: Could not decode JSON from input file {args.input}"
-        logger.error(error_message, exc_info=True)
-        with open(args.output, "w") as f:
-            json.dump({"error": error_message, "query": "Unknown"}, f, indent=2)
-        sys.exit(1) # Exit with error
-    except Exception as e:
-        error_message = f"An unexpected error occurred in the generate module: {str(e)}"
-        logger.error(error_message, exc_info=True)
-        # Try to get the query if possible, even in error states
-        query_in_error = "Unknown"
-        try:
-            with open(args.input) as f_err: # Try to re-read for query
-                data_err = json.load(f_err)
-                query_in_error = data_err.get("original_query", "Unknown during error handling")
-        except Exception:
-            pass # Ignore if re-reading fails
+        sys.exit(1)
 
-        with open(args.output, "w") as f:
-            json.dump({"error": error_message, "query": query_in_error}, f, indent=2)
-        sys.exit(1) # Exit with error
+    # --- Step 1: Call Retriever Service ---
+    retriever_payload = {
+        "query": args.query,
+        "collection": args.collection,
+        "top_k": args.top_k
+    }
+    retrieved_data = None
+    service_full_url = f"{RETRIEVER_SERVICE_URL}/retrieve"
+    
+    logger.info(f"Calling retriever service at {service_full_url} with payload: {retriever_payload}")
+    try:
+        response = requests.post(service_full_url, json=retriever_payload, timeout=30) # Timeout for the call
+        response.raise_for_status() # Raise an exception for HTTP error codes (4xx or 5xx)
+        retrieved_data = response.json() # Get the JSON response from the retriever
+        logger.info(f"Successfully retrieved data from retriever service. Received {len(retrieved_data.get('retrieved_contexts', []))} contexts.")
+    except requests.exceptions.Timeout:
+        logger.error(f"Timeout calling retriever service at {service_full_url}")
+        retrieved_data = {"error": "Timeout calling retriever service", "original_query": args.query}
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error calling retriever service at {service_full_url}: {e}", exc_info=True)
+        # Prepare an error structure similar to what the retriever might send on its own errors
+        retrieved_data = {"error": f"Failed to call retriever service: {str(e)}", "original_query": args.query}
+    except json.JSONDecodeError as e: # If response from retriever is not valid JSON
+        logger.error(f"Failed to decode JSON response from retriever service: {e}", exc_info=True)
+        retrieved_data = {"error": "Invalid JSON response from retriever service", "original_query": args.query}
+    except Exception as e: # Catch-all for other unexpected errors during the call
+        logger.error(f"Unexpected error calling retriever service: {e}", exc_info=True)
+        retrieved_data = {"error": f"Unexpected error during retriever call: {str(e)}", "original_query": args.query}
+
+    # --- Step 2: Generate Response (using the data fetched above) ---
+    generated_answer = ""
+    source_collection_info = args.collection # Default to requested collection
+    num_contexts_for_gen = 0
+
+    if retrieved_data and "error" not in retrieved_data:
+        retrieved_contexts = retrieved_data.get("retrieved_contexts", [])
+        source_collection_info = retrieved_data.get("collection_used", args.collection)
+        num_contexts_for_gen = len(retrieved_contexts)
+
+        logger.info(f"Proceeding to generation with {num_contexts_for_gen} contexts for query '{args.query}'.")
+        generated_answer = generate_response_from_contexts(args.query, retrieved_contexts)
+        
+        final_output_payload = {
+            "query": args.query,
+            "answer": generated_answer,
+            "source_collection": source_collection_info,
+            "num_contexts_received_by_generator": num_contexts_for_gen
+        }
+    else: # An error occurred during retrieval or retrieved_data is None/empty or contains an error
+        error_message = "No data from retriever or retriever reported an error."
+        if retrieved_data and "error" in retrieved_data: # If retriever itself sent an error field
+            error_message = retrieved_data["error"]
+        logger.error(f"Cannot generate response for query '{args.query}' due to retriever error: {error_message}")
+        final_output_payload = {
+            "query": args.query,
+            "error": f"Retrieval step failed: {error_message}",
+            "answer": "Could not generate an answer due to an error in the retrieval process."
+        }
+
+    # --- Step 3: Write Final Output ---
+    with open(args.output, "w") as f:
+        json.dump(final_output_payload, f, indent=2)
+    logger.info(f"Final RAG output written to {args.output}")
 
 
 if __name__ == "__main__":
@@ -130,7 +151,7 @@ if __name__ == "__main__":
             parser_fallback.add_argument("--output", default="generate_output.json")
             args_fallback, _ = parser_fallback.parse_known_args() # Parse known to avoid error on unknown args
             output_path = args_fallback.output
-        except:
+        except Exception:
             pass
 
         with open(output_path, "w") as f:
