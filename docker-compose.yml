@@ -21,6 +21,7 @@ services:
       - RETRIEVER_SERVICE_URL=http://retriever-service:8000
       - RETRIEVER_SERVICE_URL_FOR_HOST=http://localhost:8001
       - RETRIEVER_SERVICE_URL_FOR_DAGGER=http://host.docker.internal:8001
+      - ENABLE_STARTUP_WARMUP=true
     env_file:
       - .env
     depends_on:
