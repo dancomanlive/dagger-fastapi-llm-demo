@@ -36,4 +36,4 @@ ENV DOCKER_HOST=unix:///var/run/docker.sock
 EXPOSE 8000
 
 # Run the RAG app using the containerized approach
-CMD ["uvicorn", "rag_app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

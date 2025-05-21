@@ -71,7 +71,7 @@ def main():
     
     # Test multiple URLs
     # Get environment variable for Dagger
-    dagger_url = os.environ.get("QDRANT_URL_FOR_DAGGER", "http://host.docker.internal:6333")
+    dagger_url = os.environ.get("QDRANT_HOST", "http://host.docker.internal:6333")
     
     urls_to_test = [
         "http://qdrant:6333",

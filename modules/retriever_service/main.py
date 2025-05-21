@@ -1,4 +1,14 @@
 # modules/retriever_service/main.py
+
+"""
+This code handles the semantic search component of the (RAG) pipeline. The steps involved are:
+
+1. Receive natural language queries from the user.
+2. Convert these queries into vector embeddings using an embedding model.
+3. Perform a similarity search in a vector database to find semantically similar documents.
+4. Return the most relevant context documents to be used by the language model (LLM) for generating a response.
+"""
+
 import os
 import time
 import logging

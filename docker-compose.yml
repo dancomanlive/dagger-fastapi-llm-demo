@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   fastapi:
     build:
@@ -7,18 +8,19 @@ services:
       - .:/app
       - dagger-socket:/run/dagger
       - /var/run/docker.sock:/var/run/docker.sock
-    command: uvicorn rag_app:app --host 0.0.0.0 --reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     environment:
-      - DAGGER_HOST=unix:///run/dagger/engine.sock
-      - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock
+      - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock # Connect to Dagger Engine through socket
+      - OPENAI_BASE_URL=https://api.openai.com/v1 # OpenAI API endpoint
+      - OPENAI_API_KEY=${OPENAI_API_KEY} # Loaded from .env
       - QDRANT_URL=http://qdrant:6333
-      - QDRANT_URL_FOR_DAGGER=http://host.docker.internal:6333
+      - QDRANT_HOST=http://host.docker.internal:6333
       - PYTHONPATH=/app
-      - RETRIEVER_SERVICE_URL=http://retriever-service:8000 # For container-to-container
-      - RETRIEVER_SERVICE_URL_FOR_HOST=http://localhost:8001 # For host access
-      - RETRIEVER_SERVICE_URL_FOR_DAGGER=http://host.docker.internal:8001 # For Dagger containers
+      - RETRIEVER_SERVICE_URL=http://retriever-service:8000
+      - RETRIEVER_SERVICE_URL_FOR_HOST=http://localhost:8001
+      - RETRIEVER_SERVICE_URL_FOR_DAGGER=http://host.docker.internal:8001
     env_file:
       - .env
     depends_on:
@@ -34,13 +36,17 @@ services:
       retries: 3
 
   dagger-engine:
-    image: registry.dagger.io/engine:v0.18.8
+    image: registry.dagger.io/engine:v0.18.8 # Match Dagger SDK version
     container_name: dagger-engine
     privileged: true
+    ports:
+      - "8080:8080" # Expose Dagger Engine API
     volumes:
       - dagger-socket:/run/dagger
     networks:
       - dagger-net
+    environment:
+      - DAGGER_LOG_LEVEL=debug
 
   retriever-service:
     build:
@@ -48,15 +54,20 @@ services:
       args:
         EMBEDDING_MODEL_ARG: "sentence-transformers/all-MiniLM-L6-v2"
     ports:
-      - "8001:8000" # Expose on host port 8001
+      - "8001:8000"
     environment:
-      - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333 # Service discovery within Docker Compose
-      - QDRANT_API_KEY=${QDRANT_API_KEY:-} # Get from .env or empty if not set
+      - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
     depends_on:
       - qdrant
     restart: unless-stopped
     networks:
       - dagger-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -72,7 +83,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
 
 volumes:
   dagger-socket:

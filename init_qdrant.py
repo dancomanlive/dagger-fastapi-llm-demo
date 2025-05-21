@@ -18,7 +18,7 @@ load_dotenv()
 # If running this script INSIDE a Docker container that's part of the same docker-compose,
 # then 'http://qdrant:6333' would be correct.
 # Since this is likely run from the host for initialization, let's make it configurable.
-DEFAULT_QDRANT_URL = os.environ.get("http://localhost:6333")
+DEFAULT_QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 DEFAULT_COLLECTION = os.environ.get("QDRANT_COLLECTION_NAME", "default") # Align with Dagger pipeline's default
 
 # Default embedding model to be used by fastembed (via qdrant-client)
