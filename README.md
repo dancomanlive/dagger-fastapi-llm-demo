@@ -1,6 +1,20 @@
-# 🚀 Dagger FastAPI RAG Demo
+# 🚀 FastAPI RAG Demo with Direct Execution
 
-A containerized Retrieval-Augmented Generation (RAG) system built with FastAPI and orchestrated by Dagger. This project demonstrates how to create a modular, maintainable RAG pipeline using direct Python execution in containers without wrapper scripts.
+A containerized Retrieval-Augmented Generation (RAG) system built with FastAPI using direct execution of Python scripts. This project demonstrates how to create a modular, maintainable ## 🛠️ Dependency Management
+
+This project uses a smart dependency management system that:
+
+1. **Hash-based Tracking**:
+   - Calculates MD5 hashes of `requirements.txt` files to track changes
+   - Uses marker files to avoid reinstalling unchanged dependencies
+
+2. **Installation Status Caching**:
+   - Maintains a registry of installed module dependencies
+   - Avoids redundant dependency installation during a single session
+
+3. **Temporary File Management**:
+   - Uses a `.tmp` directory to store dependency installation markers
+   - Automatically cleans up outdated dependency markersing efficient dependency management and process execution.
 
 ## 🔄 Deployment Patterns
 
@@ -23,7 +37,7 @@ python rag_pipeline.py "your query"
 
 ## 🧠 RAG Pipeline & Qdrant Initialization
 
-This project includes a modular RAG pipeline orchestrated by Dagger, with Qdrant as the vector database. The pipeline consists of two main modules:
+This project includes a modular RAG pipeline, with Qdrant as the vector database. The pipeline consists of two main modules:
 
 - **Retrieve**: Fetches relevant documents from Qdrant using vector search
 - **Generate**: Uses an LLM to generate answers based on retrieved context
@@ -45,12 +59,12 @@ All required environment variables are documented in `.env.example`. Copy this f
 
 ### Running the RAG Pipeline
 
-The pipeline is orchestrated by Dagger and can be triggered via the FastAPI endpoint or by calling the relevant Python functions. The pipeline will:
+The pipeline executes Python scripts directly and can be triggered via the FastAPI endpoint or by calling the relevant Python functions. The pipeline will:
 
 1. Use the `retrieve` module to fetch relevant documents from Qdrant
 2. Use the `generate` module to create a response based on the retrieved context
 
-The pipeline uses dependency and model caching for efficiency. See `rag_pipeline.py` for details.
+The pipeline uses smart dependency management and caching for efficiency. See `rag_pipeline_direct.py` for details.
 
 ### Standalone Retriever Service (Pattern 2)
 
@@ -73,7 +87,7 @@ For improved performance, you can use the standalone retriever service pattern:
 3. **Architecture**:
    - The retriever service runs in its own container (port 8001)
    - Qdrant runs in its own container (ports 6333/6334)
-   - The Dagger pipeline calls the external retriever service instead of starting its own
+   - The main pipeline calls the external retriever service
 
 To use this pattern, make sure your environment has `RETRIEVER_SERVICE_URL` set to `http://localhost:8001` when running outside Docker, or to `http://retriever-service:8000` when running from another container.
 
@@ -90,20 +104,21 @@ To use this pattern, make sure your environment has `RETRIEVER_SERVICE_URL` set 
 This project showcases a modern approach to building RAG systems with:
 
 - **FastAPI** for the web service layer
-- **Dagger** for direct container orchestration (no custom images required)
+- **Direct Python Execution** for straightforward script execution
 - **Qdrant** for vector storage
-- **Python scripts** executed directly in standard containers
+- **Python scripts** executed directly in the container
+- **Smart Dependency Management** with caching
 - **Environment configuration** via `.env` file
 - **Modular Architecture** for maintainability and reusability
 
 ## 🏗️ Architecture
 
-The system is built around a modular container-based architecture:
+The system is built around a modular architecture:
 
 1. **FastAPI Service**: Handles HTTP requests and orchestrates the RAG pipeline
-2. **Dagger Engine**: Coordinates container execution without wrapper scripts - directly mounting code and running Python
+2. **Direct Python Execution**: Runs scripts directly in the main application process
 3. **Qdrant**: Vector database for document storage and retrieval
-4. **RAG Module Containers**:
+4. **RAG Modules**:
    - **Retrieve**: Fetches relevant documents from Qdrant
    - **Generate**: Creates responses using an LLM based on retrieved documents
 
@@ -112,7 +127,6 @@ The system is built around a modular container-based architecture:
 - Docker Engine 20.10+
 - Docker Compose 2.0+ 
 - At least 4GB of available RAM
-- Docker Hub account (for CI/CD and for publishing Dagger modules)
 
 ## 🚀 Getting Started
 
@@ -121,22 +135,21 @@ The system is built around a modular container-based architecture:
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd DaggerFastAPIDemo
+cd FastAPIRAGDemo
 
 # Set up environment variables
 cp .env.example .env
 # Edit .env with your configuration values
 
 # Run the demo
-./run_demo.sh
+docker-compose up
 ```
 
-The script will:
-1. Create a Docker network
-2. Build module containers
-3. Start FastAPI and Qdrant services
-4. Initialize Qdrant with test data
-5. Test the complete RAG pipeline
+The service will:
+1. Set up the Docker network
+2. Start FastAPI and Qdrant services
+3. Initialize required dependencies
+4. Be ready to accept RAG queries
 
 ### Accessing the System
 
@@ -154,19 +167,19 @@ curl -X POST http://127.0.0.1:8000/rag \
 ## 🛠️ Project Structure
 
 ```
-├── ci/                      # CI/CD pipelines with Dagger
-├── modules/                 # RAG module code
-│   ├── retrieve/            # Document retrieval module
-│   │   ├── main.py          # Retrieval implementation
-│   │   └── requirements.txt # Retrieve module dependencies
-│   └── generate/            # Response generation module
-│       ├── main.py          # Generation implementation
-│       └── requirements.txt # Generate module dependencies
-├── docker-compose.yml       # Service configuration
-├── Dockerfile               # Main application container
-├── rag_app.py               # FastAPI application with Dagger orchestration
-├── requirements.txt         # Python dependencies
-└── run_demo.sh              # Startup script
+├── modules/                      # RAG module code
+│   ├── retriever_service/        # Standalone retriever service (Pattern 2)
+│   │   ├── main.py               # Retrieval API implementation
+│   │   └── requirements.txt      # Retrieve module dependencies
+│   └── generate/                 # Response generation module
+│       ├── main.py               # Generation implementation
+│       └── requirements.txt      # Generate module dependencies
+├── docker-compose.yml           # Service configuration
+├── Dockerfile                   # Main application container
+├── main.py                      # FastAPI application
+├── rag_pipeline_direct.py       # Direct execution implementation
+├── requirements.txt             # Python dependencies
+└── init_qdrant.py               # Data initialization script
 ```
 
 ## 🧑‍💻 Development
@@ -183,9 +196,7 @@ curl -X POST http://127.0.0.1:8000/rag \
        parser.add_argument("--output", default="output.json")
        # ...
    ```
-4. Update the Dagger pipeline in `rag_app.py` to include your new module
-
-No need to build and push custom Docker images - the pipeline uses standard Python images and mounts your code directly.
+4. Update the pipeline in `rag_pipeline_direct.py` to include your new module
 
 ### Continuous Integration
 
@@ -198,30 +209,18 @@ python ci_pipeline.py
 
 ## 📦 Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions on deploying this system to:
+This application can be deployed using standard Docker-based deployment methods:
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-
-## 🐳 Docker-Based Execution
-
-For details on the Docker-only execution model, see [DOCKER_README.md](DOCKER_README.md).
-
-## 🚢 CI/CD Setup
-
-To set up CI/CD with GitHub Actions:
-
-1. Add Docker Hub and Dagger Cloud credentials to GitHub Secrets
-2. Use the provided GitHub Actions workflow in `.github/workflows/`
+1. Build the Docker image using the provided Dockerfile
+2. Push the image to your container registry
+3. Deploy using your preferred container orchestration platform
 
 ## 📚 Documentation
 
-For more detailed documentation:
+For more detailed documentation on the RAG approach and implementation details:
 
-- [Architecture RFC](rfc_instructions.md)
-- [Docker Setup](DOCKER_README.md)
-- [Deployment Guide](DEPLOYMENT.md)
+- [Introduction to RAG](Introduction_to_dagger.md)
+- [Architecture Overview](ARCHITECTURE.md)
 
 ## 🤝 Contributing
 
@@ -247,19 +246,16 @@ This project leverages **Dagger's caching mechanism** to optimize dependency ins
 3. **Temporary Script Cache**:
    - Module-specific temporary data (e.g., pickled embeddings) is stored in `/tmp/module_cache` using the `global-script-temp-cache` volume.
 
-### Debugging Dependency Caching
+Example of the dependency management code:
+```python
+# Create a marker file to indicate installed dependencies
+hash_marker_file = os.path.join(TMP_DIR, f"{module_name}_deps_{req_hash[:8]}.installed")
 
-If dependency caching is not working as expected:
-
-- Ensure the `requirements.txt` files for the `retrieve` and `generate` modules are present and correctly formatted.
-- Verify that the cache volumes are being mounted correctly in the Dagger pipeline.
-- Add debug logs to print the hash of the `requirements.txt` file to confirm it is not changing between runs.
-
-Example Debugging Command:
-```bash
-# Check if requirements.txt is consistent
-md5sum modules/retrieve/requirements.txt
-md5sum modules/generate/requirements.txt
+# Check if dependencies are already installed with this hash
+if os.path.exists(hash_marker_file):
+    print(f"Dependencies for {module_name} already installed (hash marker exists)")
+    MODULE_DEPENDENCIES_INSTALLED[module_name] = True
+    return True
 ```
 
-For more details, see the `get_or_build_deps_image` function in `rag_pipeline.py`.
+For more details, see the `install_module_dependencies` function in `rag_pipeline_direct.py`.

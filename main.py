@@ -4,19 +4,16 @@
 This code handles the API interface for the Retrieval-Augmented Generation (RAG) pipeline. The steps involved are:
 
 1. Define API endpoints that accept user queries.
-2. Initialize Python virtual environments for each module.
+2. Initialize Python dependencies for each module.
 3. Pass incoming queries to the RAG pipeline for processing.
 4. Return the generated responses from the pipeline back to the clients.
 5. Handle errors and exceptions that may occur during the processing flow.
-6. Pre-initialize environments and dependencies for improved performance.
 """
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import json
 import logging
-import os
-import sys
 import time
 from rag_pipeline_direct import run_rag_pipeline, initialize_environments
 
@@ -30,16 +27,13 @@ app = FastAPI(title="Simplified RAG Pipeline with Direct Execution")
 async def startup_event():
     """Initialize resources during app startup"""
     try:
-        # Initialize all virtual environments
-        logger.info("Initializing virtual environments...")
+        # Initialize all dependencies
+        logger.info("Initializing module dependencies...")
         init_success = await initialize_environments()
         if init_success:
-            logger.info("Virtual environment initialization completed successfully")
-            
-            # Warmup has been removed as it's not needed
-            logger.info("Warmup functionality removed - direct execution is fast enough without it")
+            logger.info("Dependency initialization completed successfully")
         else:
-            logger.warning("Environment initialization had issues - falling back to on-demand creation")
+            logger.warning("Dependency initialization had issues - falling back to on-demand installation")
         
     except Exception as e:
         logger.exception(f"Error during startup: {str(e)}")
