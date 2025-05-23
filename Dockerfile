@@ -25,6 +25,10 @@ RUN apt-get update && \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Also install dependencies for the generate module
+COPY modules/generate/requirements.txt ./modules_generate_requirements.txt
+RUN pip install --no-cache-dir -r modules_generate_requirements.txt
+
 # Copy your FastAPI app
 COPY . .
 
@@ -35,5 +39,5 @@ ENV DOCKER_HOST=unix:///var/run/docker.sock
 # Expose port for FastAPI
 EXPOSE 8000
 
-# Run the RAG app using the containerized approach
+# Run the RAG app using direct execution approach
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

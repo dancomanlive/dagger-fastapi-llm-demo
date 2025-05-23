@@ -6,13 +6,15 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/app
-      - dagger-socket:/run/dagger
+      # Commenting out Dagger-related volumes
+      # - dagger-socket:/run/dagger
       - /var/run/docker.sock:/var/run/docker.sock
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
     environment:
-      - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock # Connect to Dagger Engine through socket
+      # Commenting out Dagger-related environment variables
+      # - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock
       - OPENAI_BASE_URL=https://api.openai.com/v1 # OpenAI API endpoint
       - OPENAI_API_KEY=${OPENAI_API_KEY} # Loaded from .env
       - QDRANT_URL=http://qdrant:6333
@@ -20,12 +22,12 @@ services:
       - PYTHONPATH=/app
       - RETRIEVER_SERVICE_URL=http://retriever-service:8000
       - RETRIEVER_SERVICE_URL_FOR_HOST=http://localhost:8001
-      - RETRIEVER_SERVICE_URL_FOR_DAGGER=http://host.docker.internal:8001
-      - ENABLE_STARTUP_WARMUP=true
+      # - RETRIEVER_SERVICE_URL_FOR_DAGGER=http://host.docker.internal:8001 # No longer needed
+      - ENABLE_STARTUP_WARMUP=false
     env_file:
       - .env
     depends_on:
-      - dagger-engine
+      # Removing Dagger engine dependency
       - qdrant
       - retriever-service
     networks:
@@ -36,18 +38,19 @@ services:
       timeout: 5s
       retries: 3
 
-  dagger-engine:
-    image: registry.dagger.io/engine:v0.18.8 # Match Dagger SDK version
-    container_name: dagger-engine
-    privileged: true
-    ports:
-      - "8080:8080" # Expose Dagger Engine API
-    volumes:
-      - dagger-socket:/run/dagger
-    networks:
-      - dagger-net
-    environment:
-      - DAGGER_LOG_LEVEL=debug
+  # Commenting out Dagger engine service - no longer needed
+  # dagger-engine:
+  #   image: registry.dagger.io/engine:v0.18.8 # Match Dagger SDK version
+  #   container_name: dagger-engine
+  #   privileged: true
+  #   ports:
+  #     - "8080:8080" # Expose Dagger Engine API
+  #   volumes:
+  #     - dagger-socket:/run/dagger
+  #   networks:
+  #     - dagger-net
+  #   environment:
+  #     - DAGGER_LOG_LEVEL=debug
 
   retriever-service:
     build:
@@ -86,7 +89,7 @@ services:
       retries: 3
 
 volumes:
-  dagger-socket:
+  # dagger-socket: # Commented out as no longer needed
   qdrant-data:
 
 networks:

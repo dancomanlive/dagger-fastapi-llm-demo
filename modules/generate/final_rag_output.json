@@ -1,0 +1,6 @@
+{
+  "query": "What is a vector",
+  "answer": "A vector is a mathematical representation used in RAG systems to store embeddings and perform similarity searches to find relevant documents for generating responses.",
+  "source_collection": "default",
+  "num_contexts_received_by_generator": 5
+}
