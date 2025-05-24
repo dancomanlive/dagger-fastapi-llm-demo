@@ -1,172 +1,321 @@
 # modules/generate/main.py
 
 """
-This code handles the orchestration of the response generation phase. The steps involved are:
+Functional response generation module for RAG system.
 
-1. Accept a user query as input.
-2. Construct a request URL and send the query to a retrieval service.
-3. Receive relevant context documents from the retrieval system.
-4. Pass the retrieved documents along with the original query to OpenAI's language model.
-5. Generate a response based on the query and contextual documents.
-6. Return the final generated answer to the user and save it for future reference.
+This module provides pure functions for:
+1. Retrieving relevant context documents from the retrieval service
+2. Generating responses using OpenAI's language model
+3. Orchestrating the complete RAG pipeline
 """
 
-import json
 import argparse
 import logging
 import os
 import sys
+import asyncio
+from typing import List, Dict, Tuple, Optional
+from functools import partial
+
 import requests
 from dotenv import load_dotenv
-import asyncio
+from openai import AsyncOpenAI
 
-from openai import AsyncOpenAI  # Add OpenAI import
-
-# Load .env for local development
+# Load environment variables
 load_dotenv()
 
-# Logger setup
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
-# Configuration
-RETRIEVER_SERVICE_URL = os.getenv("http://host.docker.internal:8001", "http://host.docker.internal:8001")
+# Configuration constants
+RETRIEVER_SERVICE_URL = os.getenv("RETRIEVER_SERVICE_URL", "http://host.docker.internal:8001")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+REQUEST_TIMEOUT = 30
+MAX_CONTEXTS = 3
 
-async def generate_response_from_contexts(query: str, contexts: list) -> str:
+
+# Pure functions for data transformation
+def combine_contexts(contexts: List[Dict], max_contexts: int = MAX_CONTEXTS) -> str:
     """
-    Generate a response using OpenAI's API instead of Dagger's LLM primitive.
+    Combine context documents into a single text string.
+    
+    Args:
+        contexts: List of context documents
+        max_contexts: Maximum number of contexts to include
+        
+    Returns:
+        Combined context text
     """
     if not contexts:
-        logger.warning("No contexts provided to generate_response_from_contexts.")
-        return "No relevant information found to answer your query."
-
-    if not OPENAI_API_KEY:
-        logger.error("OPENAI_API_KEY is not set.")
-        return "Error generating response: OpenAI API key is missing."
-
-    # Combine top 3 contexts
-    context_text = "\n".join([c.get("text", "No text available.") for c in contexts[:3]])
+        return ""
     
+    return "\n".join([
+        ctx.get("text", "No text available.") 
+        for ctx in contexts[:max_contexts]
+    ])
+
+
+def create_chat_messages(query: str, context_text: str) -> List[Dict[str, str]]:
+    """
+    Create OpenAI chat messages from query and context.
+    
+    Args:
+        query: User's question
+        context_text: Combined context text
+        
+    Returns:
+        List of message dictionaries for OpenAI API
+    """
+    return [
+        {
+            "role": "system", 
+            "content": "You are a helpful assistant that answers questions based on the provided context. If the question is not related to the context, say 'I don't know'."
+        },
+        {
+            "role": "user", 
+            "content": f"Query: {query}\n\nRetrieved Contexts:\n{context_text}\n\nGenerate a concise, fluent answer."
+        }
+    ]
+
+
+def create_retrieval_payload(query: str, collection: str, top_k: int) -> Dict[str, any]:
+    """
+    Create payload for retrieval service request.
+    
+    Args:
+        query: User's question
+        collection: Collection name
+        top_k: Number of results to retrieve
+        
+    Returns:
+        Request payload dictionary
+    """
+    return {
+        "query": query,
+        "collection": collection,
+        "top_k": top_k
+    }
+
+
+def extract_contexts_from_response(response_data: Dict) -> List[Dict]:
+    """
+    Extract contexts from retrieval service response.
+    
+    Args:
+        response_data: JSON response from retrieval service
+        
+    Returns:
+        List of context documents
+    """
+    return response_data.get("retrieved_contexts", [])
+
+
+def validate_config() -> Tuple[bool, Optional[str]]:
+    """
+    Validate required configuration.
+    
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    if not OPENAI_API_KEY:
+        return False, "OPENAI_API_KEY environment variable is not set"
+    
+    if not RETRIEVER_SERVICE_URL:
+        return False, "RETRIEVER_SERVICE_URL environment variable is not set"
+    
+    return True, None
+
+
+# IO functions
+def make_retrieval_request(url: str, payload: Dict, timeout: int = REQUEST_TIMEOUT) -> Dict:
+    """
+    Make HTTP request to retrieval service.
+    
+    Args:
+        url: Service URL
+        payload: Request payload
+        timeout: Request timeout in seconds
+        
+    Returns:
+        Response data dictionary
+        
+    Raises:
+        Exception: If request fails
+    """
     try:
-        # Initialize OpenAI client
-        openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+        logger.info(f"Making retrieval request to {url}")
+        response = requests.post(url, json=payload, timeout=timeout)
+        response.raise_for_status()
+        return response.json()
         
-        # Create the messages for the chat completion
-        messages = [
-            {"role": "system", "content": "You are a helpful assistant that answers questions based on the provided context. If the question is not related to the context, say 'I don't know'."},
-            {"role": "user", "content": f"Query: {query}\n\nRetrieved Contexts:\n{context_text}\n\nGenerate a concise, fluent answer."}
-        ]
+    except requests.exceptions.Timeout:
+        logger.error("Timeout calling retriever service")
+        raise Exception("Retrieval service timeout")
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error calling retriever service: {e}")
+        raise Exception(f"Retrieval request failed: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected error during retrieval: {e}")
+        raise
+
+
+async def call_openai_api(client: AsyncOpenAI, messages: List[Dict]) -> str:
+    """
+    Call OpenAI API to generate response.
+    
+    Args:
+        client: OpenAI client instance
+        messages: Chat messages
         
-        # Call OpenAI API
-        response = await openai_client.chat.completions.create(
-            model="gpt-3.5-turbo",  # You can change this to your preferred model
+    Returns:
+        Generated response text
+        
+    Raises:
+        Exception: If API call fails
+    """
+    try:
+        response = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
             messages=messages,
             max_tokens=500,
             temperature=0.7
         )
         
-        result = response.choices[0].message.content.strip()
-        logger.info(f"OpenAI response generated successfully for query: {query}")
-        return result
-
+        return response.choices[0].message.content.strip()
+        
     except Exception as e:
-        logger.error(f"Error using OpenAI API: {str(e)}", exc_info=True)
+        logger.error(f"Error generating response with OpenAI: {e}")
+        raise
+
+
+# Core business logic functions
+def retrieve_contexts(query: str, collection: str = "default", top_k: int = 5) -> List[Dict]:
+    """
+    Retrieve contexts from the retrieval service.
+    
+    Args:
+        query: User's question
+        collection: Collection name
+        top_k: Number of contexts to retrieve
+        
+    Returns:
+        List of retrieved contexts
+        
+    Raises:
+        Exception: If retrieval fails
+    """
+    url = f"{RETRIEVER_SERVICE_URL.rstrip('/')}/retrieve"
+    payload = create_retrieval_payload(query, collection, top_k)
+    
+    response_data = make_retrieval_request(url, payload)
+    contexts = extract_contexts_from_response(response_data)
+    
+    logger.info(f"Retrieved {len(contexts)} contexts for query: {query}")
+    return contexts
+
+
+async def generate_response_from_contexts(query: str, contexts: List[Dict]) -> str:
+    """
+    Generate response using OpenAI based on query and contexts.
+    
+    Args:
+        query: User's question
+        contexts: Retrieved context documents
+        
+    Returns:
+        Generated response text
+    """
+    if not contexts:
+        logger.warning("No contexts provided for response generation")
+        return "No relevant information found to answer your query."
+    
+    # Transform data through pure functions
+    context_text = combine_contexts(contexts)
+    messages = create_chat_messages(query, context_text)
+    
+    # Make API call
+    client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+    response = await call_openai_api(client, messages)
+    
+    logger.info(f"Response generated successfully for query: {query}")
+    return response
+
+
+# Main pipeline function
+async def generate_rag_response(query: str, collection: str = "default", top_k: int = 5) -> str:
+    """
+    Complete RAG pipeline: retrieve contexts and generate response.
+    
+    Args:
+        query: User's question
+        collection: Collection name
+        top_k: Number of contexts to retrieve
+        
+    Returns:
+        Generated response text
+    """
+    try:
+        # Retrieve contexts
+        contexts = retrieve_contexts(query, collection, top_k)
+        
+        # Generate response
+        response = await generate_response_from_contexts(query, contexts)
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error in RAG pipeline: {e}")
         return f"Error generating response: {str(e)}"
 
 
+# Utility functions
+def parse_arguments() -> argparse.Namespace:
+    """Parse and return command line arguments."""
+    parser = argparse.ArgumentParser(description="Generate RAG response for user query")
+    parser.add_argument("--query", required=True, help="The user's query")
+    parser.add_argument("--collection", default="default", help="Qdrant collection name")
+    parser.add_argument("--top_k", type=int, default=5, help="Top K results to fetch")
+    return parser.parse_args()
+
+
+def handle_error_and_exit(error_msg: str, exit_code: int = 1) -> None:
+    """Handle error logging and program exit."""
+    logger.error(error_msg)
+    print(f"Error: {error_msg}")
+    sys.exit(exit_code)
+
+
+# Main execution
 async def main():
-    parser = argparse.ArgumentParser(description="Call retriever and generate response.")
-    parser.add_argument("--query", required=True, help="The user's query.")
-    parser.add_argument("--collection", default="default", help="Qdrant collection name.")
-    parser.add_argument("--top_k", type=int, default=5, help="Top K results to fetch.")
-    parser.add_argument("--output", default="final_rag_output.json", help="Path to output JSON.")
-    args = parser.parse_args()
-
-    logger.info(f"Started. Query: '{args.query}', Collection: '{args.collection}'")
-
-    
-
-    if not RETRIEVER_SERVICE_URL:
-        logger.error("RETRIEVER_SERVICE_URL is not set.")
-        final_output = {
-            "query": args.query,
-            "error": "Configuration error: RETRIEVER_SERVICE_URL not set."
-        }
-        with open(args.output, "w") as f:
-            json.dump(final_output, f, indent=2)
-        sys.exit(1)
-
-    # Call retriever
-    retriever_payload = {
-        "query": args.query,
-        "collection": args.collection,
-        "top_k": args.top_k
-    }
-    service_full_url = f"{RETRIEVER_SERVICE_URL}/retrieve"
-
+    """Main entry point with functional composition."""
     try:
-        logger.info(f"Calling retriever at {service_full_url}")
-        response = requests.post(service_full_url, json=retriever_payload, timeout=30)
-        response.raise_for_status()
-        retrieved_data = response.json()
-        print(f"Retrieved data: {retrieved_data}")
-    except requests.exceptions.Timeout:
-        logger.error("Timeout calling retriever")
-        retrieved_data = {"error": "Timeout", "original_query": args.query}
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error calling retriever: {e}", exc_info=True)
-        retrieved_data = {"error": f"Request failed: {str(e)}", "original_query": args.query}
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON from retriever")
-        retrieved_data = {"error": "Invalid JSON", "original_query": args.query}
+        # Parse arguments
+        args = parse_arguments()
+        
+        logger.info(f"Processing query: '{args.query}' from collection: '{args.collection}'")
+        
+        # Validate configuration
+        is_valid, error_msg = validate_config()
+        if not is_valid:
+            handle_error_and_exit(error_msg)
+        
+        # Execute RAG pipeline
+        answer = await generate_rag_response(args.query, args.collection, args.top_k)
+        
+        # Output result
+        print(answer)
+        
+    except KeyboardInterrupt:
+        logger.info("Process interrupted by user")
+        sys.exit(0)
     except Exception as e:
-        logger.error(f"Unexpected error: {e}", exc_info=True)
-        retrieved_data = {"error": str(e), "original_query": args.query}
-
-    # Generate answer
-    if "error" not in retrieved_data:
-        contexts = retrieved_data.get("retrieved_contexts", [])
-        collection_used = retrieved_data.get("collection_used", args.collection)
-        answer = await generate_response_from_contexts(args.query, contexts)
-        final_output = {
-            "query": args.query,
-            "answer": answer,
-            "source_collection": collection_used,
-            "num_contexts_received_by_generator": len(contexts)
-        }
-    else:
-        logger.error(f"Retrieval failed: {retrieved_data['error']}")
-        final_output = {
-            "query": args.query,
-            "error": f"Retrieval failed: {retrieved_data['error']}",
-            "answer": "Could not generate an answer due to retrieval failure."
-        }
-
-    # Write output
-    with open(args.output, "w") as f:
-        json.dump(final_output, f, indent=2)
-    logger.info(f"Output written to {args.output}")
+        logger.critical(f"Critical error in main: {e}", exc_info=True)
+        handle_error_and_exit(f"Critical error: {str(e)}")
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except SystemExit:
-        pass
-    except Exception as e:
-        logger.critical(f"Unhandled exception at top level: {str(e)}", exc_info=True)
-        output_path = "generate_output.json"
-        try:
-            parser_fallback = argparse.ArgumentParser()
-            parser_fallback.add_argument("--output", default="generate_output.json")
-            args_fallback, _ = parser_fallback.parse_known_args()
-            output_path = args_fallback.output
-        except Exception:
-            pass
-        with open(output_path, "w") as f:
-            json.dump({"error": f"Critical unhandled exception: {str(e)}", "query": "Unknown"}, f, indent=2)
-
-
-
-
+    asyncio.run(main())
