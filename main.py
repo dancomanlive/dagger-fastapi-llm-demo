@@ -186,41 +186,6 @@ async def process_rag_request(request: RagRequest):
         )
 
 
-@app.post("/rag/simple")
-async def process_simple_rag_request(request: RagRequest):
-    """
-    Simplified RAG endpoint that returns just the answer text.
-    
-    Args:
-        request: RAG request containing query and collection
-        
-    Returns:
-        Plain text answer
-    """
-    try:
-        result_json = await run_rag_pipeline(
-            query=request.query, 
-            collection=request.collection
-        )
-        
-        result_data = json.loads(result_json)
-        
-        if result_data.get("status") == "error":
-            raise HTTPException(
-                status_code=500, 
-                detail=result_data.get("error")
-            )
-        
-        # Return just the answer text
-        return {"answer": result_data.get("answer", "No answer generated")}
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception(f"Error in simple RAG endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 # Development/debugging endpoints
 @app.get("/debug/cache")
 async def get_cache_status():
