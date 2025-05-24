@@ -9,13 +9,15 @@ Provides endpoints for:
 3. Clean error handling and logging
 """
 
+import asyncio
 import json
 import logging
 import time
 from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from rag_pipeline import run_rag_pipeline, initialize_environments
@@ -186,6 +188,73 @@ async def process_rag_request(request: RagRequest):
             status_code=500, 
             detail=f"Unexpected error: {str(e)}"
         )
+
+
+@app.post("/rag/stream")
+async def stream_rag_response(request: RagRequest):
+    """
+    Stream RAG responses as Server-Sent Events for real-time chat interfaces.
+    
+    Args:
+        request: RAG request containing query and collection
+        
+    Returns:
+        StreamingResponse with Server-Sent Events
+    """
+    async def generate_stream():
+        try:
+            logger.info(f"Starting streaming response for query: '{request.query}'")
+            
+            # Get the full response from pipeline
+            result_json = await run_rag_pipeline(
+                query=request.query, 
+                collection=request.collection
+            )
+            
+            result_data = json.loads(result_json)
+            
+            if result_data.get("status") == "error":
+                yield f"data: {json.dumps({'error': result_data.get('error')})}\n\n"
+                return
+            
+            # Stream the answer word by word to simulate real-time generation
+            answer = result_data.get("answer", "")
+            words = answer.split()
+            
+            current_text = ""
+            for i, word in enumerate(words):
+                current_text += word + " "
+                
+                chunk_data = {
+                    "content": word + " ",
+                    "full_text": current_text.strip(),
+                    "progress": (i + 1) / len(words),
+                    "is_final": i == len(words) - 1
+                }
+                
+                yield f"data: {json.dumps(chunk_data)}\n\n"
+                
+                # Add small delay to simulate streaming
+                await asyncio.sleep(0.1)
+            
+            # Send completion signal
+            yield f"data: {json.dumps({'done': True})}\n\n"
+            
+        except Exception as e:
+            logger.exception(f"Error in streaming response: {str(e)}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+    
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/event-stream",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Cache-Control"
+        }
+    )
 
 
 # Development/debugging endpoints

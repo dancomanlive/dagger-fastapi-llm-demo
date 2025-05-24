@@ -139,6 +139,27 @@ class RetrieveResponse(BaseModel):
     collection_used: str
 
 
+@app.get("/")
+async def root():
+    """Root endpoint with service status."""
+    return {
+        "status": "ok",
+        "service": "Retriever Service",
+        "version": "1.0.0",
+        "qdrant_connected": qdrant_client is not None
+    }
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint."""
+    return {
+        "status": "healthy" if qdrant_client else "degraded",
+        "timestamp": time.time(),
+        "qdrant_connected": qdrant_client is not None
+    }
+
+
 @app.post("/retrieve", response_model=RetrieveResponse)
 async def retrieve_endpoint(request: RetrieveRequest):
     if not qdrant_client:

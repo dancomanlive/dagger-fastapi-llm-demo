@@ -38,6 +38,33 @@ services:
       timeout: 5s
       retries: 3
 
+  gradio-chat:
+    build:
+      context: .
+      dockerfile: Dockerfile.gradio
+    ports:
+      - "7860:7860"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - FASTAPI_SERVICE_URL=http://fastapi:8000
+      - RETRIEVER_SERVICE_URL=http://retriever-service:8000
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    depends_on:
+      - fastapi
+      - retriever-service
+      - qdrant
+    networks:
+      - dagger-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:7860/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
   # Commenting out Dagger engine service - no longer needed
   # dagger-engine:
   #   image: registry.dagger.io/engine:v0.18.8 # Match Dagger SDK version
