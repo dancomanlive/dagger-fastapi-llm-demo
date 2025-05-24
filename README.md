@@ -16,7 +16,7 @@ A simple Retrieval-Augmented Generation (RAG) system built with FastAPI and Dock
 
 3. **Test the API:**
    - Open http://localhost:8000/docs for the interactive API documentation
-   - Or make a request: `curl -X POST "http://localhost:8000/query" -H "Content-Type: application/json" -d '{"query": "your question here"}'`
+   - Or make a request: `curl -s -X POST http://localhost:8000/rag -H "Content-Type: application/json" -d '{"query": "What is a vector", "collection": "default"}' | jq`
 
 ## Project Structure
 

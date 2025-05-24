@@ -12,7 +12,7 @@ Provides endpoints for:
 import json
 import logging
 import time
-from typing import Dict, Any
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -26,13 +26,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# FastAPI app initialization
-app = FastAPI(
-    title="Functional RAG Pipeline API",
-    description="Retrieval-Augmented Generation API with direct execution",
-    version="2.0.0"
-)
 
 # Request models
 class RagRequest(BaseModel):
@@ -56,25 +49,12 @@ class ErrorResponse(BaseModel):
 app_initialized = False
 
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Global exception handler for unhandled errors."""
-    logger.exception(f"Unhandled error in {request.url.path}: {str(exc)}")
-    return JSONResponse(
-        status_code=500,
-        content={
-            "error": "Internal server error occurred",
-            "detail": str(exc),
-            "path": str(request.url.path)
-        }
-    )
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize resources during app startup."""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan events."""
     global app_initialized
     
+    # Startup
     try:
         logger.info("Starting RAG pipeline API...")
         start_time = time.time()
@@ -97,12 +77,34 @@ async def startup_event():
         logger.exception(f"Error during startup: {str(e)}")
         # Don't raise exception - allow app to start for debugging
         app_initialized = False
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup during app shutdown."""
+    
+    yield
+    
+    # Shutdown
     logger.info("Shutting down RAG pipeline API...")
+
+
+# FastAPI app initialization with lifespan
+app = FastAPI(
+    title="Functional RAG Pipeline API",
+    description="Retrieval-Augmented Generation API with direct execution",
+    version="2.0.0",
+    lifespan=lifespan
+)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Global exception handler for unhandled errors."""
+    logger.exception(f"Unhandled error in {request.url.path}: {str(exc)}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error occurred",
+            "detail": str(exc),
+            "path": str(request.url.path)
+        }
+    )
 
 
 @app.get("/")

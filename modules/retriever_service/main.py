@@ -12,6 +12,7 @@ This code handles the semantic search component of the (RAG) pipeline. The steps
 import os
 import time
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from qdrant_client import QdrantClient, models as qdrant_models
@@ -33,13 +34,16 @@ PAYLOAD_TEXT_FIELD_NAME = os.getenv("PAYLOAD_TEXT_FIELD_NAME", "document")
 
 
 # --- Global Variables (Qdrant client initialized once on startup) ---
-app = FastAPI(title="Retriever Service")
 qdrant_client: QdrantClient | None = None
 
-@app.on_event("startup")
-async def startup_event():
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan events."""
     global qdrant_client
-    logger.info(f"Retriever service starting up...")
+    
+    # Startup
+    logger.info("Retriever service starting up...")
     logger.info(f"Attempting to connect to Qdrant at: {QDRANT_HOST}")
     logger.info(f"Using embedding model: {EMBEDDING_MODEL_NAME}")
     logger.info(f"Expecting text in payload field: {PAYLOAD_TEXT_FIELD_NAME}")
@@ -100,6 +104,21 @@ async def startup_event():
         logger.error(f"Failed to initialize Qdrant client during startup: {e}", exc_info=True)
         # You might want the service to fail loudly if Qdrant connection fails
         # raise HTTPException(status_code=503, detail="Could not connect to Qdrant") from e
+    
+    yield
+    
+    # Shutdown
+    logger.info("Retriever service shutting down...")
+    if qdrant_client:
+        try:
+            qdrant_client.close()
+            logger.info("Qdrant client closed successfully.")
+        except Exception as e:
+            logger.error(f"Error closing Qdrant client: {e}")
+
+
+# FastAPI app initialization with lifespan
+app = FastAPI(title="Retriever Service", lifespan=lifespan)
 
 
 # --- API Models ---
