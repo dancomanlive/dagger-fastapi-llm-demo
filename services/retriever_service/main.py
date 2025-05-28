@@ -1,4 +1,4 @@
-# modules/retriever_service/main.py
+# services/retriever_service/main.py
 
 """
 This code handles the semantic search component of the (RAG) pipeline. The steps involved are:
@@ -213,4 +213,4 @@ async def retrieve_endpoint(request: RetrieveRequest):
     )
 
 # To run this service locally (outside Dagger for testing):
-# uvicorn modules.retriever_service.main:app --reload --port 8001
+# uvicorn services.retriever_service.main:app --reload --port 8001

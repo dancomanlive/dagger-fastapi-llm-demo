@@ -1,0 +1,5 @@
+FastAPI
+qdrant-client
+pydantic
+python-dotenv
+uvicorn

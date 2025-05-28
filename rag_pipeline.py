@@ -271,7 +271,7 @@ def get_dependency_marker_path(module_name: str, req_hash: str) -> str:
     Generate path for dependency installation marker file.
     
     Args:
-        module_name: Name of the module (e.g., "generate")
+        module_name: Name of the module (e.g., "generate_module")
         req_hash: Hash of the requirements.txt file
         
     Returns:
@@ -306,13 +306,14 @@ def check_requirements_file(module_name: str) -> Tuple[bool, str]:
     Check if requirements.txt file exists for a module and get its path.
     
     Args:
-        module_name: Name of the module to check (e.g., "generate")
+        module_name: Name of the module to check (e.g., "generate_module")
     
     Returns:
         Tuple[bool, str]: (file_exists, file_path)
         
     Note:
-        Assumes module structure: modules/{module_name}/requirements.txt
+        Only checks modules/{module_name}/requirements.txt since this is for Python modules
+        that run as subprocesses, not for services that run in Docker containers.
     """
     requirements_path = os.path.join("modules", module_name, "requirements.txt")
     return os.path.exists(requirements_path), requirements_path
@@ -430,7 +431,7 @@ async def initialize_environments() -> bool:
     
     try:
         # Initialize generate module dependencies
-        success = await asyncio.to_thread(install_module_dependencies, "generate")
+        success = await asyncio.to_thread(install_module_dependencies, "generate_module")
         
         # Add other modules here as needed
         # success &= await asyncio.to_thread(install_module_dependencies, "retrieval")
@@ -698,13 +699,13 @@ async def run_rag_pipeline(
         logging.info(f"Cache miss. Processing query: '{query[:50]}...' in collection: '{collection}'")
         
         # Ensure dependencies are installed
-        deps_ready = await asyncio.to_thread(install_module_dependencies, "generate")
+        deps_ready = await asyncio.to_thread(install_module_dependencies, "generate_module")
         if not deps_ready:
             error = DependencyError("Failed to install generate module dependencies")
             return create_error_response(error, query)
         
         # Set up paths and environment
-        generate_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules", "generate")
+        generate_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules", "generate_module")
         command = build_generate_command(query, collection, config, generate_dir)
         env = setup_subprocess_environment()
         

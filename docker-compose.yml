@@ -22,6 +22,8 @@ services:
       - PYTHONPATH=/app
       - RETRIEVER_SERVICE_URL=http://retriever-service:8000
       - RETRIEVER_SERVICE_URL_FOR_HOST=http://localhost:8001
+      - EMBEDDING_SERVICE_URL=http://embedding-service:8000
+      - EMBEDDING_SERVICE_URL_FOR_HOST=http://localhost:8002
       # - RETRIEVER_SERVICE_URL_FOR_DAGGER=http://host.docker.internal:8001 # No longer needed
       - ENABLE_STARTUP_WARMUP=false
     env_file:
@@ -30,6 +32,7 @@ services:
       # Removing Dagger engine dependency
       - qdrant
       - retriever-service
+      - embedding-service
     networks:
       - dagger-net
     healthcheck:
@@ -81,7 +84,7 @@ services:
 
   retriever-service:
     build:
-      context: ./modules/retriever_service
+      context: ./services/retriever_service
       args:
         EMBEDDING_MODEL_ARG: "sentence-transformers/all-MiniLM-L6-v2"
     ports:
@@ -89,6 +92,26 @@ services:
     environment:
       - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333
       - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+    networks:
+      - dagger-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  embedding-service:
+    build:
+      context: ./services/embedding_service
+    ports:
+      - "8002:8000"
+    environment:
+      - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333
+      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
     depends_on:
       - qdrant
     restart: unless-stopped

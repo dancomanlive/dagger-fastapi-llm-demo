@@ -1,4 +1,4 @@
-# modules/generate/main.py
+# modules/generate_module/main.py
 
 """
 Functional response generation module for RAG system.

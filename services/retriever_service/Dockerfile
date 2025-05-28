@@ -49,7 +49,7 @@ print(f'Build-time: Model {model_name} is fully tested and cached!'); \
 
 # Copy the service code
 COPY ./main.py .
-# Add other files from modules/retriever_service if any (e.g., .env if used differently)
+# Add other files from services/retriever_service if any (e.g., .env if used differently)
 
 # Expose the port the service runs on
 EXPOSE 8000
