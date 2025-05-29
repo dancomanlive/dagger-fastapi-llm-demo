@@ -1,6 +1,14 @@
 # FastAPI RAG Demo with Temporal Workflows
 
-A sophisticated Retrieval-Augmented Generation (RAG) system with interactive streaming chat interface and Temporal workflow orchestration, built with FastAPI, Gradio, Temporal, and Docker.
+A sophisticated **microservices-based** Retrieval-Augmented Generation (RAG) system with interactive streaming chat interface and Temporal workflow orchestration. Built with FastAPI, Gradio, Temporal, and Docker.
+
+## 🏗️ Architecture
+
+**10 containerized microservices** working together:
+- **5 Core Services**: FastAPI, Gradio Chat, Embedding, Retriever, Qdrant
+- **5 Temporal Services**: Server, Worker, API, Web UI, PostgreSQL  
+- **Full Docker orchestration** with inter-service communication
+- **Automated end-to-end testing** and validation
 
 ## Features
 
@@ -18,6 +26,8 @@ A sophisticated Retrieval-Augmented Generation (RAG) system with interactive str
 
 ### Option 1: Full System with Temporal (Recommended)
 
+**Starts all 10 microservices** including Temporal workflows:
+
 1. **Set your OpenAI API Key:**
    ```bash
    export OPENAI_API_KEY="your-api-key-here"
@@ -25,7 +35,7 @@ A sophisticated Retrieval-Augmented Generation (RAG) system with interactive str
 
 2. **Start all services including Temporal:**
    ```bash
-   ./launch_temporal.sh
+   ./e2e_test.sh
    ```
 
 3. **Access the interfaces:**
@@ -39,7 +49,34 @@ A sophisticated Retrieval-Augmented Generation (RAG) system with interactive str
    python test_temporal_workflow.py
    ```
 
+### Automated End-to-End Testing
+
+The project includes a comprehensive end-to-end test script:
+
+```bash
+./e2e_test.sh
+```
+
+**What it does:**
+- 🚀 Starts all 10 Docker services
+- ⚡ Performs health checks on all services
+- 📝 Tests document processing workflow via Temporal
+- 🔍 Validates document retrieval and search
+- ✅ Provides comprehensive system validation
+- 📊 Shows real-time status and progress
+
+**Services tested:**
+- Qdrant vector database
+- Embedding service (document vectorization)
+- Retriever service (semantic search)
+- Temporal server and worker
+- Temporal API (workflow management)
+- FastAPI main application
+- Gradio chat interface
+
 ### Option 2: Basic System (Without Temporal)
+
+**Starts core 5 services** for basic RAG functionality:
 
 1. **Set your OpenAI API Key:**
    ```bash
@@ -65,30 +102,40 @@ A sophisticated Retrieval-Augmented Generation (RAG) system with interactive str
 
 ```
 ├── main.py                 # FastAPI application with streaming endpoints
-├── gradio_app.py          # Gradio chat interface with streaming support
 ├── rag_pipeline.py         # RAG pipeline implementation
 ├── init_qdrant.py         # Vector database initialization
 ├── test_temporal_workflow.py # Temporal workflow testing script
-├── docker-compose.yml     # Service orchestration (9 services total)
+├── upload_documents.py    # Document upload utility script
+├── docker-compose.yml     # Service orchestration (10 services total)
 ├── Dockerfile             # FastAPI container configuration
-├── Dockerfile.gradio      # Gradio container configuration
 ├── requirements.txt       # Python dependencies
 ├── launch.sh              # Basic Docker service launcher
-├── launch_temporal.sh     # Full system launcher with Temporal
-├── run_chat.py            # Chat launcher reference
+├── e2e_test.sh            # End-to-end test script with full system validation
+├── run_chat.py            # Chat launcher reference/documentation
 ├── services/
+│   ├── gradio_service/    # Gradio chat interface service
+│   │   ├── main.py        # Gradio app with streaming support
+│   │   ├── Dockerfile     # Gradio container configuration
+│   │   ├── requirements.txt # Gradio-specific dependencies
+│   │   └── README.md      # Service documentation
 │   ├── retriever_service/ # Document retrieval service
+│   │   ├── main.py        # FastAPI retrieval service
+│   │   ├── Dockerfile     # Retriever container configuration
+│   │   └── requirements.txt # Retriever dependencies
 │   ├── embedding_service/ # Document embedding service
+│   │   ├── main.py        # FastAPI embedding service
+│   │   ├── Dockerfile     # Embedding container configuration
+│   │   └── requirements.txt # Embedding dependencies
 │   └── temporal_service/  # Temporal workflows and activities
 │       ├── workflows.py   # Document processing workflows
 │       ├── activities.py  # Workflow activities (chunking, embedding)
 │       ├── worker.py      # Temporal worker process
 │       ├── api.py         # HTTP API for workflow management
 │       └── Dockerfile     # Temporal service container
-└── modules/
-    └── generate_module/   # Generation pipeline module
-```
-│   └── generate/          # Text generation service
+├── modules/
+│   └── generate_module/   # Generation pipeline module
+│       ├── main.py        # Generation service
+│       └── requirements.txt # Generation dependencies
 └── ci/
     └── ci_pipeline.py     # CI/CD pipeline
 ```
@@ -147,21 +194,21 @@ curl http://localhost:8003/workflow/{workflow_id}/result
 
 ## Services Architecture
 
-The system consists of 9 Docker services communicating via internal Docker network:
+The system consists of 10 Docker services communicating via internal Docker network:
 
 ### Core Services
-- **🌐 Gradio Chat** (`gradio-chat`): Interactive streaming chat interface
+- **🌐 Gradio Chat** (`gradio-chat`): Interactive streaming chat interface (microservice)
 - **🚀 FastAPI** (`fastapi`): Main API server with streaming endpoints
-- **🔍 Retriever Service** (`retriever-service`): Document retrieval with embeddings
-- **🧠 Embedding Service** (`embedding-service`): Document vectorization and indexing
+- **🔍 Retriever Service** (`retriever-service`): Document retrieval with embeddings (microservice)
+- **🧠 Embedding Service** (`embedding-service`): Document vectorization and indexing (microservice)
 - **🗄️ Qdrant** (`qdrant`): Vector database for similarity search
 
-### Temporal Services
+### Temporal Services (5 containers)
 - **⏱️ Temporal Server** (`temporal`): Workflow engine and state management  
 - **🗃️ PostgreSQL** (`postgresql`): Temporal metadata storage
 - **📊 Temporal Web UI** (`temporal-ui`): Workflow monitoring dashboard
-- **🔄 Temporal Worker** (`temporal-worker`): Workflow execution engine
-- **🛠️ Temporal API** (`temporal-api`): HTTP interface for workflow management
+- **🔄 Temporal Worker** (`temporal-worker`): Workflow execution engine (microservice)
+- **🛠️ Temporal API** (`temporal-api`): HTTP interface for workflow management (microservice)
 
 ## Port Mapping
 
@@ -183,13 +230,15 @@ The system consists of 9 Docker services communicating via internal Docker netwo
 
 ## Container-Only Architecture
 
-This project is designed for **Docker-only operation**:
+This project is designed for **Docker-only operation** with **microservices architecture**:
 
 - ✅ All development and runtime happens in containers
 - ✅ Service-to-service communication via Docker network
 - ✅ No local Python environment required
 - ✅ Consistent deployment across environments
-- ⚠️ Only `init_qdrant.py` runs locally (for database initialization)
+- ✅ Each service has its own dedicated container and dependencies
+- ✅ Modular architecture for easy scaling and maintenance
+- ⚠️ Only `init_qdrant.py` and test scripts run locally (for database initialization and testing)
 
 ## API Endpoints
 
@@ -384,13 +433,41 @@ services:
 
 ## Contributing
 
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Make changes in Docker containers
-4. Test with: `docker-compose up --build`
-5. Commit changes: `git commit -m 'Add amazing feature'`
-6. Push to branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
+### Development Workflow
+
+1. **Fork the repository**
+2. **Create feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make changes in appropriate service directory**:
+   - Chat UI changes: `services/gradio_service/`
+   - Embedding/retrieval logic: `services/embedding_service/` or `services/retriever_service/`
+   - Workflow changes: `services/temporal_service/`
+   - Main API: Root directory files
+4. **Test with full system**: `./e2e_test.sh`
+5. **Test individual services**: `docker-compose up --build <service-name>`
+6. **Commit changes**: `git commit -m 'Add amazing feature'`
+7. **Push to branch**: `git push origin feature/amazing-feature`
+8. **Open a Pull Request**
+
+### Service-Specific Development
+
+**Gradio Chat Service** (`services/gradio_service/`):
+```bash
+# Test Gradio service only
+docker-compose up --build gradio-chat
+```
+
+**Embedding Service** (`services/embedding_service/`):
+```bash
+# Test embedding service
+docker-compose up --build embedding-service qdrant
+curl http://localhost:8002/health
+```
+
+**Temporal Services** (`services/temporal_service/`):
+```bash
+# Test temporal stack
+docker-compose up --build temporal temporal-worker temporal-api postgresql
+```
 
 ## License
 
@@ -398,9 +475,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Technology Stack
 
+### Core Technologies
 - **Backend**: FastAPI (async Python web framework)
 - **Frontend**: Gradio (interactive ML interfaces)
 - **Vector DB**: Qdrant (high-performance vector database)
 - **LLM**: OpenAI GPT models via streaming API
+- **Workflow Engine**: Temporal (fault-tolerant workflow orchestration)
 - **Containerization**: Docker & Docker Compose
-- **Architecture**: Microservices with Docker networking
+
+### Architecture
+- **Microservices**: Each service runs in its own container
+- **Service Mesh**: Docker network for inter-service communication
+- **Scalable Design**: Independent scaling of each service
+- **Fault Tolerance**: Temporal workflows for reliable document processing
+- **Stream Processing**: Real-time token streaming for chat responses
