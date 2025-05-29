@@ -86,24 +86,30 @@ all_healthy=true
 for service in "${services[@]}"; do
     url="${service%:*}"
     name="${service##*:}"
-    
+
     print_status "Checking $name at $url..."
-    
+
+    # Add a 20 second sleep before checking Embedding Service
+    if [ "$name" = "Embedding Service" ]; then
+        print_status "Waiting 20 seconds for Embedding Service to initialize..."
+        sleep 20
+    fi
+
     max_attempts=30
     attempt=1
-    
+
     while [ $attempt -le $max_attempts ]; do
         if curl -sf "$url" > /dev/null 2>&1; then
             print_success "$name is healthy!"
             break
         fi
-        
+
         if [ $attempt -eq $max_attempts ]; then
             print_warning "$name is not responding after $max_attempts attempts"
             all_healthy=false
             break
         fi
-        
+
         sleep 2
         ((attempt++))
     done
