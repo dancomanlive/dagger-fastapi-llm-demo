@@ -1,6 +1,6 @@
 # SmartÆgent X-7
 
-A sophisticated **microservices-based** Retrieval-Augmented Generation (RAG) system with interactive streaming chat interface and Temporal workflow orchestration. Built with FastAPI, Gradio, Temporal, and Docker.
+An advanced and composable **microservices-based** Retrieval-Augmented Generation (RAG) system with interactive streaming chat interface and Temporal workflow orchestration. Built with FastAPI, Gradio, Temporal, and Docker.
 
 ## 🏗️ Architecture
 
@@ -12,15 +12,15 @@ A sophisticated **microservices-based** Retrieval-Augmented Generation (RAG) sys
 
 ## Features
 
-- 🚀 **Streaming Responses**: Real-time token-by-token streaming from OpenAI
-- 💬 **Interactive Chat**: Modern Gradio chat interface with bubble UI
-- ⏱️ **Temporal Workflows**: Fault-tolerant document processing workflows
-- 🐳 **Full Docker Architecture**: Everything runs in containers, no local setup required
-- 🔍 **Advanced RAG**: Document retrieval with vector search using Qdrant
-- ⚙️ **Configurable**: Adjustable temperature, max tokens, and collection selection
-- 🔧 **Debug Tools**: Built-in service connectivity testing and cache monitoring
-- 📊 **Workflow Monitoring**: Temporal Web UI for workflow visualization
-- 🔄 **Document Processing**: Automated chunking and embedding pipeline
+- **Streaming Responses**: Real-time token-by-token streaming from OpenAI
+- **Interactive Chat**: Modern Gradio chat interface with bubble UI
+- **Temporal Workflows**: Fault-tolerant document processing workflows
+- **Full Docker Architecture**: Everything runs in containers, no local setup required
+- **Advanced RAG**: Document retrieval with vector search using Qdrant
+- **Configurable**: Adjustable temperature, max tokens, and collection selection
+- **Debug Tools**: Built-in service connectivity testing and cache monitoring
+- **Workflow Monitoring**: Temporal Web UI for workflow visualization
+- **Document Processing**: Automated chunking and embedding pipeline
 
 ## Quick Start
 
