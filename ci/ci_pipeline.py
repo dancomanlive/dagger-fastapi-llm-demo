@@ -29,7 +29,7 @@ async def main():
         )
 
         # Push to Docker Hub
-        image_name = f"docker.io/{dockerhub_username}/dagger-fastapi-demo:latest"
+        image_name = f"docker.io/{dockerhub_username}/smartagent-x7:latest"
         await container.publish(image_name)
         
         print(f"Image published: {image_name}")

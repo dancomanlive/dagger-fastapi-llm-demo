@@ -1,4 +1,4 @@
-# FastAPI RAG Demo with Temporal Workflows
+# SmartÆgent X-7
 
 A sophisticated **microservices-based** Retrieval-Augmented Generation (RAG) system with interactive streaming chat interface and Temporal workflow orchestration. Built with FastAPI, Gradio, Temporal, and Docker.
 

@@ -1,4 +1,8 @@
 version: '3.8'
+
+# SmartÆgent X-7 - Advanced AI-Powered Retrieval and Reasoning System
+name: smartagent-x7
+
 services:
   fastapi:
     build:
@@ -34,7 +38,7 @@ services:
       - retriever-service
       - embedding-service
     networks:
-      - dagger-net
+      - smartagent-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
       interval: 10s
@@ -59,7 +63,7 @@ services:
       - retriever-service
       - qdrant
     networks:
-      - dagger-net
+      - smartagent-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:7860/"]
       interval: 30s
@@ -95,7 +99,7 @@ services:
       - qdrant
     restart: unless-stopped
     networks:
-      - dagger-net
+      - smartagent-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
       interval: 10s
@@ -115,7 +119,7 @@ services:
       - qdrant
     restart: unless-stopped
     networks:
-      - dagger-net
+      - smartagent-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
       interval: 10s
@@ -130,7 +134,7 @@ services:
     volumes:
       - qdrant-data:/qdrant/storage
     networks:
-      - dagger-net
+      - smartagent-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:6333/healthz"]
       interval: 10s
@@ -152,7 +156,7 @@ services:
     depends_on:
       - postgresql
     networks:
-      - dagger-net
+      - smartagent-net
 
   # PostgreSQL for Temporal
   postgresql:
@@ -166,7 +170,7 @@ services:
     volumes:
       - postgresql-data:/var/lib/postgresql/data
     networks:
-      - dagger-net
+      - smartagent-net
 
   # Temporal Web UI
   temporal-ui:
@@ -179,7 +183,7 @@ services:
     depends_on:
       - temporal
     networks:
-      - dagger-net
+      - smartagent-net
 
   # Temporal Worker Service
   temporal-worker:
@@ -194,7 +198,7 @@ services:
       - temporal
       - embedding-service
     networks:
-      - dagger-net
+      - smartagent-net
     restart: unless-stopped
 
   # Temporal API Service
@@ -212,7 +216,7 @@ services:
       - temporal
       - embedding-service
     networks:
-      - dagger-net
+      - smartagent-net
     restart: unless-stopped
     command: ["python", "api.py"]
     healthcheck:
@@ -228,5 +232,5 @@ volumes:
   postgresql-data:
 
 networks:
-  dagger-net:
+  smartagent-net:
     driver: bridge
