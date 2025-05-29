@@ -257,6 +257,101 @@ async def stream_rag_response(request: RagRequest):
     )
 
 
+# Temporal workflow integration endpoints
+@app.post("/workflow/process-documents")
+async def trigger_document_processing_workflow(request: dict):
+    """
+    Trigger a Temporal workflow for document processing.
+    
+    Args:
+        request: Request body containing documents list
+        
+    Returns:
+        Workflow ID and status
+    """
+    try:
+        import httpx
+        
+        documents = request.get("documents", [])
+        if not documents:
+            raise HTTPException(status_code=400, detail="No documents provided")
+        
+        # Forward request to Temporal API service
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            temporal_api_url = "http://temporal-api:8000"  # Internal service URL
+            
+            response = await client.post(
+                f"{temporal_api_url}/process-documents",
+                json={"documents": documents}
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                logger.info(f"Started Temporal workflow: {result}")
+                return result
+            else:
+                logger.error(f"Temporal API error: {response.status_code} - {response.text}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Temporal API error: {response.text}"
+                )
+                
+    except ImportError:
+        logger.warning("httpx not available - Temporal integration disabled")
+        raise HTTPException(
+            status_code=503,
+            detail="Temporal integration not available - missing dependencies"
+        )
+    except Exception as e:
+        logger.error(f"Error triggering workflow: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to trigger workflow: {str(e)}"
+        )
+
+
+@app.get("/workflow/{workflow_id}/status")
+async def get_workflow_status(workflow_id: str):
+    """
+    Get the status of a Temporal workflow.
+    
+    Args:
+        workflow_id: ID of the workflow to check
+        
+    Returns:
+        Workflow status information
+    """
+    try:
+        import httpx
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            temporal_api_url = "http://temporal-api:8000"
+            
+            response = await client.get(
+                f"{temporal_api_url}/workflow/{workflow_id}/status"
+            )
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Temporal API error: {response.text}"
+                )
+                
+    except ImportError:
+        raise HTTPException(
+            status_code=503,
+            detail="Temporal integration not available - missing dependencies"
+        )
+    except Exception as e:
+        logger.error(f"Error checking workflow status: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to check workflow status: {str(e)}"
+        )
+
+
 # Development/debugging endpoints
 @app.get("/debug/cache")
 async def get_cache_status():

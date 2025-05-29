@@ -18,7 +18,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY gradio_app.py .
+COPY main.py .
+COPY requirements.txt .
 COPY .env* ./
 
 # Set environment variables
@@ -33,4 +34,4 @@ ENV RETRIEVER_SERVICE_URL=http://retriever-service:8000
 EXPOSE 7860
 
 # Run the Gradio app
-CMD ["python", "gradio_app.py"]
+CMD ["python", "main.py"]

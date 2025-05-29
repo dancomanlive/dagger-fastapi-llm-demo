@@ -1,24 +1,52 @@
-# FastAPI RAG Demo with Streaming Chat
+# FastAPI RAG Demo with Temporal Workflows
 
-A sophisticated Retrieval-Augmented Generation (RAG) system with interactive streaming chat interface, built with FastAPI, Gradio, and Docker.
+A sophisticated Retrieval-Augmented Generation (RAG) system with interactive streaming chat interface and Temporal workflow orchestration, built with FastAPI, Gradio, Temporal, and Docker.
 
 ## Features
 
 - 🚀 **Streaming Responses**: Real-time token-by-token streaming from OpenAI
 - 💬 **Interactive Chat**: Modern Gradio chat interface with bubble UI
+- ⏱️ **Temporal Workflows**: Fault-tolerant document processing workflows
 - 🐳 **Full Docker Architecture**: Everything runs in containers, no local setup required
 - 🔍 **Advanced RAG**: Document retrieval with vector search using Qdrant
 - ⚙️ **Configurable**: Adjustable temperature, max tokens, and collection selection
 - 🔧 **Debug Tools**: Built-in service connectivity testing and cache monitoring
+- 📊 **Workflow Monitoring**: Temporal Web UI for workflow visualization
+- 🔄 **Document Processing**: Automated chunking and embedding pipeline
 
 ## Quick Start
+
+### Option 1: Full System with Temporal (Recommended)
 
 1. **Set your OpenAI API Key:**
    ```bash
    export OPENAI_API_KEY="your-api-key-here"
    ```
 
-2. **Start all services:**
+2. **Start all services including Temporal:**
+   ```bash
+   ./launch_temporal.sh
+   ```
+
+3. **Access the interfaces:**
+   - **Temporal Web UI**: http://localhost:8081 (Workflow monitoring)
+   - **Chat Interface**: http://localhost:7860 (Gradio streaming chat)
+   - **API Documentation**: http://localhost:8000/docs (FastAPI docs)
+   - **Temporal API**: http://localhost:8003 (Workflow management)
+
+4. **Test the document processing workflow:**
+   ```bash
+   python test_temporal_workflow.py
+   ```
+
+### Option 2: Basic System (Without Temporal)
+
+1. **Set your OpenAI API Key:**
+   ```bash
+   export OPENAI_API_KEY="your-api-key-here"
+   ```
+
+2. **Start basic services:**
    ```bash
    docker-compose up --build
    ```
@@ -40,38 +68,118 @@ A sophisticated Retrieval-Augmented Generation (RAG) system with interactive str
 ├── gradio_app.py          # Gradio chat interface with streaming support
 ├── rag_pipeline.py         # RAG pipeline implementation
 ├── init_qdrant.py         # Vector database initialization
-├── docker-compose.yml     # Service orchestration (4 services)
+├── test_temporal_workflow.py # Temporal workflow testing script
+├── docker-compose.yml     # Service orchestration (9 services total)
 ├── Dockerfile             # FastAPI container configuration
 ├── Dockerfile.gradio      # Gradio container configuration
 ├── requirements.txt       # Python dependencies
-├── launch.sh              # Docker service launcher
+├── launch.sh              # Basic Docker service launcher
+├── launch_temporal.sh     # Full system launcher with Temporal
 ├── run_chat.py            # Chat launcher reference
-├── modules/
+├── services/
 │   ├── retriever_service/ # Document retrieval service
+│   ├── embedding_service/ # Document embedding service
+│   └── temporal_service/  # Temporal workflows and activities
+│       ├── workflows.py   # Document processing workflows
+│       ├── activities.py  # Workflow activities (chunking, embedding)
+│       ├── worker.py      # Temporal worker process
+│       ├── api.py         # HTTP API for workflow management
+│       └── Dockerfile     # Temporal service container
+└── modules/
+    └── generate_module/   # Generation pipeline module
+```
 │   └── generate/          # Text generation service
 └── ci/
     └── ci_pipeline.py     # CI/CD pipeline
 ```
 
+## Temporal Workflows
+
+The system includes fault-tolerant document processing workflows powered by Temporal:
+
+### Document Processing Workflow
+
+**Workflow**: `DocumentProcessingWorkflow`
+- **Step 1**: Document chunking into paragraphs
+- **Step 2**: Embedding generation and vector storage via embedding service
+- **Features**: Automatic retries, progress monitoring, failure handling
+
+### Workflow Activities
+
+1. **`chunk_documents_activity`**:
+   - Splits documents into meaningful paragraphs
+   - Filters out very short content
+   - Adds metadata for tracking
+
+2. **`embed_documents_activity`**:
+   - Sends chunks to embedding service
+   - Stores vectors in Qdrant
+   - Handles large batches with timeouts
+
+### Usage Example
+
+```bash
+# Start a document processing workflow
+curl -X POST http://localhost:8003/process-documents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "documents": [
+      {
+        "id": "doc1",
+        "text": "Your document text here...",
+        "metadata": {"source": "upload"}
+      }
+    ]
+  }'
+
+# Check workflow status
+curl http://localhost:8003/workflow/{workflow_id}/status
+
+# Get workflow result
+curl http://localhost:8003/workflow/{workflow_id}/result
+```
+
+### Monitoring
+
+- **Temporal Web UI**: http://localhost:8081
+- **Workflow Management API**: http://localhost:8003
+- **Worker Health**: Automatic health checks and restarts
+
 ## Services Architecture
 
-The system consists of 4 Docker services communicating via internal Docker network:
+The system consists of 9 Docker services communicating via internal Docker network:
 
+### Core Services
 - **🌐 Gradio Chat** (`gradio-chat`): Interactive streaming chat interface
-  - Port: 7860
-  - Features: Real-time streaming, chat history, advanced settings
-  
-- **🚀 FastAPI App** (`fastapi`): Main RAG API with streaming endpoints
-  - Port: 8000
-  - Endpoints: `/rag`, `/rag/stream`, `/health`, `/docs`
-  
-- **🔍 Retriever Service** (`retriever-service`): Document search microservice
-  - Port: 8001
-  - Function: Vector similarity search and document retrieval
-  
-- **💾 Qdrant Vector DB** (`qdrant`): Vector database for document embeddings
-  - Port: 6333
-  - Storage: Persistent vector embeddings
+- **🚀 FastAPI** (`fastapi`): Main API server with streaming endpoints
+- **🔍 Retriever Service** (`retriever-service`): Document retrieval with embeddings
+- **🧠 Embedding Service** (`embedding-service`): Document vectorization and indexing
+- **🗄️ Qdrant** (`qdrant`): Vector database for similarity search
+
+### Temporal Services
+- **⏱️ Temporal Server** (`temporal`): Workflow engine and state management  
+- **🗃️ PostgreSQL** (`postgresql`): Temporal metadata storage
+- **📊 Temporal Web UI** (`temporal-ui`): Workflow monitoring dashboard
+- **🔄 Temporal Worker** (`temporal-worker`): Workflow execution engine
+- **🛠️ Temporal API** (`temporal-api`): HTTP interface for workflow management
+
+## Port Mapping
+
+### Web Interfaces
+- **🌐 Gradio Chat**: http://localhost:7860 - Interactive chat interface
+- **📊 Temporal Web UI**: http://localhost:8081 - Workflow monitoring
+- **� FastAPI Docs**: http://localhost:8000/docs - API documentation
+
+### API Services  
+- **🚀 FastAPI**: http://localhost:8000 - Main RAG API
+- **🔍 Retriever**: http://localhost:8001 - Document retrieval
+- **🧠 Embedding**: http://localhost:8002 - Document embedding
+- **🛠️ Temporal API**: http://localhost:8003 - Workflow management
+- **�️ Qdrant**: http://localhost:6333 - Vector database
+
+### Infrastructure
+- **⏱️ Temporal**: localhost:7233 - Workflow engine (internal)
+- **🗃️ PostgreSQL**: localhost:5432 - Database (internal)
 
 ## Container-Only Architecture
 

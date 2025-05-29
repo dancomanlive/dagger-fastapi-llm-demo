@@ -43,8 +43,7 @@ services:
 
   gradio-chat:
     build:
-      context: .
-      dockerfile: Dockerfile.gradio
+      context: ./services/gradio_service
     ports:
       - "7860:7860"
     environment:
@@ -138,9 +137,95 @@ services:
       timeout: 5s
       retries: 3
 
+  # Temporal Server
+  temporal:
+    image: temporalio/auto-setup:1.24
+    ports:
+      - "7233:7233"
+      - "8080:8080"  # Temporal Web UI
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=postgresql
+    depends_on:
+      - postgresql
+    networks:
+      - dagger-net
+
+  # PostgreSQL for Temporal
+  postgresql:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=temporal
+      - POSTGRES_PASSWORD=temporal
+      - POSTGRES_DB=temporal
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    networks:
+      - dagger-net
+
+  # Temporal Web UI
+  temporal-ui:
+    image: temporalio/ui:2.28.0
+    ports:
+      - "8081:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:8081
+    depends_on:
+      - temporal
+    networks:
+      - dagger-net
+
+  # Temporal Worker Service
+  temporal-worker:
+    build:
+      context: ./services/temporal_service
+    environment:
+      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      - TEMPORAL_TASK_QUEUE=document-processing-queue
+      - EMBEDDING_SERVICE_URL=http://embedding-service:8000
+    depends_on:
+      - temporal
+      - embedding-service
+    networks:
+      - dagger-net
+    restart: unless-stopped
+
+  # Temporal API Service
+  temporal-api:
+    build:
+      context: ./services/temporal_service
+    ports:
+      - "8003:8000"
+    environment:
+      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      - TEMPORAL_TASK_QUEUE=document-processing-queue
+      - EMBEDDING_SERVICE_URL=http://embedding-service:8000
+    depends_on:
+      - temporal
+      - embedding-service
+    networks:
+      - dagger-net
+    restart: unless-stopped
+    command: ["python", "api.py"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   # dagger-socket: # Commented out as no longer needed
   qdrant-data:
+  temporal-data:
+  postgresql-data:
 
 networks:
   dagger-net:

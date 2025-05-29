@@ -1,0 +1,32 @@
+# Dynamic configuration for Temporal development with SQL database
+# This file contains runtime configuration that can be updated without restarting the server
+
+# History settings
+history.maxAutoResetPoints:
+  - value: 20
+    constraints: {}
+
+# Retention settings  
+system.forceSearchAttributesCacheRefreshOnRead:
+  - value: true
+    constraints: {}
+
+# Workflow execution settings
+limit.maxIDLength:
+  - value: 1000
+    constraints: {}
+
+# Search attributes
+system.enableNewWorkflowExecutions:
+  - value: true
+    constraints: {}
+
+# Frontend settings
+frontend.enableUpdateWorkflowExecution:
+  - value: true
+    constraints: {}
+
+# Worker settings
+worker.buildIdScavengerEnabled:
+  - value: true
+    constraints: {}

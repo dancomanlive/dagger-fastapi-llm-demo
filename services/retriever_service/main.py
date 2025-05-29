@@ -171,12 +171,14 @@ async def retrieve_endpoint(request: RetrieveRequest):
 
     try:
         # qdrant-client with fastembed handles embedding the query_text
+        # For collections created with fastembed, we need to specify the vector name
         search_results = qdrant_client.query_points(
             collection_name=request.collection,
             query=qdrant_models.Document(
                 text=request.query,
                 model=EMBEDDING_MODEL_NAME # Instructs fastembed to use this model
             ),
+            using="fast-bge-small-en",  # Specify the vector name for fastembed collections
             limit=request.top_k,
             with_payload=True
         )
