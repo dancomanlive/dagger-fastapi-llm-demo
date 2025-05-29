@@ -90,7 +90,7 @@ The project includes a comprehensive end-to-end test script:
 
 3. **Initialize the vector database:**
    ```bash
-   python init_qdrant.py
+   python upload_documents.py
    ```
 
 4. **Access the interfaces:**
@@ -103,7 +103,6 @@ The project includes a comprehensive end-to-end test script:
 ```
 ├── main.py                 # FastAPI application with streaming endpoints
 ├── rag_pipeline.py         # RAG pipeline implementation
-├── init_qdrant.py         # Vector database initialization
 ├── test_temporal_workflow.py # Temporal workflow testing script
 ├── upload_documents.py    # Document upload utility script
 ├── docker-compose.yml     # Service orchestration (10 services total)
@@ -163,29 +162,6 @@ The system includes fault-tolerant document processing workflows powered by Temp
    - Stores vectors in Qdrant
    - Handles large batches with timeouts
 
-### Usage Example
-
-```bash
-# Start a document processing workflow
-curl -X POST http://localhost:8003/process-documents \
-  -H "Content-Type: application/json" \
-  -d '{
-    "documents": [
-      {
-        "id": "doc1",
-        "text": "Your document text here...",
-        "metadata": {"source": "upload"}
-      }
-    ]
-  }'
-
-# Check workflow status
-curl http://localhost:8003/workflow/{workflow_id}/status
-
-# Get workflow result
-curl http://localhost:8003/workflow/{workflow_id}/result
-```
-
 ### Monitoring
 
 - **Temporal Web UI**: http://localhost:8081
@@ -238,7 +214,7 @@ This project is designed for **Docker-only operation** with **microservices arch
 - ✅ Consistent deployment across environments
 - ✅ Each service has its own dedicated container and dependencies
 - ✅ Modular architecture for easy scaling and maintenance
-- ⚠️ Only `init_qdrant.py` and test scripts run locally (for database initialization and testing)
+- ⚠️ Only `upload_documents.py` and test scripts run locally (for database initialization and testing)
 
 ## API Endpoints
 
@@ -279,28 +255,6 @@ That's it! The system is designed to be simple and straightforward to use.
 5. Adjust settings (temperature, max tokens) as needed
 6. Use debug panel to test service connectivity
 
-### API Usage
-```bash
-# Standard RAG query
-curl -X POST http://localhost:8000/rag \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "What is machine learning?",
-    "collection": "default",
-    "max_tokens": 500,
-    "temperature": 0.7
-  }'
-
-# Streaming query (Server-Sent Events)
-curl -X POST http://localhost:8000/rag/stream \
-  -H "Content-Type: application/json" \
-  -H "Accept: text/event-stream" \
-  -d '{
-    "query": "Explain neural networks",
-    "collection": "default"
-  }'
-```
-
 ## Development Workflow
 
 ### Building and Running
@@ -332,7 +286,7 @@ export FASTAPI_URL="http://fastapi:8000"
 ### Adding New Collections
 ```bash
 # Initialize with custom data
-python init_qdrant.py --collection my-docs --data-path ./my-data/
+python upload_documents.py --collection my-docs --data-path ./my-data/
 ```
 
 ## Configuration
@@ -390,7 +344,7 @@ docker-compose exec retriever-service ping qdrant
 **Vector database empty:**
 ```bash
 # Re-initialize Qdrant
-python init_qdrant.py
+python upload_documents.py
 
 # Check collection status
 curl http://localhost:6333/collections

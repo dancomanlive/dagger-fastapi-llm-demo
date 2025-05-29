@@ -15,6 +15,9 @@ venv/
 .dagger*/
 dagger-work/
 
+# Temporary files
+.tmp/
+
 # IDE folders
 .idea/
 .vscode/
