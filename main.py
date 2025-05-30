@@ -12,6 +12,7 @@ Provides endpoints for:
 import asyncio
 import json
 import logging
+import os
 import time
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -19,8 +20,12 @@ from typing import AsyncGenerator
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
+from dotenv import load_dotenv
 
 from rag_pipeline import run_rag_pipeline, initialize_environments
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -28,6 +33,10 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Debug: Check if OpenAI API key is available at startup
+openai_key_available = bool(os.getenv("OPENAI_API_KEY"))
+logger.info(f"Main application startup - OpenAI API key {'FOUND' if openai_key_available else 'NOT FOUND'}")
 
 # Request models
 class RagRequest(BaseModel):
