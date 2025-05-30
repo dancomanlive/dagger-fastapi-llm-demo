@@ -547,10 +547,12 @@ async def execute_generate_subprocess_async(
         )
         
         if process.returncode != 0:
-            error_msg = stderr.decode().strip() or "Process failed with no error message"
+            error_msg = (stderr.decode() if isinstance(stderr, bytes) else stderr).strip() or "Process failed with no error message"
             raise subprocess.CalledProcessError(process.returncode, command, stderr=error_msg)
         
-        return True, stdout.decode().strip(), stderr.decode().strip()
+        stdout_str = stdout.decode() if isinstance(stdout, bytes) else stdout
+        stderr_str = stderr.decode() if isinstance(stderr, bytes) else stderr
+        return True, stdout_str.strip(), stderr_str.strip()
         
     except asyncio.TimeoutError:
         try:
@@ -561,7 +563,16 @@ async def execute_generate_subprocess_async(
         return False, "", f"Process timed out after {config.timeout_seconds}s"
     except subprocess.CalledProcessError as e:
         error_msg = f"Process failed with exit code {e.returncode}"
-        return False, e.stdout.decode() if e.stdout else "", f"{error_msg}\n{e.stderr.decode() if e.stderr else ''}"
+        stdout_str = ""
+        stderr_str = ""
+        
+        if e.stdout:
+            stdout_str = e.stdout.decode() if isinstance(e.stdout, bytes) else e.stdout
+        
+        if e.stderr:
+            stderr_str = e.stderr.decode() if isinstance(e.stderr, bytes) else e.stderr
+            
+        return False, stdout_str, f"{error_msg}\n{stderr_str}"
     except Exception as e:
         return False, "", f"Unexpected error: {str(e)}"
 
