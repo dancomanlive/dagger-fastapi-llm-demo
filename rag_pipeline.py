@@ -68,10 +68,10 @@ def load_config_from_env() -> RAGConfig:
         RAG_MAX_QUERY_LENGTH: Maximum query length in characters (default: 1000)
     """
     return RAGConfig(
-        top_k=int(os.getenv("RAG_TOP_K", "5")),
-        timeout_seconds=int(os.getenv("RAG_TIMEOUT_SECONDS", "120")),
-        cache_ttl_seconds=int(os.getenv("RAG_CACHE_TTL_SECONDS", "3600")),
-        max_query_length=int(os.getenv("RAG_MAX_QUERY_LENGTH", "1000"))
+        top_k=int(os.environ.get("RAG_TOP_K", "5")),
+        timeout_seconds=int(os.environ.get("RAG_TIMEOUT_SECONDS", "120")),
+        cache_ttl_seconds=int(os.environ.get("RAG_CACHE_TTL_SECONDS", "3600")),
+        max_query_length=int(os.environ.get("RAG_MAX_QUERY_LENGTH", "1000"))
     )
 
 def get_cache() -> Dict[str, tuple]:
@@ -488,11 +488,11 @@ def setup_subprocess_environment() -> dict:
     env["PYTHONUNBUFFERED"] = "1"
     
     # Set retriever service URL
-    retriever_url = os.getenv("RETRIEVER_SERVICE_URL", "http://retriever-service:8000")
+    retriever_url = os.environ.get("RETRIEVER_SERVICE_URL", "http://retriever-service:8000")
     env["RETRIEVER_SERVICE_URL"] = retriever_url
     
     # Add OpenAI API key
-    openai_key = os.getenv("OPENAI_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
     logger.info(f"OpenAI API key {'found' if openai_key else 'NOT FOUND'} in environment")
     if openai_key:
         env["OPENAI_API_KEY"] = openai_key

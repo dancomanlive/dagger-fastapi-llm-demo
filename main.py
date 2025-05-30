@@ -35,7 +35,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Debug: Check if OpenAI API key is available at startup
-openai_key_available = bool(os.getenv("OPENAI_API_KEY"))
+openai_key_available = bool(os.environ.get("OPENAI_API_KEY"))
 logger.info(f"Main application startup - OpenAI API key {'FOUND' if openai_key_available else 'NOT FOUND'}")
 
 # Request models

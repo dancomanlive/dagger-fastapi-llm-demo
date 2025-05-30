@@ -25,14 +25,14 @@ load_dotenv()
 
 def get_openai_client():
     """Get OpenAI client with API key from environment"""
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise ValueError("OPENAI_API_KEY environment variable is not set")
     return openai.OpenAI(api_key=api_key)
 
 # Configuration - Docker service URLs
-FASTAPI_BASE_URL = os.getenv("FASTAPI_SERVICE_URL", "http://fastapi:8000")
-RETRIEVER_SERVICE_URL = os.getenv("RETRIEVER_SERVICE_URL", "http://retriever-service:8000")
+FASTAPI_BASE_URL = os.environ.get("FASTAPI_SERVICE_URL", "http://fastapi:8000")
+RETRIEVER_SERVICE_URL = os.environ.get("RETRIEVER_SERVICE_URL", "http://retriever-service:8000")
 DEFAULT_COLLECTION = "default"
 AVAILABLE_COLLECTIONS = ["default", "documents", "research", "manuals"]
 
@@ -183,7 +183,7 @@ def test_services() -> dict:
     
     # Test OpenAI
     try:
-        if os.getenv("OPENAI_API_KEY"):
+        if os.environ.get("OPENAI_API_KEY"):
             services["OpenAI"] = "✅ API Key Set"
         else:
             services["OpenAI"] = "❌ No API Key"

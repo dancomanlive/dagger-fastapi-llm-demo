@@ -32,13 +32,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration constants
-RETRIEVER_SERVICE_URL = os.getenv("RETRIEVER_SERVICE_URL", "http://host.docker.internal:8001")
+RETRIEVER_SERVICE_URL = os.environ.get("RETRIEVER_SERVICE_URL", "http://host.docker.internal:8001")
 REQUEST_TIMEOUT = 30
 MAX_CONTEXTS = 3
 
 def get_openai_api_key():
     """Get OpenAI API key at runtime"""
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.environ.get("OPENAI_API_KEY")
     logger.info(f"OpenAI API key {'found' if api_key else 'NOT FOUND'} in generate module environment")
     return api_key
 
