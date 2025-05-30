@@ -23,8 +23,12 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Initialize OpenAI client
-openai_client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+def get_openai_client():
+    """Get OpenAI client with API key from environment"""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is not set")
+    return openai.OpenAI(api_key=api_key)
 
 # Configuration - Docker service URLs
 FASTAPI_BASE_URL = os.getenv("FASTAPI_SERVICE_URL", "http://fastapi:8000")
@@ -110,6 +114,7 @@ Instructions:
         messages.append({"role": "user", "content": query})
         
         # Create streaming response
+        openai_client = get_openai_client()
         stream = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",  # Use gpt-4 if available
             messages=messages,

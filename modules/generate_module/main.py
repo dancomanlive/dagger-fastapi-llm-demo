@@ -33,9 +33,12 @@ logger = logging.getLogger(__name__)
 
 # Configuration constants
 RETRIEVER_SERVICE_URL = os.getenv("RETRIEVER_SERVICE_URL", "http://host.docker.internal:8001")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 REQUEST_TIMEOUT = 30
 MAX_CONTEXTS = 3
+
+def get_openai_api_key():
+    """Get OpenAI API key at runtime"""
+    return os.getenv("OPENAI_API_KEY")
 
 
 # Pure functions for data transformation
@@ -121,7 +124,8 @@ def validate_config() -> Tuple[bool, Optional[str]]:
     Returns:
         Tuple of (is_valid, error_message)
     """
-    if not OPENAI_API_KEY:
+    openai_api_key = get_openai_api_key()
+    if not openai_api_key:
         return False, "OPENAI_API_KEY environment variable is not set"
     
     if not RETRIEVER_SERVICE_URL:
@@ -238,7 +242,8 @@ async def generate_response_from_contexts(query: str, contexts: List[Dict]) -> s
     messages = create_chat_messages(query, context_text)
     
     # Make API call
-    client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+    openai_api_key = get_openai_api_key()
+    client = AsyncOpenAI(api_key=openai_api_key)
     response = await call_openai_api(client, messages)
     
     logger.info(f"Response generated successfully for query: {query}")
