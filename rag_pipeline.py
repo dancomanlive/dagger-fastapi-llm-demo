@@ -493,8 +493,12 @@ def setup_subprocess_environment() -> dict:
     
     # Add OpenAI API key
     openai_key = os.getenv("OPENAI_API_KEY")
+    logger.info(f"OpenAI API key {'found' if openai_key else 'NOT FOUND'} in environment")
     if openai_key:
         env["OPENAI_API_KEY"] = openai_key
+        logger.info("OpenAI API key added to subprocess environment")
+    else:
+        logger.warning("OpenAI API key not available - subprocess may fail")
     
     # Add execution timestamp for debugging
     env["EXECUTION_ID"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")

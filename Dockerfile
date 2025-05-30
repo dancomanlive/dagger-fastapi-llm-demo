@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+# Declare build arguments for environment variables
+ARG OPENAI_API_KEY
+
 # Set work directory
 WORKDIR /app
 
@@ -35,6 +38,7 @@ COPY . .
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV DOCKER_HOST=unix:///var/run/docker.sock
+ENV OPENAI_API_KEY=${OPENAI_API_KEY}
 
 # Expose port for FastAPI
 EXPOSE 8000

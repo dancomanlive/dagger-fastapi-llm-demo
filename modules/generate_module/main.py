@@ -38,7 +38,9 @@ MAX_CONTEXTS = 3
 
 def get_openai_api_key():
     """Get OpenAI API key at runtime"""
-    return os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY")
+    logger.info(f"OpenAI API key {'found' if api_key else 'NOT FOUND'} in generate module environment")
+    return api_key
 
 
 # Pure functions for data transformation
