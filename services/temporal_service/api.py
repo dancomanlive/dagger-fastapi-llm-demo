@@ -10,16 +10,8 @@ from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from temporalio.client import Client
-from dotenv import load_dotenv
 
 from workflows import DocumentProcessingWorkflow
-
-# Load environment variables (optional in production)
-try:
-    load_dotenv()
-except Exception:
-    # In production (like Koyeb), .env files might not exist
-    pass
 
 # Configure logging
 logging.basicConfig(

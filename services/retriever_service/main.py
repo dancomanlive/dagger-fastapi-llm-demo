@@ -16,14 +16,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from qdrant_client import QdrantClient, models as qdrant_models
-from dotenv import load_dotenv
-
-# Load environment variables (optional in production)
-try:
-    load_dotenv()
-except Exception:
-    # In production (like Koyeb), .env files might not exist
-    pass
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

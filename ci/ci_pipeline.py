@@ -1,15 +1,8 @@
 import sys
 import dagger
 import os
-from dotenv import load_dotenv
 
 async def main():
-    # Load environment variables (optional in production)
-    try:
-        load_dotenv()
-    except Exception:
-        # In production (like Koyeb), .env files might not exist
-        pass
     
     # Get Docker Hub credentials from environment
     dockerhub_username = os.environ.get('DOCKERHUB_USERNAME')

@@ -17,15 +17,7 @@ import asyncio
 from typing import List, Dict, Tuple, Optional
 
 import requests
-from dotenv import load_dotenv
 from openai import AsyncOpenAI
-
-# Load environment variables (optional in production)
-try:
-    load_dotenv()
-except Exception:
-    # In production (like Koyeb), .env files might not exist
-    pass
 
 # Configure logging
 logging.basicConfig(

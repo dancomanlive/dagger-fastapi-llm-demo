@@ -20,16 +20,8 @@ from typing import AsyncGenerator
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
 
 from rag_pipeline import run_rag_pipeline, initialize_environments
-
-# Load environment variables (optional in production)
-try:
-    load_dotenv()
-except Exception:
-    # In production (like Koyeb), .env files might not exist
-    pass
 
 # Configure logging
 logging.basicConfig(
