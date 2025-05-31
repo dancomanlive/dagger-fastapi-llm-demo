@@ -22,11 +22,11 @@ logger = logging.getLogger(__name__)
 
 # --- Configuration (from Environment Variables, Dagger will set these) ---
 QDRANT_HOST = os.getenv("QDRANT_HOST_FOR_SERVICE", "http://localhost:6333")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") # Will be passed as Dagger secret
+QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY") # Will be passed as Dagger secret
 # Model for fastembed (via qdrant-client)
-EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+EMBEDDING_MODEL_NAME = os.environ.get("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 # This is the field in Qdrant payload assumed to hold the main text content.
-PAYLOAD_TEXT_FIELD_NAME = os.getenv("PAYLOAD_TEXT_FIELD_NAME", "document")
+PAYLOAD_TEXT_FIELD_NAME = os.environ.get("PAYLOAD_TEXT_FIELD_NAME", "document")
 
 
 # --- Global Variables (Qdrant client initialized once on startup) ---
