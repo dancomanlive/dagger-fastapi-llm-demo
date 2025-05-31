@@ -1,3 +1,4 @@
 FROM koyeb/docker-compose
 
 COPY . /app
+RUN touch /app/.env

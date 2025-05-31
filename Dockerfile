@@ -35,6 +35,9 @@ RUN pip install --no-cache-dir -r modules_generate_requirements.txt
 # Copy your FastAPI app
 COPY . .
 
+# Create an empty .env file
+RUN touch .env
+
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV DOCKER_HOST=unix:///var/run/docker.sock
