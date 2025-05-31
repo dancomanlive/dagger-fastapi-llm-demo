@@ -18,8 +18,12 @@ from dotenv import load_dotenv
 # Debug print to confirm script execution
 print("[DEBUG] rag_pipeline.py script started")
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (optional in production)
+try:
+    load_dotenv()
+except Exception:
+    # In production (like Koyeb), .env files might not exist
+    pass
 
 # Configure logging
 logging.basicConfig(
