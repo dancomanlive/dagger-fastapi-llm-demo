@@ -6,10 +6,10 @@ name: smartagent-x7
 services:
   fastapi:
     build:
-      context: .
+      context: ./services/fastapi_service
       dockerfile: Dockerfile
     volumes:
-      - .:/app
+      - ./services/fastapi_service:/app
       # Commenting out Dagger-related volumes
       # - dagger-socket:/run/dagger
       - /var/run/docker.sock:/var/run/docker.sock
@@ -56,6 +56,7 @@ services:
       - RETRIEVER_SERVICE_URL=http://retriever-service:8000
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
+      - DOCUMENT_COLLECTION_NAME=${DOCUMENT_COLLECTION_NAME:-document_chunks}
     env_file:
       - .env
     depends_on:
@@ -194,6 +195,7 @@ services:
       - TEMPORAL_NAMESPACE=default
       - TEMPORAL_TASK_QUEUE=document-processing-queue
       - EMBEDDING_SERVICE_URL=http://embedding-service:8000
+      - DOCUMENT_COLLECTION_NAME=${DOCUMENT_COLLECTION_NAME:-document_chunks}
     depends_on:
       - temporal
       - embedding-service
@@ -212,6 +214,7 @@ services:
       - TEMPORAL_NAMESPACE=default
       - TEMPORAL_TASK_QUEUE=document-processing-queue
       - EMBEDDING_SERVICE_URL=http://embedding-service:8000
+      - DOCUMENT_COLLECTION_NAME=${DOCUMENT_COLLECTION_NAME:-document_chunks}
     depends_on:
       - temporal
       - embedding-service

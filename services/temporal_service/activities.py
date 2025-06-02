@@ -3,11 +3,15 @@ Temporal activities for document processing pipeline.
 """
 
 import logging
+import os
 import re
 import httpx
 import uuid
 from typing import List, Dict, Any
 from temporalio import activity
+
+# Get the document collection name from environment variable
+DOCUMENT_COLLECTION_NAME = os.environ.get("DOCUMENT_COLLECTION_NAME", "document_chunks")
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +81,7 @@ async def embed_documents_activity(documents: List[Dict[str, Any]], embedding_se
         try:
             # Prepare the request payload to match embedding service API
             request_data = {
-                "collection": "document_chunks",  # Changed from collection_name to collection
+                "collection": DOCUMENT_COLLECTION_NAME,  # Use environment variable for collection name
                 "documents": documents,
                 "create_collection": True
             }

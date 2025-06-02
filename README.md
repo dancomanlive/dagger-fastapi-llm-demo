@@ -74,14 +74,15 @@ python upload_documents.py
 ## Project Structure
 
 ```
-├── main.py                    # FastAPI application
-├── rag_pipeline.py           # RAG implementation
-├── upload_documents.py      # Vector database initialization
-├── e2e_test.sh             # End-to-end system validation
 ├── docker-compose.yml       # Service orchestration
-├── Dockerfile               # FastAPI container
-├── requirements.txt         # Dependencies
+├── requirements.txt         # Root dependencies
 ├── services/
+│   ├── fastapi_service/    # Main FastAPI application
+│   │   ├── main.py         # FastAPI app
+│   │   ├── rag_pipeline.py # RAG implementation
+│   │   ├── upload_documents.py # Vector database initialization
+│   │   ├── Dockerfile      # FastAPI container
+│   │   └── requirements.txt # FastAPI dependencies
 │   ├── gradio_service/     # Chat interface service
 │   ├── retriever_service/  # Document retrieval service
 │   ├── embedding_service/  # Document embedding service

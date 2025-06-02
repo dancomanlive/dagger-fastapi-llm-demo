@@ -29,14 +29,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Also install dependencies for the generate module
-COPY modules/generate_module/requirements.txt ./modules_generate_requirements.txt
+COPY ../../modules/generate_module/requirements.txt ./modules_generate_requirements.txt
 RUN pip install --no-cache-dir -r modules_generate_requirements.txt
 
 # Copy your FastAPI app
 COPY . .
-
-# Create an empty .env file
-RUN touch .env
 
 # Set environment variables
 ENV PYTHONPATH=/app

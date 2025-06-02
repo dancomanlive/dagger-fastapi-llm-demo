@@ -48,7 +48,8 @@ class DependencyError(RAGError):
 _thread_local = threading.local()
 
 # Configuration
-TMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".tmp")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TMP_DIR = os.path.join(PROJECT_ROOT, ".tmp")
 
 def load_config_from_env() -> RAGConfig:
     """
@@ -311,7 +312,7 @@ def check_requirements_file(module_name: str) -> Tuple[bool, str]:
         Only checks modules/{module_name}/requirements.txt since this is for Python modules
         that run as subprocesses, not for services that run in Docker containers.
     """
-    requirements_path = os.path.join("modules", module_name, "requirements.txt")
+    requirements_path = os.path.join(PROJECT_ROOT, "modules", module_name, "requirements.txt")
     return os.path.exists(requirements_path), requirements_path
 
 
@@ -716,7 +717,10 @@ async def run_rag_pipeline(
             return create_error_response(error, query)
         
         # Set up paths and environment
-        generate_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modules", "generate_module")
+        generate_dir = os.path.join(
+            PROJECT_ROOT,
+            "modules", "generate_module"
+        )
         command = build_generate_command(query, collection, config, generate_dir)
         env = setup_subprocess_environment()
         

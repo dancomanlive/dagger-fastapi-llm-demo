@@ -30,7 +30,8 @@ def get_openai_client():
 FASTAPI_BASE_URL = os.environ.get("FASTAPI_SERVICE_URL", "http://fastapi:8000")
 RETRIEVER_SERVICE_URL = os.environ.get("RETRIEVER_SERVICE_URL", "http://retriever-service:8000")
 DEFAULT_COLLECTION = "default"
-AVAILABLE_COLLECTIONS = ["default", "documents", "research", "manuals"]
+DOCUMENT_COLLECTION_NAME = os.environ.get("DOCUMENT_COLLECTION_NAME", "document_chunks")
+AVAILABLE_COLLECTIONS = ["default", DOCUMENT_COLLECTION_NAME]
 
 def get_context_for_query(query: str, collection: str) -> str:
     """Get context using the existing FastAPI retriever service"""

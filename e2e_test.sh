@@ -6,6 +6,9 @@
 
 set -e
 
+# Environment configuration
+TEST-DOCUMENT_COLLECTION_NAME="test-document-chunks"
+
 echo "🧪 Starting End-to-End Document Processing System Test..."
 
 # Colors for output
@@ -30,6 +33,20 @@ print_warning() {
 
 print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Function to cleanup test collection
+cleanup_test_collection() {
+    print_status "🧹 Cleaning up test collection: $TEST-DOCUMENT_COLLECTION_NAME"
+    
+    # Delete the test collection from Qdrant
+    cleanup_response=$(curl -s -X DELETE "http://localhost:6333/collections/${TEST-DOCUMENT_COLLECTION_NAME}")
+    
+    if echo "$cleanup_response" | grep -q '"status":"ok"' || echo "$cleanup_response" | grep -q '"result":true'; then
+        print_success "✅ Test collection '$TEST-DOCUMENT_COLLECTION_NAME' cleaned up successfully!"
+    else
+        print_warning "⚠️ Could not cleanup test collection (it may not exist or was already removed)"
+    fi
 }
 
 # Check if Docker and Docker Compose are installed
@@ -161,7 +178,10 @@ echo ""
 echo "3. Search the processed document:"
 echo "curl -X POST http://localhost:8001/retrieve \\"
 echo "  -H 'Content-Type: application/json' \\"
-echo "  -d '{\"query\": \"artificial intelligence\", \"collection\": \"document_chunks\", \"limit\": 3}'"
+echo "  -d '{\"query\": \"artificial intelligence\", \"collection\": \"${TEST-DOCUMENT_COLLECTION_NAME}\", \"limit\": 3}'"
+echo ""
+echo "4. Cleanup test collection (optional):"
+echo "curl -X DELETE http://localhost:6333/collections/${TEST-DOCUMENT_COLLECTION_NAME}"
 echo ""
 
 # Auto-test the workflow if all services are healthy
@@ -188,13 +208,17 @@ if [ "$all_healthy" = true ]; then
         print_status "3. Testing document retrieval..."
         retrieval_response=$(curl -s -X POST http://localhost:8001/retrieve \
             -H 'Content-Type: application/json' \
-            -d '{"query": "machine learning algorithms", "collection": "document_chunks", "limit": 2}')
+            -d "{\"query\": \"machine learning algorithms\", \"collection\": \"${TEST-DOCUMENT_COLLECTION_NAME}\", \"limit\": 2}")
         
         if echo "$retrieval_response" | grep -q "retrieved_contexts"; then
             print_success "✅ Document retrieval successful!"
             echo ""
             echo -e "${GREEN}🎉 END-TO-END WORKFLOW TEST PASSED!${NC}"
             echo -e "${GREEN}✅ Document processing, embedding, and retrieval all working correctly!${NC}"
+            echo ""
+            
+            # Cleanup test collection after successful test
+            cleanup_test_collection
         else
             print_warning "⚠️ Document retrieval test failed"
         fi
