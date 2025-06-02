@@ -80,19 +80,20 @@ def trigger_temporal_workflow(documents: list, temporal_api_url: str = "http://l
 
 def main():
     parser = argparse.ArgumentParser(description="Load PDFs and trigger temporal workflow processing.")
-    parser.add_argument("--test-data-dir", default="test_data", help="Directory containing PDF files")
     parser.add_argument("--temporal-api", default="http://localhost:8003", help="Temporal API URL")
     parser.add_argument("--dry-run", action="store_true", help="Load documents but don't trigger workflow")
     args = parser.parse_args()
 
-    print(f"Loading PDFs from: {args.test_data_dir}")
+    data_directory = "document_files"  # Hardcoded directory
+
+    print(f"Loading PDFs from: {data_directory}")
     
-    if not os.path.exists(args.test_data_dir):
-        print(f"Error: Directory '{args.test_data_dir}' does not exist.")
+    if not os.path.exists(data_directory):
+        print(f"Error: Directory '{data_directory}' does not exist.")
         print("Please create the directory and add PDF files.")
         sys.exit(1)
     
-    documents = load_pdfs_from_directory(args.test_data_dir)
+    documents = load_pdfs_from_directory(data_directory)
     
     if not documents:
         print("No documents loaded. Please add PDF files to the directory.")

@@ -153,7 +153,7 @@ Standard RAG query with complete response
 ```json
 {
   "query": "What is machine learning?",
-  "collection": "default",
+  "collection": "document-chunks",
   "max_tokens": 500,
   "temperature": 0.7
 }
@@ -227,7 +227,7 @@ docker-compose exec fastapi ping retriever-service
 curl -X POST http://localhost:8000/rag/stream \
   -H "Content-Type: application/json" \
   -H "Accept: text/event-stream" \
-  -d '{"query": "test", "collection": "default"}'
+  -d '{"query": "test", "collection": "document-chunks"}'
 ```
 
 **Vector Database Issues**

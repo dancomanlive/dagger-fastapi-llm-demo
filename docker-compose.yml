@@ -6,8 +6,8 @@ name: smartagent-x7
 services:
   fastapi:
     build:
-      context: ./services/fastapi_service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/fastapi_service/Dockerfile
     volumes:
       - ./services/fastapi_service:/app
       # Commenting out Dagger-related volumes

@@ -6,8 +6,17 @@
 
 set -e
 
-# Environment configuration
-TEST-DOCUMENT_COLLECTION_NAME="test-document-chunks"
+# Load environment variables from .env file
+if [ -f .env ]; then
+    source .env
+    echo "✅ Loaded environment variables from .env file"
+else
+    echo "⚠️ No .env file found, using defaults"
+fi
+
+# Environment configuration with fallbacks
+TEST_DOCUMENT_COLLECTION_NAME="${TEST_DOCUMENT_COLLECTION_NAME:-test-document-chunks}"
+DOCUMENT_COLLECTION_NAME="${DOCUMENT_COLLECTION_NAME:-document-chunks}"
 
 echo "🧪 Starting End-to-End Document Processing System Test..."
 
@@ -37,17 +46,19 @@ print_error() {
 
 # Function to cleanup test collection
 cleanup_test_collection() {
-    print_status "🧹 Cleaning up test collection: $TEST-DOCUMENT_COLLECTION_NAME"
+    print_status "🧹 Cleaning up test collection: $TEST_DOCUMENT_COLLECTION_NAME"
     
     # Delete the test collection from Qdrant
-    cleanup_response=$(curl -s -X DELETE "http://localhost:6333/collections/${TEST-DOCUMENT_COLLECTION_NAME}")
+    cleanup_response=$(curl -s -X DELETE "http://localhost:6333/collections/${TEST_DOCUMENT_COLLECTION_NAME}")
     
     if echo "$cleanup_response" | grep -q '"status":"ok"' || echo "$cleanup_response" | grep -q '"result":true'; then
-        print_success "✅ Test collection '$TEST-DOCUMENT_COLLECTION_NAME' cleaned up successfully!"
+        print_success "✅ Test collection '$TEST_DOCUMENT_COLLECTION_NAME' cleaned up successfully!"
     else
         print_warning "⚠️ Could not cleanup test collection (it may not exist or was already removed)"
     fi
 }
+
+
 
 # Check if Docker and Docker Compose are installed
 print_status "Checking prerequisites..."
@@ -69,6 +80,7 @@ print_status "Stopping any existing services..."
 docker-compose down
 
 print_status "Starting services..."
+export DOCUMENT_COLLECTION_NAME="$TEST_DOCUMENT_COLLECTION_NAME"
 docker-compose up -d
 
 print_success "Services started in background!"
@@ -178,10 +190,10 @@ echo ""
 echo "3. Search the processed document:"
 echo "curl -X POST http://localhost:8001/retrieve \\"
 echo "  -H 'Content-Type: application/json' \\"
-echo "  -d '{\"query\": \"artificial intelligence\", \"collection\": \"${TEST-DOCUMENT_COLLECTION_NAME}\", \"limit\": 3}'"
+echo "  -d '{\"query\": \"artificial intelligence\", \"collection\": \"${TEST_DOCUMENT_COLLECTION_NAME}\", \"limit\": 3}'"
 echo ""
 echo "4. Cleanup test collection (optional):"
-echo "curl -X DELETE http://localhost:6333/collections/${TEST-DOCUMENT_COLLECTION_NAME}"
+echo "curl -X DELETE http://localhost:6333/collections/${TEST_DOCUMENT_COLLECTION_NAME}"
 echo ""
 
 # Auto-test the workflow if all services are healthy
@@ -208,7 +220,7 @@ if [ "$all_healthy" = true ]; then
         print_status "3. Testing document retrieval..."
         retrieval_response=$(curl -s -X POST http://localhost:8001/retrieve \
             -H 'Content-Type: application/json' \
-            -d "{\"query\": \"machine learning algorithms\", \"collection\": \"${TEST-DOCUMENT_COLLECTION_NAME}\", \"limit\": 2}")
+            -d "{\"query\": \"machine learning algorithms\", \"collection\": \"${TEST_DOCUMENT_COLLECTION_NAME}\", \"limit\": 2}")
         
         if echo "$retrieval_response" | grep -q "retrieved_contexts"; then
             print_success "✅ Document retrieval successful!"

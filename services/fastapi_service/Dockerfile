@@ -25,15 +25,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements.txt .
+COPY ./services/fastapi_service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Also install dependencies for the generate module
-COPY ../../modules/generate_module/requirements.txt ./modules_generate_requirements.txt
+COPY ./modules/generate_module/requirements.txt ./modules_generate_requirements.txt
 RUN pip install --no-cache-dir -r modules_generate_requirements.txt
 
 # Copy your FastAPI app
-COPY . .
+COPY ./services/fastapi_service/ .
 
 # Set environment variables
 ENV PYTHONPATH=/app
