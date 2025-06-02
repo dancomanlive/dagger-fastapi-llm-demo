@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from qdrant_client import QdrantClient, models as qdrant_models
+from grpc import RpcError, StatusCode # Add this import
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -178,8 +179,28 @@ async def retrieve_endpoint(request: RetrieveRequest):
             limit=request.top_k,
             with_payload=True
         )
-    except Exception as e:
-        logger.error(f"Error during Qdrant search for query '{request.query}': {e}", exc_info=True)
+    except RpcError as e: # Catch gRPC specific errors
+        if e.code() == StatusCode.NOT_FOUND:
+            logger.warning(
+                f"Collection '{request.collection}' not found or query failed with NOT_FOUND. "
+                f"Returning empty results. Details: {e.details()}"
+            )
+            # Return empty results gracefully
+            return RetrieveResponse(
+                original_query=request.query,
+                retrieved_contexts=[],
+                collection_used=request.collection
+            )
+        else:
+            # For other gRPC errors, log and raise a 500
+            logger.error(
+                f"A gRPC error occurred during Qdrant search for query '{request.query}'. "
+                f"Code: {e.code()}, Details: {e.details()}",
+                exc_info=True
+            )
+            raise HTTPException(status_code=500, detail=f"Qdrant search failed due to gRPC error: {e.details()}")
+    except Exception as e: # Catch any other exceptions
+        logger.error(f"An unexpected error occurred during Qdrant search for query '{request.query}': {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Qdrant search failed: {str(e)}")
     
     search_duration = time.time() - search_start_time
