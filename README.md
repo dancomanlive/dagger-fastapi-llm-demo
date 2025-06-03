@@ -54,14 +54,14 @@ Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system
 docker-compose up --build
 ```
 
-**2. Initialize vector database:**
-```bash
-python upload_documents.py
-```
-
-**3. Run end-to-end validation after vector database initialization:**
+**2. Run end-to-end validation:**
 ```bash
 ./e2e_test.sh
+```
+
+**3. Upload docs to vector database:**
+```bash
+python upload_documents.py
 ```
 
 **Access interfaces:**
