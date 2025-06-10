@@ -66,4 +66,4 @@ jobs:
             -e GITHUB_RUN_NUMBER="${GITHUB_RUN_NUMBER}" \
             -e GITHUB_WORKFLOW="${GITHUB_WORKFLOW}" \
             python:3.11-slim \
-            sh -c "apt-get update && apt-get install -y docker.io && pip install dagger-io python-dotenv && python ci/dagger_pipeline.py"
+            sh -c "apt-get update && apt-get install -y docker.io && pip install dagger-io python-dotenv && python ci/ci_pipeline.py"
