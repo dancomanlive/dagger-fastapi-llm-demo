@@ -51,26 +51,24 @@ Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system
 - **Workflow Definitions:** Orchestrates chunking and embedding steps.
 
 ### 4. Code/Implementation
-- `services/fastapi_service/main.py`: FastAPI app, `/rag` endpoints, workflow triggers.
-- `services/fastapi_service/rag_pipeline.py`: Implements RAG logic.
-- `services/retriever_service/main.py`: `/retrieve` endpoint, Qdrant search logic.
-- `services/embedding_service/main.py`: `/index`, `/add_document`, `/health` endpoints, Qdrant vector storage.
+- `services/gradio_service/main.py`: Chat UI with Temporal client integration.
+- `services/temporal_service/workflows.py`: RetrievalWorkflow and DocumentProcessingWorkflow.
 - `services/temporal_service/activities.py`: Workflow activities (chunking, embedding).
-- `services/temporal_service/workflows.py`: Workflow orchestration logic.
+- `services/retriever_service/activities.py`: Vector search activities for Temporal.
+- `services/embedding_service/activities.py`: Text embedding activities for Temporal.
 
 ---
 
 ## Service Summary Table
 
-| Service           | Purpose                        | Key Endpoints/Functions           |
+| Service           | Purpose                        | Key Functions                     |
 |-------------------|-------------------------------|-----------------------------------|
-| Gradio            | Chat UI                       | Web interface                     |
-| FastAPI           | Main API, RAG, workflows      | `/rag`, `/rag/stream`, `/health`  |
-| Retriever         | Semantic search               | `/retrieve`, `/health`            |
-| Embedding         | Document embedding/indexing   | `/index`, `/add_document`, `/health` |
-| Temporal Worker   | Workflow execution            | Activities: chunk, embed          |
-| Qdrant            | Vector DB                     | N/A (internal)                    |
-| PostgreSQL        | Metadata DB                   | N/A (internal)                    |
+| Gradio            | Chat UI + Temporal Client     | Web interface, workflow triggers |
+| Temporal Worker   | Workflow orchestration        | RetrievalWorkflow, Activities     |
+| Retriever         | Vector search activities      | search_vectors, index_vectors     |
+| Embedding         | Text embedding activities     | embed_text, embed_query           |
+| Qdrant            | Vector Database               | Document storage, similarity      |
+| PostgreSQL        | Temporal State Store          | Workflow persistence              |
 
 ---
 
@@ -78,7 +76,7 @@ Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system
 
 ### Prerequisites
 1. **Environment Configuration**
-   - Create `.env` file in project root
+   - Create `.env` file in project root with `OPENAI_API_KEY`
 2. **System Requirements**
    - Docker and Docker Compose
    - Network access for OpenAI API
@@ -88,41 +86,44 @@ Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system
    ```bash
    docker-compose up --build
    ```
-2. **Run end-to-end validation:**
-   ```bash
-   ./e2e_test.sh
-   ```
-3. **Upload docs to vector database:**
+2. **Upload documents to vector database:**
    ```bash
    python upload_documents.py
    ```
 
 **Access interfaces:**
-- **Chat Interface**: http://localhost:7860
-- **API Documentation**: http://localhost:8000/docs
-- **Temporal Web UI**: http://localhost:8081
-- **Temporal API**: http://localhost:8003
+- **Chat Interface**: http://localhost:7860 (Main user interface)
+- **Temporal Web UI**: http://localhost:8081 (Workflow monitoring)
+- **Qdrant UI**: http://localhost:6333/dashboard (Vector database)
 
 ---
 
 ## Project Structure
 
 ```
-├── docker-compose.yml       # Service orchestration
-├── requirements.txt         # Root dependencies
+├── docker-compose.yml       # Simplified Temporal-based orchestration
+├── requirements.txt         # Root dependencies  
 ├── services/
-│   ├── fastapi_service/    # Main FastAPI application
-│   │   ├── main.py         # FastAPI app
-│   │   ├── rag_pipeline.py # RAG implementation
-│   │   ├── upload_documents.py # Vector database initialization
-│   │   ├── Dockerfile      # FastAPI container
-│   │   └── requirements.txt # FastAPI dependencies
-│   ├── gradio_service/     # Chat interface service
-│   ├── retriever_service/  # Document retrieval service
-│   ├── embedding_service/  # Document embedding service
-│   └── temporal_service/   # Workflow services
-├── modules/
-│   └── generate_module/    # Generation pipeline
+│   ├── gradio_service/     # Chat interface + Temporal client
+│   │   ├── main.py         # Gradio app with Temporal integration
+│   │   ├── tests/          # Temporal integration tests
+│   │   ├── features/       # BDD scenarios
+│   │   ├── Dockerfile      # Gradio container
+│   │   └── requirements.txt # Gradio dependencies
+│   ├── temporal_service/   # Workflow orchestration
+│   │   ├── workflows.py    # RetrievalWorkflow, DocumentProcessingWorkflow
+│   │   ├── activities.py   # Document processing activities
+│   │   ├── worker.py       # Temporal worker
+│   │   ├── tests/          # Workflow tests
+│   │   └── features/       # BDD scenarios
+│   ├── retriever_service/  # Vector search activities
+│   │   ├── activities.py   # search_vectors, index_vectors
+│   │   ├── worker.py       # Activity worker
+│   │   └── tests/          # Activity tests
+│   └── embedding_service/  # Text embedding activities
+│       ├── activities.py   # embed_text, embed_query
+│       ├── worker.py       # Activity worker
+│       └── tests/          # Activity tests
 └── ci/
     └── ci_pipeline.py      # CI/CD pipeline
 ```

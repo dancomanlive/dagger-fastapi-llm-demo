@@ -11,12 +11,40 @@ venv/
 *.env.*
 !.env.example
 
+# Test artifacts and coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+.pytest_cache/
+.cache/
+nosetests.xml
+coverage/
+*.cover
+.hypothesis/
+test-results/
+test_results/
+*.xml
+*.log
+
+# BDD test artifacts
+.behave/
+behave-report.json
+behave-report.html
+reports/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
 # Dagger cache/logs
 .dagger*/
 dagger-work/
 
 # Temporary files
 .tmp/
+*.tmp
+*.temp
+.DS_Store
 
 # IDE folders
 .idea/

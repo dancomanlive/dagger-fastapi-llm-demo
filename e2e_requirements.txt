@@ -1,0 +1,2 @@
+# Requirements for E2E Testing
+temporalio>=1.0.0

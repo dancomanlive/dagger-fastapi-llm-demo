@@ -48,12 +48,7 @@ print(f'Build-time: Model {model_name} is fully tested and cached!'); \
 # be preserved. However, having the files cached will make startup much faster.
 
 # Copy the service code
-COPY ./main.py .
-# Add other files from services/retriever_service if any (e.g., .env if used differently)
+COPY . .
 
-# Expose the port the service runs on
-EXPOSE 8000
-
-# Command to run the service (QDRANT_HOST_FOR_SERVICE will be set at `docker run` time)
-# EMBEDDING_MODEL and PAYLOAD_TEXT_FIELD_NAME are already set via ENV
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--lifespan", "on"]
+# Command to run the Temporal worker (not the FastAPI service)
+CMD ["python", "worker.py"]

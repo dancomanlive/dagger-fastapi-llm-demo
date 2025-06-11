@@ -1,4 +1,11 @@
 fastapi>=0.115.12
 uvicorn[standard]>=0.25.0
-qdrant-client[fastembed]>=1.14.0,<1.15.0
+qdrant-client[fastembed]>=1.14.1,<1.15.0
 pydantic
+# Testing dependencies
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
+pytest-cov>=4.0.0
+# Temporal dependencies for activities
+temporalio>=1.6.0

@@ -1,146 +1,89 @@
-version: '3.8'
-
-# SmartÆgent X-7 - Advanced AI-Powered Retrieval and Reasoning System
+# SmartÆgent X-7 - Pure Temporal Architecture
 name: smartagent-x7
 
 services:
-  fastapi:
-    build:
-      context: .
-      dockerfile: ./services/fastapi_service/Dockerfile
-    volumes:
-      - ./services/fastapi_service:/app
-      # Commenting out Dagger-related volumes
-      # - dagger-socket:/run/dagger
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-    ports:
-      - "8000:8000"
-    environment:
-      # Commenting out Dagger-related environment variables
-      # - _EXPERIMENTAL_DAGGER_RUNNER_HOST=unix:///run/dagger/engine.sock
-      - OPENAI_BASE_URL=https://api.openai.com/v1 # OpenAI API endpoint
-      - OPENAI_API_KEY=${OPENAI_API_KEY} # Loaded from .env
-      - QDRANT_URL=http://qdrant:6333
-      - QDRANT_HOST=http://host.docker.internal:6333
-      - PYTHONPATH=/app
-      - RETRIEVER_SERVICE_URL=http://retriever-service:8000
-      - RETRIEVER_SERVICE_URL_FOR_HOST=http://localhost:8001
-      - EMBEDDING_SERVICE_URL=http://embedding-service:8000
-      - EMBEDDING_SERVICE_URL_FOR_HOST=http://localhost:8002
-      # - RETRIEVER_SERVICE_URL_FOR_DAGGER=http://host.docker.internal:8001 # No longer needed
-      - ENABLE_STARTUP_WARMUP=false
-    env_file:
-      - .env
-    depends_on:
-      # Removing Dagger engine dependency
-      - qdrant
-      - retriever-service
-      - embedding-service
-    networks:
-      - smartagent-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  gradio-chat:
+  # Main Chat Interface
+  gradio:
     build:
       context: ./services/gradio_service
     ports:
       - "7860:7860"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - FASTAPI_SERVICE_URL=http://fastapi:8000
-      - RETRIEVER_SERVICE_URL=http://retriever-service:8000
+      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_NAMESPACE=default
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
       - DOCUMENT_COLLECTION_NAME=${DOCUMENT_COLLECTION_NAME:-document_chunks}
     env_file:
       - .env
     depends_on:
-      - fastapi
-      - retriever-service
-      - qdrant
+      temporal:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
     networks:
       - smartagent-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:7860/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
     restart: unless-stopped
 
-  # Commenting out Dagger engine service - no longer needed
-  # dagger-engine:
-  #   image: registry.dagger.io/engine:v0.18.8 # Match Dagger SDK version
-  #   container_name: dagger-engine
-  #   privileged: true
-  #   ports:
-  #     - "8080:8080" # Expose Dagger Engine API
-  #   volumes:
-  #     - dagger-socket:/run/dagger
-  #   networks:
-  #     - dagger-net
-  #   environment:
-  #     - DAGGER_LOG_LEVEL=debug
+  # Embedding Service (Temporal Activities)
+  embedding-service:
+    build:
+      context: ./services/embedding_service
+      args:
+        EMBEDDING_MODEL_ARG: "sentence-transformers/all-MiniLM-L6-v2"
+    environment:
+      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      - TEMPORAL_TASK_QUEUE=embedding-task-queue
+      - PYTHONPATH=/app
+    depends_on:
+      temporal:
+        condition: service_healthy
+    networks:
+      - smartagent-net
+    restart: unless-stopped
 
+  # Retriever Service (Temporal Activities)
   retriever-service:
     build:
       context: ./services/retriever_service
       args:
         EMBEDDING_MODEL_ARG: "sentence-transformers/all-MiniLM-L6-v2"
-    ports:
-      - "8001:8000"
     environment:
       - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333
       - QDRANT_API_KEY=${QDRANT_API_KEY:-}
+      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      - TEMPORAL_TASK_QUEUE=retriever-task-queue
+      - PYTHONPATH=/app
     depends_on:
-      - qdrant
-    restart: unless-stopped
+      qdrant:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
     networks:
       - smartagent-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  embedding-service:
-    build:
-      context: ./services/embedding_service
-    ports:
-      - "8002:8000"
-    environment:
-      - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333
-      - QDRANT_API_KEY=${QDRANT_API_KEY:-}
-      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
-    depends_on:
-      - qdrant
     restart: unless-stopped
-    networks:
-      - smartagent-net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
+  # Vector Database
   qdrant:
     image: qdrant/qdrant:latest
     ports:
       - "6333:6333"
-      - "6334:6334"
     volumes:
-      - qdrant-data:/qdrant/storage
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      - QDRANT__SERVICE__GRPC_PORT=6334
     networks:
       - smartagent-net
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:6333/healthz"]
+      test: ["CMD", "timeout", "5", "bash", "-c", "</dev/tcp/localhost/6333"]
       interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
 
   # Temporal Server
   temporal:
@@ -148,6 +91,7 @@ services:
     ports:
       - "7233:7233"
       - "8080:8080"  # Temporal Web UI
+      - "7243:7243"  # Temporal HTTP API
     environment:
       - DB=postgres12
       - DB_PORT=5432
@@ -155,9 +99,16 @@ services:
       - POSTGRES_PWD=temporal
       - POSTGRES_SEEDS=postgresql
     depends_on:
-      - postgresql
+      postgresql:
+        condition: service_healthy
     networks:
       - smartagent-net
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "temporal-server"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
   # PostgreSQL for Temporal
   postgresql:
@@ -166,12 +117,15 @@ services:
       - POSTGRES_USER=temporal
       - POSTGRES_PASSWORD=temporal
       - POSTGRES_DB=temporal
-    ports:
-      - "5432:5432"
     volumes:
-      - postgresql-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - smartagent-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Temporal Web UI
   temporal-ui:
@@ -182,11 +136,12 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://localhost:8081
     depends_on:
-      - temporal
+      temporal:
+        condition: service_healthy
     networks:
       - smartagent-net
 
-  # Temporal Worker Service
+  # Temporal Worker Service (Workflows + Orchestration)
   temporal-worker:
     build:
       context: ./services/temporal_service
@@ -194,45 +149,18 @@ services:
       - TEMPORAL_HOST=temporal:7233
       - TEMPORAL_NAMESPACE=default
       - TEMPORAL_TASK_QUEUE=document-processing-queue
-      - EMBEDDING_SERVICE_URL=http://embedding-service:8000
       - DOCUMENT_COLLECTION_NAME=${DOCUMENT_COLLECTION_NAME:-document_chunks}
     depends_on:
-      - temporal
-      - embedding-service
+      temporal:
+        condition: service_healthy
     networks:
       - smartagent-net
     restart: unless-stopped
-
-  # Temporal API Service
-  temporal-api:
-    build:
-      context: ./services/temporal_service
-    ports:
-      - "8003:8000"
-    environment:
-      - TEMPORAL_HOST=temporal:7233
-      - TEMPORAL_NAMESPACE=default
-      - TEMPORAL_TASK_QUEUE=document-processing-queue
-      - EMBEDDING_SERVICE_URL=http://embedding-service:8000
-      - DOCUMENT_COLLECTION_NAME=${DOCUMENT_COLLECTION_NAME:-document_chunks}
-    depends_on:
-      - temporal
-      - embedding-service
-    networks:
-      - smartagent-net
-    restart: unless-stopped
-    command: ["python", "api.py"]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    stop_grace_period: 30s
 
 volumes:
-  # dagger-socket: # Commented out as no longer needed
-  qdrant-data:
-  temporal-data:
-  postgresql-data:
+  qdrant_data:
+  postgres_data:
 
 networks:
   smartagent-net:

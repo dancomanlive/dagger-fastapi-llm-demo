@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# End-to-End Document Processing System Test
+# End-to-End Document Processing System Test - Pure Temporal Architecture
 # This script starts all services, validates health, and runs complete workflow tests
-# Tests: Docker services → Health checks → Document processing → Retrieval validation
+# Tests: Docker services → Health checks → Temporal workflow execution → Retrieval validation
 
 set -e
 
@@ -18,7 +18,7 @@ fi
 TEST_DOCUMENT_COLLECTION_NAME="${TEST_DOCUMENT_COLLECTION_NAME:-test-document-chunks}"
 DOCUMENT_COLLECTION_NAME="${DOCUMENT_COLLECTION_NAME:-document-chunks}"
 
-echo "🧪 Starting End-to-End Document Processing System Test..."
+echo "🧪 Starting End-to-End Pure Temporal Document Processing System Test..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -91,23 +91,24 @@ docker-compose ps
 
 # Wait for services to be healthy
 print_status "Waiting for services to start..."
-sleep 15
+sleep 30  # Increased wait time for health checks
 
 # Show container status
 print_status "Checking container status..."
 docker-compose ps
 
+# Additional wait for Temporal workers and health checks
+print_status "Waiting additional time for all health checks to pass..."
+sleep 20
+
 # Check service health
 print_status "Checking service health..."
 
 services=(
-    "http://localhost:6333/healthz:Qdrant"
-    "http://localhost:8000/:FastAPI Main"
-    "http://localhost:8001/:Retriever Service"
-    "http://localhost:8002/:Embedding Service"
-    "http://localhost:8081/api/v1/cluster-info:Temporal Server"
-    "http://localhost:8003/health:Temporal API"
-    "http://localhost:7860/:Gradio Chat"
+    "http://localhost:6333/healthz:Qdrant Vector DB"
+    "http://localhost:7243/api/v1/namespaces:Temporal Server"
+    "http://localhost:8081/api/v1/cluster-info:Temporal Web UI"
+    "http://localhost:7860/:Gradio Chat Interface"
 )
 
 all_healthy=true
@@ -117,12 +118,6 @@ for service in "${services[@]}"; do
     name="${service##*:}"
 
     print_status "Checking $name at $url..."
-
-    # Add a 20 second sleep before checking Embedding Service
-    if [ "$name" = "Embedding Service" ]; then
-        print_status "Waiting 20 seconds for Embedding Service to initialize..."
-        sleep 20
-    fi
 
     max_attempts=30
     attempt=1
@@ -148,21 +143,17 @@ echo ""
 echo "🎉 E2E Test Environment Ready! All services are healthy:"
 echo ""
 echo -e "${GREEN}🌐 Web Interfaces:${NC}"
-echo "  • Temporal Web UI:    http://localhost:8081"
-echo "  • Gradio Chat UI:     http://localhost:7860"
+echo "  • Temporal Web UI:      http://localhost:8081"
+echo "  • Gradio Chat UI:       http://localhost:7860"
 echo ""
-echo -e "${BLUE}📡 API Endpoints:${NC}"
-echo "  • Main FastAPI:       http://localhost:8000"
-echo "  • Retriever Service:  http://localhost:8001"
-echo "  • Embedding Service:  http://localhost:8002"
-echo "  • Temporal API:       http://localhost:8003"
-echo "  • Temporal Server:    http://localhost:7233"
-echo "  • Qdrant Vector DB:   http://localhost:6333"
+echo -e "${BLUE}📡 Service Endpoints:${NC}"
+echo "  • Temporal Server:      http://localhost:7243"
+echo "  • Qdrant Vector DB:     http://localhost:6333"
 echo ""
-echo -e "${YELLOW}🧪 Test Commands:${NC}"
-echo "  • Test Temporal workflow: python test_temporal_workflow.py"
-echo "  • View logs:             docker-compose logs -f [service-name]"
-echo "  • Stop services:         docker-compose down"
+echo -e "${YELLOW}🧪 Test Architecture:${NC}"
+echo "  • Pure Temporal workflows for document processing and retrieval"
+echo "  • Gradio ↔ Temporal ↔ Activities (Embedding & Retrieval services)"
+echo "  • No HTTP service calls - all orchestration via Temporal"
 echo ""
 
 if [ "$all_healthy" = true ]; then
@@ -171,73 +162,91 @@ if [ "$all_healthy" = true ]; then
     echo "💡 You can now:"
     echo "   1. Visit the Temporal Web UI to monitor workflows"
     echo "   2. Use the Gradio chat interface for document Q&A"
-    echo "   3. Run the test script to try the document processing workflow"
+    echo "   3. Run the Temporal workflow test to validate the pipeline"
+    echo ""
+    echo -e "${YELLOW}🧪 Available Test Commands:${NC}"
+    echo "  • Test Temporal workflows:   python test_temporal_e2e.py"
+    echo "  • View service logs:         docker-compose logs -f [service-name]"
+    echo "  • Stop services:             docker-compose down"
 else
     print_warning "Some services may not be fully ready. Check logs with: docker-compose logs"
 fi
 
 echo ""
-echo "📚 To test the complete document processing workflow:"
+echo "📚 Pure Temporal Architecture Test Instructions:"
 echo ""
-echo "1. Process a document:"
-echo "curl -X POST http://localhost:8003/process-documents \\"
-echo "  -H 'Content-Type: application/json' \\"
-echo "  -d '{\"documents\": [{\"id\": \"test-doc\", \"text\": \"Sample document about artificial intelligence and machine learning.\"}]}'"
+echo "1. Test the complete workflow pipeline:"
+echo "   python test_temporal_e2e.py"
 echo ""
-echo "2. Check workflow status (replace WORKFLOW_ID with the returned workflow_id):"
-echo "curl http://localhost:8003/workflow/WORKFLOW_ID/status"
+echo "2. Monitor workflows in Temporal Web UI:"
+echo "   http://localhost:8081"
 echo ""
-echo "3. Search the processed document:"
-echo "curl -X POST http://localhost:8001/retrieve \\"
-echo "  -H 'Content-Type: application/json' \\"
-echo "  -d '{\"query\": \"artificial intelligence\", \"collection\": \"${TEST_DOCUMENT_COLLECTION_NAME}\", \"limit\": 3}'"
+echo "3. Use Gradio for interactive document Q&A:"
+echo "   http://localhost:7860"
 echo ""
 echo "4. Cleanup test collection (optional):"
-echo "curl -X DELETE http://localhost:6333/collections/${TEST_DOCUMENT_COLLECTION_NAME}"
+echo "   curl -X DELETE http://localhost:6333/collections/${TEST_DOCUMENT_COLLECTION_NAME}"
 echo ""
 
 # Auto-test the workflow if all services are healthy
 if [ "$all_healthy" = true ]; then
     echo ""
-    print_status "🧪 Auto-testing the document processing workflow..."
+    print_status "🧪 Auto-testing the Temporal workflow pipeline..."
     echo ""
     
-    # Test document processing
-    print_status "1. Processing a test document..."
-    response=$(curl -s -X POST http://localhost:8003/process-documents \
-        -H 'Content-Type: application/json' \
-        -d '{"documents": [{"id": "launch-test-doc", "text": "This is an automated test document about machine learning algorithms and neural networks. Deep learning has transformed computer vision and natural language processing."}]}')
-    
-    if echo "$response" | grep -q "workflow_id"; then
-        workflow_id=$(echo "$response" | grep -o '"workflow_id":"[^"]*"' | cut -d'"' -f4)
-        print_success "✅ Document processing started! Workflow ID: $workflow_id"
-        
-        # Wait for processing to complete
-        print_status "2. Waiting for document processing to complete..."
-        sleep 10
-        
-        # Test retrieval
-        print_status "3. Testing document retrieval..."
-        retrieval_response=$(curl -s -X POST http://localhost:8001/retrieve \
-            -H 'Content-Type: application/json' \
-            -d "{\"query\": \"machine learning algorithms\", \"collection\": \"${TEST_DOCUMENT_COLLECTION_NAME}\", \"limit\": 2}")
-        
-        if echo "$retrieval_response" | grep -q "retrieved_contexts"; then
-            print_success "✅ Document retrieval successful!"
-            echo ""
-            echo -e "${GREEN}🎉 END-TO-END WORKFLOW TEST PASSED!${NC}"
-            echo -e "${GREEN}✅ Document processing, embedding, and retrieval all working correctly!${NC}"
-            echo ""
-            
-            # Cleanup test collection after successful test
-            cleanup_test_collection
-        else
-            print_warning "⚠️ Document retrieval test failed"
-        fi
+    # Check if Python is available
+    if command -v python3 &> /dev/null; then
+        python_cmd="python3"
+        pip_cmd="pip3"
+    elif command -v python &> /dev/null; then
+        python_cmd="python"
+        pip_cmd="pip"
     else
-        print_warning "⚠️ Document processing test failed"
+        print_warning "⚠️ Python not found, skipping automated workflow test"
+        echo ""
+        exit 0
     fi
-    echo ""
+    
+    # Install required dependencies for e2e testing
+    print_status "Installing e2e test dependencies..."
+    if [ -f "e2e_requirements.txt" ]; then
+        $pip_cmd install -r e2e_requirements.txt > /dev/null 2>&1
+        if [ $? -eq 0 ]; then
+            print_success "✅ Dependencies installed successfully"
+        else
+            print_warning "⚠️ Failed to install dependencies, proceeding anyway..."
+        fi
+    fi
+    
+    # Wait a bit more for Temporal workers to be ready
+    print_status "Waiting 15 seconds for Temporal workers to be fully ready..."
+    sleep 15
+    
+    # Test Temporal workflows
+    print_status "Running comprehensive Temporal workflow test..."
+    
+    # Set environment variables for the test
+    export TEMPORAL_HOST="localhost:7243"
+    export TEMPORAL_NAMESPACE="default"
+    export TEST_DOCUMENT_COLLECTION_NAME="$TEST_DOCUMENT_COLLECTION_NAME"
+    
+    if $python_cmd test_temporal_e2e.py; then
+        print_success "✅ TEMPORAL WORKFLOW TEST PASSED!"
+        echo ""
+        echo -e "${GREEN}🎉 END-TO-END PURE TEMPORAL ARCHITECTURE TEST SUCCESSFUL!${NC}"
+        echo -e "${GREEN}✅ Document processing, embedding, and retrieval workflows all working correctly!${NC}"
+        echo -e "${GREEN}✅ Pure Temporal orchestration validated successfully!${NC}"
+        echo ""
+        
+        # Cleanup test collection after successful test
+        cleanup_test_collection
+    else
+        print_error "❌ TEMPORAL WORKFLOW TEST FAILED!"
+        echo ""
+        print_warning "Check the output above for error details"
+        print_warning "You can also check service logs with: docker-compose logs"
+        echo ""
+    fi
 else
     echo ""
     print_warning "⚠️ Skipping auto-test due to unhealthy services"

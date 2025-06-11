@@ -7,7 +7,7 @@ import logging
 import os
 from temporalio.client import Client
 from temporalio.worker import Worker
-from workflows import DocumentProcessingWorkflow, HealthCheckWorkflow
+from workflows import DocumentProcessingWorkflow, HealthCheckWorkflow, RetrievalWorkflow
 from activities import chunk_documents_activity, embed_documents_activity, health_check_activity
 
 # Configure logging
@@ -38,7 +38,7 @@ async def main():
     worker = Worker(
         client,
         task_queue=TASK_QUEUE,
-        workflows=[DocumentProcessingWorkflow, HealthCheckWorkflow],
+        workflows=[DocumentProcessingWorkflow, HealthCheckWorkflow, RetrievalWorkflow],
         activities=[
             chunk_documents_activity,
             embed_documents_activity,
