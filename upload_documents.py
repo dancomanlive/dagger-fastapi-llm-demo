@@ -1,20 +1,48 @@
 #!/usr/bin/env python3
 """
-Simple utility to load PDF files from test_data directory and trigger temporal workflow processing.
+Simple utility to load PDF files and trigger temporal workflow processing.
+Updated to work with Temporal client directly.
 """
 import argparse
 import os
 import sys
-import requests
+import asyncio
 import PyPDF2
+from temporalio.client import Client
+from datetime import timedelta
 
 
 def extract_text_from_pdf(pdf_path: str) -> str:
     """Extract text from a PDF file."""
+    print(f"🔍 Extracting text from {pdf_path}...")
     try:
         with open(pdf_path, 'rb') as file:
             pdf_reader = PyPDF2.PdfReader(file)
-            return "\n".join(page.extract_text() for page in pdf_reader.pages).strip()
+            pages = len(pdf_reader.pages)
+            print(f"  📄 Found {pages} pages")
+            
+            # Process pages in smaller chunks to avoid hanging
+            text_parts = []
+            batch_size = 10
+            for i in range(0, pages, batch_size):
+                end_idx = min(i + batch_size, pages)
+                print(f"  📑 Processing pages {i+1}-{end_idx}...")
+                
+                batch_text = []
+                for page_idx in range(i, end_idx):
+                    try:
+                        page_text = pdf_reader.pages[page_idx].extract_text()
+                        batch_text.append(page_text)
+                    except Exception as e:
+                        print(f"    ⚠️ Error on page {page_idx+1}: {e}")
+                        batch_text.append("")
+                
+                text_parts.extend(batch_text)
+            
+            full_text = "\n".join(text_parts).strip()
+            print(f"  ✅ Extracted {len(full_text)} characters")
+            return full_text
+            
     except Exception as e:
         print(f"Error extracting text from {pdf_path}: {e}", file=sys.stderr)
         return ""
@@ -47,45 +75,49 @@ def load_pdfs_from_directory(directory: str) -> list:
     return documents
 
 
-def trigger_temporal_workflow(documents: list, temporal_api_url: str = "http://localhost:8003") -> bool:
-    """Send documents to temporal service for processing."""
+async def trigger_temporal_workflow(documents: list, temporal_host: str = "localhost:7233", wait_for_completion: bool = False) -> bool:
+    """Send documents to temporal service for processing via Temporal client."""
     try:
-        payload = {
-            "documents": documents
-        }
+        client = await Client.connect(f"{temporal_host}")
         
-        response = requests.post(
-            f"{temporal_api_url}/process-documents",
-            json=payload,
-            headers={"Content-Type": "application/json"},
-            timeout=10
+        # Start the document processing workflow
+        workflow_id = f"upload-docs-{len(documents)}-{asyncio.get_event_loop().time():.0f}"
+        
+        handle = await client.start_workflow(
+            "DocumentProcessingWorkflow",
+            documents,  # Just pass documents directly - workflow expects this as first parameter
+            id=workflow_id,
+            task_queue="document-processing-queue",
+            execution_timeout=timedelta(minutes=10),
         )
         
-        if response.status_code == 200:
-            result = response.json()
-            workflow_id = result.get("workflow_id")
-            print(f"✅ Workflow started successfully! ID: {workflow_id}")
-            print(f"📊 Track progress at: {temporal_api_url}/workflow/{workflow_id}/status")
-            return True
+        print(f"✅ Workflow started successfully! ID: {workflow_id}")
+        print(f"📊 Track progress at: http://localhost:8081/namespaces/default/workflows/{workflow_id}")
+        
+        if wait_for_completion:
+            print("⏳ Waiting for workflow to complete...")
+            result = await handle.result()
+            print(f"🎉 Workflow completed! Result: {result}")
         else:
-            print(f"❌ Failed to start workflow. Status: {response.status_code}")
-            print(f"Response: {response.text}")
-            return False
-            
-    except requests.exceptions.RequestException as e:
+            print("⏳ Use --wait flag to wait for workflow completion...")
+        
+        return True
+        
+    except Exception as e:
         print(f"❌ Error connecting to temporal service: {e}")
-        print("Make sure the temporal service is running at {temporal_api_url}")
+        print(f"Make sure the temporal service is running at {temporal_host}")
         return False
 
 
-def main():
+async def main_async():
     parser = argparse.ArgumentParser(description="Load PDFs and trigger temporal workflow processing.")
-    parser.add_argument("--temporal-api", default="http://localhost:8003", help="Temporal API URL")
+    parser.add_argument("--temporal-host", default="localhost:7233", help="Temporal host:port")
+    parser.add_argument("--directory", default="document_files", help="Directory containing PDF files")
     parser.add_argument("--dry-run", action="store_true", help="Load documents but don't trigger workflow")
+    parser.add_argument("--wait", action="store_true", help="Wait for workflow completion")
     args = parser.parse_args()
 
-    data_directory = "document_files"  # Hardcoded directory
-
+    data_directory = args.directory
     print(f"Loading PDFs from: {data_directory}")
     
     if not os.path.exists(data_directory):
@@ -107,9 +139,14 @@ def main():
             print(f"  - {doc['id']}: {doc['metadata']['source']} ({len(doc['text'])} chars)")
     else:
         print("🚀 Triggering temporal workflow...")
-        success = trigger_temporal_workflow(documents, args.temporal_api)
+        success = await trigger_temporal_workflow(documents, args.temporal_host, args.wait)
         if not success:
             sys.exit(1)
+
+
+def main():
+    """Main entry point that runs the async main function."""
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":

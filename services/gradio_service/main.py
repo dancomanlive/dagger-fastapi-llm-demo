@@ -23,11 +23,12 @@ from temporalio.client import Client
 TEMPORAL_HOST = os.environ.get("TEMPORAL_HOST", "localhost:7233")
 TEMPORAL_NAMESPACE = os.environ.get("TEMPORAL_NAMESPACE", "default")
 
-async def get_context_via_temporal(query: str, collection: str) -> str:
+async def get_context_via_temporal(query: str, collection: str) -> dict:
     """
     Get context using Temporal RetrievalWorkflow instead of HTTP calls.
     
     This replaces the HTTP-based get_context_for_query function.
+    Returns both formatted context and raw chunks.
     """
     try:
         # Connect to Temporal
@@ -38,7 +39,7 @@ async def get_context_via_temporal(query: str, collection: str) -> str:
             "RetrievalWorkflow",
             args=[query, 5],  # query and top_k
             id=f"gradio-retrieval-{int(time.time() * 1000)}",
-            task_queue="workflow-task-queue"  # temporal_service task queue
+            task_queue="document-processing-queue"  # Use the correct task queue
         )
         
         # Get the result
@@ -50,18 +51,43 @@ async def get_context_via_temporal(query: str, collection: str) -> str:
             if "results" in search_data and search_data["results"]:
                 # Format results into context
                 contexts = []
+                chunks = []
                 for i, doc in enumerate(search_data["results"]):
-                    content = doc.get("content", "")
+                    content = doc.get("text", "")
                     contexts.append(f"Context {i+1}: {content}")
+                    chunks.append({
+                        "id": doc.get("id", ""),
+                        "score": doc.get("score", 0),
+                        "text": content[:200] + "..." if len(content) > 200 else content  # Truncate for display
+                    })
                 
-                return "\n\n".join(contexts)
+                formatted_context = "\n\n".join(contexts)
+                return {
+                    "context": formatted_context,
+                    "chunks": chunks,
+                    "total_results": len(chunks)
+                }
             else:
-                return "No relevant context found."
+                print("❌ No results in search data")  # Debug log
+                return {
+                    "context": "No relevant context found.",
+                    "chunks": [],
+                    "total_results": 0
+                }
         else:
-            return f"Workflow completed but no results found: {result.get('status', 'unknown')}"
+            print(f"❌ Workflow status: {result.get('status', 'unknown')}")  # Debug log
+            return {
+                "context": f"Workflow completed but no results found: {result.get('status', 'unknown')}",
+                "chunks": [],
+                "total_results": 0
+            }
             
     except Exception as e:
-        return f"Error retrieving context via Temporal: {str(e)}"
+        return {
+            "context": f"Error retrieving context via Temporal: {str(e)}",
+            "chunks": [],
+            "total_results": 0
+        }
 
 def get_openai_client():
     """Get OpenAI client with API key from environment"""
@@ -92,7 +118,15 @@ def stream_rag_response(
     
     try:
         # Get context from Temporal RetrievalWorkflow (instead of HTTP)
-        context = get_context_for_query_temporal(query, collection)
+        context_result = get_context_for_query_temporal_with_chunks(query, collection)
+        context = context_result["context"]
+        retrieved_chunks = context_result["chunks"]
+        
+        # Check if we got meaningful context
+        if not context or context.startswith("Error") or context == "No relevant context found.":
+            print("⚠️  No valid context retrieved, using fallback response")
+            context = "No relevant document context available."
+            retrieved_chunks = []
         
         # Prepare messages for OpenAI
         messages = [
@@ -105,9 +139,10 @@ Context from documents:
 
 Instructions:
 - Answer based primarily on the provided context
-- If the context doesn't contain relevant information, say so
+- If the context doesn't contain relevant information, say so clearly
 - Be concise but comprehensive
-- Cite specific parts of the context when relevant"""
+- Cite specific parts of the context when relevant
+- If no context is provided, explain that no document context is available"""
             }
         ]
         
@@ -140,7 +175,9 @@ Instructions:
                 metrics = {
                     "response_time": round(elapsed_time, 2),
                     "token_count": token_count,
-                    "collection_used": collection
+                    "collection_used": collection,
+                    "retrieved_chunks": retrieved_chunks,
+                    "total_chunks": len(retrieved_chunks)
                 }
                 
                 # Yield updated chat history
@@ -153,6 +190,8 @@ Instructions:
             "response_time": round(time.time() - start_time, 2),
             "token_count": 0,
             "collection_used": collection,
+            "retrieved_chunks": [],
+            "total_chunks": 0,
             "error": str(e)
         }
         updated_history = history + [[query, error_response]]
@@ -355,6 +394,22 @@ def create_gradio_app():
     
     return demo
 
+def get_context_for_query_temporal_with_chunks(query: str, collection: str) -> dict:
+    """
+    Synchronous wrapper for get_context_via_temporal that returns both context and chunks.
+    
+    This function replaces the HTTP-based get_context_for_query in the 
+    main application flow while maintaining the same interface.
+    """
+    try:
+        return asyncio.run(get_context_via_temporal(query, collection))
+    except Exception as e:
+        return {
+            "context": f"Error retrieving context via Temporal: {str(e)}",
+            "chunks": [],
+            "total_results": 0
+        }
+
 def get_context_for_query_temporal(query: str, collection: str) -> str:
     """
     Synchronous wrapper for get_context_via_temporal.
@@ -363,7 +418,8 @@ def get_context_for_query_temporal(query: str, collection: str) -> str:
     main application flow while maintaining the same interface.
     """
     try:
-        return asyncio.run(get_context_via_temporal(query, collection))
+        result = asyncio.run(get_context_via_temporal(query, collection))
+        return result["context"] if isinstance(result, dict) else result
     except Exception as e:
         return f"Error retrieving context via Temporal: {str(e)}"
 
