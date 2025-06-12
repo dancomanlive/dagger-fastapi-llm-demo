@@ -10,6 +10,7 @@ venv/
 .new_venv/
 *.env.*
 !.env.example
+.koyeb
 
 # Test artifacts and coverage reports
 htmlcov/
