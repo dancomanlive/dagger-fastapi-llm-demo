@@ -31,12 +31,13 @@ services:
     build:
       context: ./services/embedding_service
       args:
-        EMBEDDING_MODEL_ARG: "sentence-transformers/all-MiniLM-L6-v2"
+        EMBEDDING_MODEL_ARG: "fast-bge-small-en"
     environment:
       - TEMPORAL_HOST=temporal:7233
       - TEMPORAL_NAMESPACE=default
       - TEMPORAL_TASK_QUEUE=embedding-task-queue
       - PYTHONPATH=/app
+      - EMBEDDING_MODEL=fast-bge-small-en
     depends_on:
       temporal:
         condition: service_healthy
@@ -49,7 +50,7 @@ services:
     build:
       context: ./services/retriever_service
       args:
-        EMBEDDING_MODEL_ARG: "sentence-transformers/all-MiniLM-L6-v2"
+        EMBEDDING_MODEL_ARG: "fast-bge-small-en"
     environment:
       - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333
       - QDRANT_API_KEY=${QDRANT_API_KEY:-}
@@ -57,6 +58,7 @@ services:
       - TEMPORAL_NAMESPACE=default
       - TEMPORAL_TASK_QUEUE=retriever-task-queue
       - PYTHONPATH=/app
+      - EMBEDDING_MODEL=fast-bge-small-en
     depends_on:
       qdrant:
         condition: service_healthy

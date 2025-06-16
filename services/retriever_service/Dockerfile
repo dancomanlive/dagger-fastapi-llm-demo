@@ -2,53 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Set Hugging Face Home for model caching within the image/container
-ENV HF_HOME=/app/.cache/huggingface
 ENV PYTHONUNBUFFERED=1
 
 # Install dependencies
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# --- Model Pre-downloading and Pre-warming ---
-# This ENV var will be used by the prewarm script
-ARG EMBEDDING_MODEL_ARG="sentence-transformers/all-MiniLM-L6-v2"
+# Pre-download the embedding model at build time
+ARG EMBEDDING_MODEL_ARG="fast-bge-small-en"
 ENV EMBEDDING_MODEL=${EMBEDDING_MODEL_ARG}
-ENV PAYLOAD_TEXT_FIELD_NAME="document"
 
-# Create a more comprehensive pre-warming script that will:
-# 1. Download the model files
-# 2. Force load the model into memory to test it works
-# 3. Create model embeddings for some sample text
-# This runs at IMAGE BUILD TIME
-RUN python -c "\
-import os; \
-import time; \
-from fastembed.embedding import DefaultEmbedding; \
-model_name = os.getenv('EMBEDDING_MODEL'); \
-print(f'Build-time: Ensuring model {model_name} files are downloaded to {os.getenv(\"HF_HOME\")} via fastembed...'); \
-start_time = time.time(); \
-embedding_model = DefaultEmbedding(model_name=model_name); \
-print(f'Build-time: Model {model_name} object created in {time.time() - start_time:.2f} seconds.'); \
-# Actually generate embeddings to verify model works and warm it up fully \
-sample_sentences = [ \
-    'This is a sample sentence to test embedding generation.', \
-    'Another sentence to ensure the model is properly loaded.', \
-    'I want to make sure everything works correctly.' \
-]; \
-print('Build-time: Generating test embeddings to fully load model...'); \
-start_time = time.time(); \
-embeddings = list(embedding_model.embed(sample_sentences)); \
-duration = time.time() - start_time; \
-print(f'Build-time: Generated {len(embeddings)} embeddings in {duration:.2f} seconds'); \
-print(f'Build-time: First embedding shape: {embeddings[0].shape}'); \
-print(f'Build-time: Model {model_name} is fully tested and cached!'); \
-"
-# Note: Model cache files will persist in the image, but model RAM state won't
-# be preserved. However, having the files cached will make startup much faster.
+RUN python -c "from fastembed.embedding import DefaultEmbedding; DefaultEmbedding(model_name='${EMBEDDING_MODEL_ARG}')"
 
 # Copy the service code
 COPY . .
 
-# Command to run the Temporal worker (not the FastAPI service)
+# Command to run the Temporal worker
 CMD ["python", "worker.py"]

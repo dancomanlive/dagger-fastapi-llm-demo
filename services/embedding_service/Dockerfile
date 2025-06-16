@@ -1,15 +1,20 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the requirements file
-COPY requirements.txt .
+ENV PYTHONUNBUFFERED=1
 
 # Install dependencies
+COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
+# Pre-download the embedding model at build time
+ARG EMBEDDING_MODEL_ARG="fast-bge-small-en"
+ENV EMBEDDING_MODEL=${EMBEDDING_MODEL_ARG}
+
+RUN python -c "from fastembed.embedding import DefaultEmbedding; DefaultEmbedding(model_name='${EMBEDDING_MODEL_ARG}')"
+
+# Copy the service code
 COPY . .
 
 # Command to run the Temporal worker
