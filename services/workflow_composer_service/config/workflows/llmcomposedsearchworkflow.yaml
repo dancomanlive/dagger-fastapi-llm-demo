@@ -1,0 +1,44 @@
+workflows:
+- activities:
+  - id: utility_service.validate_inputs_activity
+    parameters:
+    - input_name: search_request
+      name: inputs
+      source: input
+    result_key: validated_inputs
+  - id: intent_service.extract_context_activity
+    parameters:
+    - input_name: query
+      name: query
+      source: input
+    - input_name: search
+      name: context_type
+      source: input
+    result_key: search_context
+  - id: embedding_service.generate_embeddings_activity
+    parameters:
+    - input_name: query
+      name: text
+      source: input
+    result_key: query_embeddings
+  - id: retriever_service.semantic_search_activity
+    parameters:
+    - name: query_embedding
+      result_name: query_embeddings
+      source: activity_result
+    - input_name: collection
+      name: collection_name
+      source: input
+    result_key: search_results
+  - id: utility_service.format_response_activity
+    parameters:
+    - name: results
+      result_name: search_results
+      source: activity_result
+    - input_name: json
+      name: format_type
+      source: input
+    result_key: formatted_results
+  description: Search workflow composed by LLM based on discovered activities
+  name: LLMComposedSearchWorkflow
+  version: 1.0.0

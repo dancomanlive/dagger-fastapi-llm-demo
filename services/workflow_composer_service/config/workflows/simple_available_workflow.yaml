@@ -1,0 +1,9 @@
+workflows:
+- activities:
+  - id: utility_service.validate_inputs_activity
+    parameters: {}
+  - id: utility_service.format_response_activity
+    parameters: {}
+  description: A simple workflow using only available activities
+  name: simple_available_workflow
+  version: 1.0.0

@@ -1,0 +1,7 @@
+workflows:
+- activities:
+  - id: utility_service.format_response_activity
+    parameters: []
+    result_key: output
+  description: Another workflow via GraphQL
+  name: GraphQLTestWorkflow2

@@ -1,0 +1,19 @@
+workflows:
+- activities:
+  - id: utility_service.validate_inputs_activity
+    output_mapping:
+      validated_data: validation_result
+    parameters:
+      inputs: ${workflow.inputs}
+      schema:
+        preferences: object
+        user_query: string
+  - id: utility_service.format_response_activity
+    output_mapping:
+      formatted_response: final_output
+    parameters:
+      format_type: json
+      results: ${activities.0.validation_result}
+  description: A simple workflow that validates inputs and formats output
+  name: simple_validation_workflow
+  version: 1.0.0

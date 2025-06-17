@@ -1,0 +1,7 @@
+workflows:
+- activities:
+  - id: utility_service.validate_inputs_activity
+    parameters: []
+    result_key: validated
+  description: Workflow created via GraphQL
+  name: GraphQLTestWorkflow

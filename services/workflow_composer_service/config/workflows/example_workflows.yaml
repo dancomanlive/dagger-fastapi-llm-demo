@@ -1,0 +1,206 @@
+workflows:
+  - name: "SemanticSearchWorkflow"
+    description: "Find relevant accommodations based on user query with semantic matching"
+    version: "1.0.0"
+    activities:
+      - id: "utility_service.validate_inputs_activity"
+        result_key: "validation_result"
+        parameters:
+          - name: "inputs"
+            source: "input"
+            input_name: "user_input"
+          - name: "schema"
+            source: "input"
+            input_name: "validation_schema"
+      
+      - id: "intent_service.extract_context_activity"
+        result_key: "search_context"
+        parameters:
+          - name: "query"
+            source: "input"
+            input_name: "user_query"
+          - name: "context_type"
+            source: "input"
+            input_name: "search"
+      
+      - id: "embedding_service.generate_embeddings_activity"
+        result_key: "query_embeddings"
+        parameters:
+          - name: "text"
+            source: "input"
+            input_name: "user_query"
+      
+      - id: "retriever_service.semantic_search_activity"
+        result_key: "search_results"
+        parameters:
+          - name: "query_embedding"
+            source: "activity_result"
+            result_name: "query_embeddings"
+          - name: "collection_name"
+            source: "input"
+            input_name: "collection_name"
+      
+      - id: "retriever_service.filter_results_activity"
+        result_key: "filtered_results"
+        parameters:
+          - name: "results"
+            source: "activity_result"
+            result_name: "search_results"
+          - name: "filters"
+            source: "input"
+            input_name: "filters"
+      
+      - id: "retriever_service.rank_results_activity"
+        result_key: "ranked_results"
+        parameters:
+          - name: "results"
+            source: "activity_result"
+            result_name: "filtered_results"
+          - name: "user_preferences"
+            source: "input"
+            input_name: "user_preferences"
+      
+      - id: "utility_service.format_response_activity"
+        result_key: "formatted_response"
+        parameters:
+          - name: "results"
+            source: "activity_result"
+            result_name: "ranked_results"
+          - name: "format_type"
+            source: "input"
+            input_name: "format_type"
+
+  - name: "RecommendationsWorkflow"
+    description: "Generate personalized accommodation recommendations"
+    version: "1.0.0"
+    activities:
+      - id: "utility_service.validate_inputs_activity"
+        result_key: "validation_result"
+        parameters:
+          - name: "inputs"
+            source: "input"
+            input_name: "user_input"
+      
+      - id: "intent_service.extract_context_activity"
+        result_key: "user_preferences"
+        parameters:
+          - name: "query"
+            source: "input"
+            input_name: "user_query"
+          - name: "context_type"
+            source: "input"
+            input_name: "recommendation"
+      
+      - id: "ai_service.generate_recommendations_activity"
+        result_key: "recommendation_list"
+        parameters:
+          - name: "user_preferences"
+            source: "activity_result"
+            result_name: "user_preferences"
+          - name: "count"
+            source: "input"
+            input_name: "recommendation_count"
+      
+      - id: "retriever_service.semantic_search_activity"
+        result_key: "accommodation_results"
+        parameters:
+          - name: "query_embedding"
+            source: "activity_result"
+            result_name: "recommendation_list.embedding"
+          - name: "collection_name"
+            source: "input"
+            input_name: "collection_name"
+      
+      - id: "retriever_service.rank_results_activity"
+        result_key: "ranked_results"
+        parameters:
+          - name: "results"
+            source: "activity_result"
+            result_name: "accommodation_results"
+          - name: "user_preferences"
+            source: "activity_result"
+            result_name: "user_preferences"
+      
+      - id: "utility_service.format_response_activity"
+        result_key: "formatted_response"
+        parameters:
+          - name: "results"
+            source: "activity_result"
+            result_name: "ranked_results"
+          - name: "format_type"
+            source: "input"
+            input_name: "format_type"
+
+  - name: "BookingWorkflow"
+    description: "Handle booking requests end-to-end"
+    version: "1.0.0"
+    activities:
+      - id: "utility_service.validate_inputs_activity"
+        result_key: "validation_result"
+        parameters:
+          - name: "inputs"
+            source: "input"
+            input_name: "booking_request"
+      
+      - id: "intent_service.extract_context_activity"
+        result_key: "booking_details"
+        parameters:
+          - name: "query"
+            source: "input"
+            input_name: "booking_query"
+          - name: "context_type"
+            source: "input"
+            input_name: "booking"
+      
+      - id: "booking_service.check_availability_activity"
+        result_key: "availability_info"
+        parameters:
+          - name: "accommodation_id"
+            source: "activity_result"
+            result_name: "booking_details.accommodation_id"
+          - name: "check_in"
+            source: "activity_result"
+            result_name: "booking_details.check_in"
+          - name: "check_out"
+            source: "activity_result"
+            result_name: "booking_details.check_out"
+          - name: "guests"
+            source: "activity_result"
+            result_name: "booking_details.guests"
+      
+      - id: "ai_service.process_booking_request_activity"
+        result_key: "booking_recommendation"
+        parameters:
+          - name: "booking_intent"
+            source: "activity_result"
+            result_name: "booking_details"
+          - name: "availability_data"
+            source: "activity_result"
+            result_name: "availability_info"
+      
+      - id: "booking_service.create_reservation_activity"
+        result_key: "reservation"
+        parameters:
+          - name: "booking_details"
+            source: "activity_result"
+            result_name: "booking_recommendation"
+          - name: "payment_info"
+            source: "input"
+            input_name: "payment_details"
+      
+      - id: "booking_service.get_booking_details_activity"
+        result_key: "booking_confirmation"
+        parameters:
+          - name: "reservation_id"
+            source: "activity_result"
+            result_name: "reservation.id"
+      
+      - id: "utility_service.format_response_activity"
+        result_key: "formatted_response"
+        parameters:
+          - name: "results"
+            source: "activity_result"
+            result_name: "booking_confirmation"
+          - name: "format_type"
+            source: "input"
+            input_name: "format_type"

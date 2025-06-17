@@ -1,0 +1,9 @@
+workflows:
+- activities:
+  - id: utility_service.validate_inputs_activity
+    parameters: {}
+  - id: booking_service.check_availability_activity
+    parameters: {}
+  description: A unit test workflow
+  name: test_unit_workflow
+  version: 1.0.0
