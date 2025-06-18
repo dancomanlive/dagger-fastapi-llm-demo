@@ -12,10 +12,46 @@ from typing import Dict, Any
 from qdrant_client import QdrantClient
 from temporalio import activity
 
-# Import normalization function from temporal service
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'temporal_service'))
-from normalization import normalize_args_input
+# Normalization function (copied from temporal service to avoid cross-service dependency)
+def normalize_args_input(*args, default_top_k: int = 5) -> Dict[str, Any]:
+    """
+    Normalize function arguments to standard format.
+    
+    This handles the dual format problem in retriever service:
+    - args = (["query", "collection", top_k],)  # List format
+    - args = ("query", "collection", top_k)     # Direct format
+    
+    Args:
+        *args: Variable arguments
+        default_top_k: Default top_k value for retriever service
+        
+    Returns:
+        Dict with keys: query, collection, top_k
+        
+    Raises:
+        ValueError: If insufficient arguments provided
+    """
+    if len(args) == 1 and isinstance(args[0], list) and len(args[0]) >= 2:
+        # List format: args = (["query", "collection", top_k],)
+        arg_list = args[0]
+        query = arg_list[0]
+        collection = arg_list[1]
+        top_k = arg_list[2] if len(arg_list) > 2 else default_top_k
+        
+    elif len(args) >= 2:
+        # Direct format: args = ("query", "collection", top_k)
+        query = args[0]
+        collection = args[1]
+        top_k = args[2] if len(args) > 2 else default_top_k
+        
+    else:
+        raise ValueError(f"Expected at least 2 arguments (query, collection), got {len(args)}: {args}")
+    
+    return {
+        "query": str(query),
+        "collection": str(collection),
+        "top_k": int(top_k)
+    }
 
 # Configure logging
 logger = logging.getLogger(__name__)
