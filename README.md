@@ -1,101 +1,130 @@
 # SmartÆgent X-7
 
-Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system with interactive streaming chat interface and Temporal workflow orchestration. Built with FastAPI, Gradio, Temporal, and Docker.
+Microservice orchestration platform for Retrieval-Augmented Generation (RAG) using Temporal workflows. Features distributed document processing, vector search, and interactive chat interface with full workflow visibility and monitoring.
 
 ---
 
-## C4 Architecture Overview
+## Temporal Microservice Orchestration
+
+### Architecture Overview
+SmartÆgent X-7 demonstrates **microservice orchestration using Temporal workflows** for distributed RAG operations. Each service runs as an independent container with Temporal coordinating complex document processing pipelines.
+
+**Core Orchestration Pattern:**
+```
+Gradio UI → Temporal Workflows → Distributed Activities → Vector Database
+```
+
+### Temporal Workflow Benefits
+- **Reliability**: Automatic retries, error handling, and state persistence
+- **Scalability**: Horizontal scaling of individual microservices
+- **Visibility**: Full workflow execution monitoring via Temporal UI
+- **Durability**: Workflow state survives service restarts and failures
+- **Composition**: Complex pipelines built from simple, reusable activities
 
 ### 1. Context
-- **System:** SmartÆgent X-7 — RAG platform for interactive chat and document processing.
+- **System:** SmartÆgent X-7 — Temporal-orchestrated RAG platform demonstrating microservice coordination
 - **Users:**
-  - End Users (web chat interface)
-  - Developers (API)
-  - Administrators (Temporal UI, monitoring)
+  - End Users (Gradio chat interface)
+  - Developers (Temporal workflow monitoring)
+  - DevOps (Container orchestration)
 - **External Systems:**
   - OpenAI API (LLM completions)
-  - PostgreSQL (metadata storage)
-  - Docker infrastructure
+  - Temporal Server (workflow orchestration)
+  - Vector Database (Qdrant)
 
-### 2. Containers
-**Main containers/services:**
-- **Gradio Service:** Web-based chat UI for users. Connects to FastAPI and Retriever services.
-- **FastAPI Service:** Main API server. Orchestrates RAG pipeline, exposes `/rag` endpoints, and integrates with Temporal workflows.
-- **Retriever Service:** FastAPI microservice for semantic search. Queries Qdrant for relevant document chunks.
-- **Embedding Service:** FastAPI microservice for document embedding and indexing. Stores vectors in Qdrant.
-- **Temporal Services:**
-  - Temporal Server (workflow engine)
-  - Temporal Worker (executes workflows)
-  - Temporal API (HTTP workflow management)
-  - Temporal Web UI (monitoring dashboard)
-- **Qdrant:** Vector database for storing and searching embeddings.
-- **PostgreSQL:** Metadata storage for Temporal.
+### 2. Microservice Architecture
+**Temporal-Orchestrated Services:**
+- **Gradio Service:** Interactive chat interface with Temporal workflow triggers
+- **Temporal Service:** Workflow orchestration engine executing distributed activities
+- **Retriever Service:** Vector search microservice (Temporal activities)
+- **Embedding Service:** Document embedding microservice (Temporal activities)
+- **Workflow Composer Service:** Advanced workflow composition and agent orchestration
 
-**Container Interactions:**
-- Gradio → FastAPI (chat, RAG queries)
-- FastAPI → Retriever (semantic search)
-- FastAPI → Temporal API (workflow management)
-- Temporal Worker → Embedding Service (embedding via HTTP)
-- Embedding/Retriever → Qdrant (vector storage/search)
+**Infrastructure Services:**
+- **Temporal Server:** Workflow engine with persistence and monitoring
+- **Qdrant:** Vector database for semantic search
+- **PostgreSQL:** Temporal metadata storage
 
-### 3. Components
-**(Example: FastAPI Service)**
-- **RAG Pipeline:** Orchestrates retrieval and generation, calls Retriever and OpenAI.
-- **Workflow Endpoints:** Triggers Temporal workflows for document processing.
-- **Cache/State Management:** Caches results for performance.
-- **API Models:** Defines request/response schemas.
+**Microservice Communication Pattern:**
+```
+Chat Request → Temporal Workflow → Activity Tasks → Service Workers → Results
+```
+All service coordination flows through Temporal workflows, eliminating point-to-point service dependencies.
 
-**(Example: Temporal Worker)**
-- **Chunk Documents Activity:** Splits documents into paragraphs.
-- **Embed Documents Activity:** Calls Embedding Service for vectorization.
-- **Workflow Definitions:** Orchestrates chunking and embedding steps.
+### 3. Temporal Workflow Components
+**Document Processing Workflow:**
+- **Document Upload Activity:** Handles file ingestion and validation
+- **Text Chunking Activity:** Splits documents into semantic chunks
+- **Embedding Activity:** Generates vector embeddings for chunks
+- **Vector Storage Activity:** Stores embeddings in Qdrant
 
-### 4. Code/Implementation
-- `services/gradio_service/main.py`: Chat UI with Temporal client integration.
-- `services/gradio_service/rag_service.py`: RAG pipeline integration and backend communication.
-- `services/temporal_service/workflows.py`: Temporal workflows for document processing.
-- `services/temporal_service/activities.py`: Workflow activities (chunking, embedding).
-- `services/temporal_service/pipeline_executor.py`: Centralized pipeline execution logic.
-- `services/temporal_service/normalization.py`: Data normalization and transformation utilities.
-- `services/retriever_service/activities.py`: Vector search activities for Temporal.
-- `services/embedding_service/activities.py`: Text embedding activities for Temporal.
-- `services/workflow_composer_service/`: Advanced workflow composition and agent orchestration.
-- `tests/`: Centralized test suite with comprehensive coverage.
-- `scripts/`: Automation scripts for testing and maintenance.
+**RAG Query Workflow:**
+- **Query Processing Activity:** Normalizes and validates user queries
+- **Vector Retrieval Activity:** Searches for relevant document chunks
+- **Context Assembly Activity:** Combines retrieved chunks for LLM context
+- **Response Generation Activity:** Integrates with OpenAI for final response
+
+**Workflow Orchestration Benefits:**
+- Each activity runs in isolated microservices
+- Automatic retry and error handling
+- Full execution history and monitoring
+- Horizontal scaling of individual activities
+
+### 4. Implementation Architecture
+**Microservice Implementation:**
+- `services/temporal_service/workflows.py`: Workflow definitions for document processing and RAG
+- `services/temporal_service/activities.py`: Cross-cutting workflow activities
+- `services/retriever_service/activities.py`: Vector search activities
+- `services/embedding_service/activities.py`: Text embedding activities
+- `services/gradio_service/main.py`: Chat UI with Temporal workflow integration
+- `services/workflow_composer_service/`: Advanced workflow composition engine
+
+**Key Architecture Patterns:**
+- **Activity Pattern**: Each microservice exposes Temporal activities
+- **Workflow Pattern**: Complex operations composed of distributed activities
+- **Saga Pattern**: Long-running transactions with compensation
+- **Event Sourcing**: Full workflow execution history
 
 ---
 
-## Service Summary Table
+## Microservice Orchestration Summary
 
-| Service           | Purpose                        | Key Functions                     |
-|-------------------|-------------------------------|-----------------------------------|
-| Gradio            | Chat UI + Temporal Client     | Web interface, workflow triggers |
-| Temporal Worker   | Workflow orchestration        | Workflows, Activities, Pipeline   |
-| Retriever         | Vector search activities      | search_vectors, index_vectors     |
-| Embedding         | Text embedding activities     | embed_text, embed_query           |
-| Workflow Composer | Workflow composition          | Agent orchestration, GraphQL API |
-| Qdrant            | Vector Database               | Document storage, similarity      |
-| PostgreSQL        | Temporal State Store          | Workflow persistence              |
+| Service           | Role                          | Temporal Integration          |
+|-------------------|-------------------------------|-------------------------------|
+| Gradio            | Chat UI + Workflow Triggers  | Temporal client, workflow API |
+| Temporal Worker   | Workflow orchestration        | Workflow definitions, routing |
+| Retriever         | Vector search microservice    | Temporal activities           |
+| Embedding         | Text embedding microservice   | Temporal activities           |
+| Workflow Composer | Advanced orchestration        | Meta-workflows, composition   |
+| Qdrant            | Vector Database               | Data persistence layer        |
+| PostgreSQL        | Temporal State Store          | Workflow state persistence    |
+
+**Orchestration Flow:**
+1. User interaction → Gradio triggers Temporal workflow
+2. Temporal Worker coordinates distributed activities
+3. Activities execute in isolated microservices
+4. Results flow back through workflow to UI
+5. Full execution history available in Temporal UI
 
 ---
 
 ## Testing & Development
 
-### Test Structure
+### Microservice Testing Strategy
 - **Unit Tests**: Individual service tests in `services/*/tests/`
-- **Integration Tests**: Cross-service tests in `tests/`
-- **E2E Tests**: Full pipeline tests with `scripts/e2e_test.sh`
-- **Normalization Tests**: TDD-style data transformation tests
+- **Workflow Tests**: Temporal workflow integration tests
+- **Activity Tests**: Distributed activity execution tests
+- **E2E Tests**: Full pipeline orchestration tests
 
 ### Running Tests
 ```bash
-# Run all tests
+# Test all microservices
 python run_tests.py
 
-# Run E2E tests
+# Test end-to-end workflows
 scripts/e2e_test.sh
 
-# Clean up test collections
+# Clean test data
 scripts/cleanup_collections.sh
 ```
 
@@ -104,90 +133,76 @@ scripts/cleanup_collections.sh
 ## Quick Start
 
 ### Prerequisites
-1. **Environment Configuration**
-   - Create `.env` file in project root with `OPENAI_API_KEY`
-2. **System Requirements**
-   - Docker and Docker Compose
-   - Network access for OpenAI API
+- Docker and Docker Compose
+- OpenAI API key in `.env` file: `OPENAI_API_KEY=your_key_here`
 
-### Deployment
-1. **Build and start all services:**
-   ```bash
-   docker-compose up --build
-   ```
-2. **Upload documents to vector database:**
-   ```bash
-   python upload_documents.py
-   ```
-3. **Run tests:**
-   ```bash
-   python run_tests.py
-   ```
-4. **Run E2E tests:**
-   ```bash
-   scripts/e2e_test.sh
-   ```
+### Launch Platform
+```bash
+# 1. Build and start all microservices
+docker-compose up --build && docker-compose up -d
 
-**Access interfaces:**
-- **Chat Interface**: http://localhost:7860 (Main user interface)
-- **Temporal Web UI**: http://localhost:8081 (Workflow monitoring)
-- **Qdrant UI**: http://localhost:6333/dashboard (Vector database)
+# 2. Upload documents (only local setup required)
+python upload_documents.py
+```
+
+### Experience Temporal Orchestration
+1. **Monitor Workflows**: http://localhost:8081 (Temporal UI)
+   - Watch document processing workflows in real-time
+   - See activity execution across distributed services
+   - Monitor workflow history and performance
+
+2. **Chat Interface**: http://localhost:7860 (Gradio UI)
+   - Ask questions about uploaded documents
+   - Observe retrieved document chunks in responses
+   - Each query triggers a complete RAG workflow
+
+3. **Vector Database**: http://localhost:6333/dashboard (Qdrant UI)
+   - Explore processed document embeddings
+   - View vector search operations
+
+### Workflow Visualization
+- Document upload → Temporal orchestrates: chunking → embedding → storage
+- Chat query → Temporal orchestrates: search → retrieval → response generation
+- All operations visible in Temporal UI with full execution traces
 
 ---
 
 ## Project Structure
 
 ```
-├── docker-compose.yml       # Simplified Temporal-based orchestration
-├── requirements.txt         # Root dependencies
-├── run_tests.py            # Test runner entry point
-├── upload_documents.py     # Document upload utility
-├── e2e_requirements.txt    # E2E testing dependencies
-├── scripts/                # Automation scripts
-│   ├── e2e_test.sh        # End-to-end testing script
-│   └── cleanup_collections.sh # Qdrant cleanup utility
-├── tests/                  # Centralized test suite
-│   ├── run_tests.py       # Main test runner
-│   ├── test_temporal_e2e.py # E2E tests
-│   ├── test_normalization_tdd.py # Normalization tests
-│   ├── test_normalization_integration.py # Integration tests
-│   └── test_*.py          # Additional test files
+├── docker-compose.yml       # Microservice orchestration with Temporal
+├── upload_documents.py     # Document upload utility (local setup)
+├── scripts/                # Testing and maintenance automation
+│   ├── e2e_test.sh        # End-to-end workflow testing
+│   └── cleanup_collections.sh # Vector database cleanup
+├── tests/                  # Workflow and integration tests
+│   ├── test_temporal_e2e.py # Temporal workflow tests
+│   └── test_*.py          # Service integration tests
 ├── document_files/         # Sample documents for testing
-│   ├── ai-report.pdf
-│   ├── ai-science.pdf
-│   └── README.md
-├── services/
-│   ├── gradio_service/     # Chat interface + Temporal client
-│   │   ├── main.py         # Gradio app with Temporal integration
-│   │   ├── rag_service.py  # RAG pipeline integration
-│   │   ├── gradio_ui.py    # UI components
-│   │   ├── tests/          # Gradio integration tests
-│   │   ├── Dockerfile      # Gradio container
-│   │   └── requirements.txt # Gradio dependencies
-│   ├── temporal_service/   # Workflow orchestration
-│   │   ├── workflows.py    # Temporal workflows
-│   │   ├── activities.py   # Document processing activities
-│   │   ├── pipeline_executor.py # Pipeline execution logic
-│   │   ├── normalization.py # Centralized normalization
-│   │   ├── worker.py       # Temporal worker
-│   │   ├── transforms/     # Data transformation modules
-│   │   └── tests/          # Workflow tests
-│   ├── retriever_service/  # Vector search activities
-│   │   ├── activities.py   # search_vectors, index_vectors
-│   │   ├── worker.py       # Activity worker
-│   │   └── tests/          # Activity tests
-│   ├── embedding_service/  # Text embedding activities
-│   │   ├── activities.py   # embed_text, embed_query
-│   │   ├── worker.py       # Activity worker
-│   │   └── tests/          # Activity tests
-│   └── workflow_composer_service/ # Workflow composition
+├── services/               # Temporal-orchestrated microservices
+│   ├── gradio_service/     # Chat UI + Temporal workflow triggers
+│   │   ├── main.py         # Gradio app with workflow integration
+│   │   ├── rag_service.py  # RAG workflow client
+│   │   └── Dockerfile      # Containerized UI service
+│   ├── temporal_service/   # Workflow orchestration engine
+│   │   ├── workflows.py    # Document and RAG workflow definitions
+│   │   ├── activities.py   # Workflow activities
+│   │   ├── worker.py       # Temporal worker process
+│   │   └── normalization.py # Data transformation utilities
+│   ├── retriever_service/  # Vector search microservice
+│   │   ├── activities.py   # Vector search Temporal activities
+│   │   ├── worker.py       # Activity worker process
+│   │   └── Dockerfile      # Containerized retrieval service
+│   ├── embedding_service/  # Text embedding microservice
+│   │   ├── activities.py   # Embedding Temporal activities
+│   │   ├── worker.py       # Activity worker process
+│   │   └── Dockerfile      # Containerized embedding service
+│   └── workflow_composer_service/ # Advanced workflow orchestration
 │       ├── activities.py   # Composition activities
-│       ├── worker.py       # Composition worker
-│       ├── api/            # GraphQL API
-│       ├── agents/         # AI agents
-│       └── tests/          # Composition tests
+│       ├── agents/         # AI agent workflows
+│       └── api/            # GraphQL workflow API
 └── ci/
-    └── ci_pipeline.py      # CI/CD pipeline
+    └── ci_pipeline.py      # CI/CD automation
 ```
 
 ---
