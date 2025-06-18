@@ -29,7 +29,7 @@ The system consists of these key components:
 
 ```bash
 # Start all services and run automated tests
-./e2e_test.sh
+./scripts/e2e_test.sh
 ```
 
 ### Manual Testing
@@ -41,7 +41,7 @@ The system consists of these key components:
 
 2. **Run Temporal Workflow Tests**:
    ```bash
-   python test_temporal_e2e.py
+   python tests/test_temporal_e2e.py
    ```
 
 3. **Monitor via Web UI**:
@@ -50,7 +50,7 @@ The system consists of these key components:
 
 ### Test Script Features
 
-The `test_temporal_e2e.py` script validates:
+The `tests/test_temporal_e2e.py` script validates:
 
 - ✅ Temporal connectivity
 - ✅ HealthCheckWorkflow execution

@@ -18,8 +18,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY main.py .
-COPY requirements.txt .
+COPY *.py .
 
 # Set environment variables
 ENV PYTHONPATH=/app
@@ -32,5 +31,5 @@ ENV RETRIEVER_SERVICE_URL=http://retriever-service:8000
 # Expose port for Gradio
 EXPOSE 7860
 
-# Run the Gradio app
-CMD ["python", "main.py"]
+# Run the Gradio app with new entry point
+CMD ["python", "app.py"]

@@ -27,11 +27,6 @@ test-results/
 test_results/
 *.xml
 *.log
-
-# BDD test artifacts
-.behave/
-behave-report.json
-behave-report.html
 reports/
 
 # Jupyter Notebook checkpoints

@@ -1,0 +1,562 @@
+# gradio_app.py
+
+"""
+Gradio-based chat interface for the RAG pipeline with streaming support.
+
+Features:
+- Real-time streaming responses from OpenAI
+- Interactive chat interface  
+- Document collection selection
+- Debug information panel
+- Response metrics and settings
+"""
+
+import gradio as gr
+import openai
+import os
+import time
+import asyncio
+from typing import Generator, List, Tuple
+from temporalio.client import Client
+
+# Temporal Configuration
+TEMPORAL_HOST = os.environ.get("TEMPORAL_HOST", "localhost:7233")
+TEMPORAL_NAMESPACE = os.environ.get("TEMPORAL_NAMESPACE", "default")
+
+async def get_context_via_temporal(query: str, collection: str) -> dict:
+    """
+    Get context using GenericPipelineWorkflow with document_retrieval pipeline.
+    
+    This replaces the HTTP-based get_context_for_query function.
+    Returns both formatted context and raw chunks.
+    """
+    try:
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Starting with query='{query}', collection='{collection}'")
+        
+        # Connect to Temporal
+        client = await Client.connect(TEMPORAL_HOST, namespace=TEMPORAL_NAMESPACE)
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Connected to Temporal at {TEMPORAL_HOST}")
+        
+        # Start GenericPipelineWorkflow with document_retrieval pipeline
+        workflow_args = ["document_retrieval", {"query": query, "top_k": 5}]
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Starting workflow with args: {workflow_args}")
+        
+        workflow_handle = await client.start_workflow(
+            "GenericPipelineWorkflow",
+            args=workflow_args,  # Pipeline name and input
+            id=f"gradio-retrieval-{int(time.time() * 1000)}",
+            task_queue="document-processing-queue"  # Use the correct task queue
+        )
+        
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Workflow started, waiting for result...")
+        
+        # Get the result
+        result = await workflow_handle.result()
+        
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Got workflow result type: {type(result)}")
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Result keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Full result: {result}")
+        
+        # Handle different result formats - check if result is the direct search data or wrapped
+        search_data = None
+        
+        # First, check if result is directly the search result (new format)
+        if isinstance(result, list) and len(result) > 0 and isinstance(result[0], dict):
+            # Result is a list with search results (like your JSON example)
+            search_data = result[0]
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Found direct list result format")
+        elif result.get("status") == "completed" and "final_result" in result:
+            # Legacy format with final_result wrapper
+            search_data = result["final_result"]
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Found completed workflow with final_result")
+        elif result.get("status") == "success" and "retrieved_documents" in result:
+            # Direct success format
+            search_data = result
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Found direct success format")
+        
+        if search_data:
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Search data type: {type(search_data)}")
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Search data keys: {list(search_data.keys()) if isinstance(search_data, dict) else 'Not a dict'}")
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Search data: {search_data}")
+            
+            if search_data.get("status") == "success" and "retrieved_documents" in search_data and search_data["retrieved_documents"]:
+                print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Found {len(search_data['retrieved_documents'])} retrieved documents")
+                # Format results into context
+                contexts = []
+                chunks = []
+                for i, doc in enumerate(search_data["retrieved_documents"]):
+                    content = doc.get("text", "")
+                    print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Document {i}: ID={doc.get('id', 'N/A')}, text_length={len(content)}")
+                    contexts.append(f"Context {i+1}: {content}")
+                    chunks.append({
+                        "id": doc.get("id", ""),
+                        "score": doc.get("score", 0),
+                        "text": content[:200] + "..." if len(content) > 200 else content  # Truncate for display
+                    })
+                
+                formatted_context = "\n\n".join(contexts)
+                final_result = {
+                    "context": formatted_context,
+                    "chunks": chunks,
+                    "total_results": len(chunks),
+                    "collection_name": search_data.get("collection_name", "unknown"),
+                    "processing_time": search_data.get("processing_time", 0),
+                    "query": search_data.get("query", ""),
+                    "retrieval_status": search_data.get("status", "unknown")
+                }
+                print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Returning success with {len(chunks)} chunks, context length: {len(formatted_context)}")
+                return final_result
+            else:
+                print(f"❌ GET_CONTEXT_VIA_TEMPORAL: No retrieved_documents in search data. Search data: {search_data}")
+                error_result = {
+                    "context": "No relevant context found.",
+                    "chunks": [],
+                    "total_results": 0
+                }
+                print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Returning error result: {error_result}")
+                return error_result
+        else:
+            print(f"❌ GET_CONTEXT_VIA_TEMPORAL: Workflow status: {result.get('status', 'unknown')}, keys: {list(result.keys()) if isinstance(result, dict) else 'not dict'}")
+            error_result = {
+                "context": f"Workflow completed but no results found: {result.get('status', 'unknown')}",
+                "chunks": [],
+                "total_results": 0
+            }
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Returning workflow error result: {error_result}")
+            return error_result
+            
+    except Exception as e:
+        print(f"❌ GET_CONTEXT_VIA_TEMPORAL: Exception occurred: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        error_result = {
+            "context": f"Error retrieving context via Temporal: {str(e)}",
+            "chunks": [],
+            "total_results": 0
+        }
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Returning exception error result: {error_result}")
+        return error_result
+
+def get_openai_client():
+    """Get OpenAI client with API key from environment"""
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY environment variable is not set")
+    return openai.OpenAI(api_key=api_key)
+
+# Configuration - Application settings
+DEFAULT_COLLECTION = "default"
+DOCUMENT_COLLECTION_NAME = os.environ.get("DOCUMENT_COLLECTION_NAME", "document_chunks")
+AVAILABLE_COLLECTIONS = ["default", DOCUMENT_COLLECTION_NAME]
+
+# Note: get_context_for_query has been removed - we now use GenericPipelineWorkflow only
+
+def stream_rag_response(
+    query: str, 
+    history: List[Tuple[str, str]], 
+    collection: str = DEFAULT_COLLECTION,
+    temperature: float = 0.7,
+    max_tokens: int = 1000
+) -> Generator[Tuple[str, List[Tuple[str, str]], dict], None, None]:
+    """Stream RAG response using OpenAI with context from retriever service"""
+    
+    start_time = time.time()
+    response_text = ""
+    token_count = 0
+    
+    # Get context from GenericPipelineWorkflow with document_retrieval pipeline (outside try-catch)
+    print(f"🔍 GRADIO STREAM: Starting retrieval for query='{query}', collection='{collection}'")
+    print(f"🔍 GRADIO STREAM: About to call get_context_for_query_temporal_with_chunks...")
+    
+    context_result = get_context_for_query_temporal_with_chunks(query, collection)
+    
+    print(f"🔍 GRADIO STREAM: Raw context_result type: {type(context_result)}")
+    print(f"🔍 GRADIO STREAM: Raw context_result keys: {list(context_result.keys()) if isinstance(context_result, dict) else 'Not a dict'}")
+    print(f"🔍 GRADIO STREAM: Raw context_result: {context_result}")
+    
+    context = context_result["context"]
+    retrieved_chunks = context_result["chunks"]
+    
+    print(f"🔍 GRADIO STREAM: Extracted context type: {type(context)}, length: {len(context) if context else 'None'}")
+    print(f"🔍 GRADIO STREAM: Extracted chunks type: {type(retrieved_chunks)}, length: {len(retrieved_chunks) if retrieved_chunks else 'None'}")
+    print(f"🔍 GRADIO STREAM: Context content: '{context}'")
+    print(f"🔍 GRADIO STREAM: First chunk: {retrieved_chunks[0] if retrieved_chunks else 'No chunks'}")
+    
+    # Check if we got meaningful context
+    if not context or context.startswith("Error") or context == "No relevant context found.":
+        print("⚠️  GRADIO STREAM: No valid context retrieved, using fallback response")
+        print(f"⚠️  GRADIO STREAM: Context was: '{context}'")
+        print(f"⚠️  GRADIO STREAM: Context startswith Error: {context.startswith('Error') if context else 'N/A'}")
+        print(f"⚠️  GRADIO STREAM: Context == No relevant: {context == 'No relevant context found.'}")
+        context = "No relevant document context available."
+        # Don't reset retrieved_chunks to empty - keep the original chunks for debugging
+    else:
+        print(f"✅ GRADIO STREAM: Valid context retrieved: {len(context)} chars, {len(retrieved_chunks)} chunks")
+    
+    try:
+        
+        # Prepare messages for OpenAI
+        messages = [
+            {
+                "role": "system", 
+                "content": f"""You are a helpful assistant that answers questions based on the provided context. 
+                
+Context from documents:
+{context}
+
+Instructions:
+- Answer based primarily on the provided context
+- If the context doesn't contain relevant information, say so clearly
+- Be concise but comprehensive
+- Cite specific parts of the context when relevant
+- If no context is provided, explain that no document context is available"""
+            }
+        ]
+        
+        # Add conversation history
+        for user_msg, assistant_msg in history[-5:]:  # Keep last 5 exchanges
+            messages.append({"role": "user", "content": user_msg})
+            messages.append({"role": "assistant", "content": assistant_msg})
+        
+        # Add current query
+        messages.append({"role": "user", "content": query})
+        
+        # Create streaming response
+        openai_client = get_openai_client()
+        stream = openai_client.chat.completions.create(
+            model="gpt-3.5-turbo",  # Use gpt-4 if available
+            messages=messages,
+            stream=True,
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        
+        for chunk in stream:
+            if chunk.choices[0].delta.content is not None:
+                content = chunk.choices[0].delta.content
+                response_text += content
+                token_count += 1
+                
+                # Calculate metrics with enhanced retrieval info
+                elapsed_time = time.time() - start_time
+                metrics = {
+                    "response_time": round(elapsed_time, 2),
+                    "token_count": token_count,
+                    "collection_used": collection,
+                    "retrieved_chunks": retrieved_chunks,
+                    "total_chunks": len(retrieved_chunks),
+                    "collection_name": context_result.get("collection_name", collection),
+                    "processing_time": context_result.get("processing_time", 0),
+                    "query": context_result.get("query", query),
+                    "retrieval_status": context_result.get("retrieval_status", "unknown")
+                }
+                
+                # Yield updated chat history
+                updated_history = history + [[query, response_text]]
+                yield "", updated_history, metrics
+                
+    except Exception as e:
+        error_response = f"Error generating response: {str(e)}"
+        print(f"❌ GRADIO STREAM: OpenAI error: {str(e)}")
+        print(f"🔍 GRADIO STREAM: Still preserving {len(retrieved_chunks)} retrieved chunks in error response")
+        metrics = {
+            "response_time": round(time.time() - start_time, 2),
+            "token_count": 0,
+            "collection_used": collection,
+            "retrieved_chunks": retrieved_chunks,  # Preserve the chunks even on error
+            "total_chunks": len(retrieved_chunks),
+            "collection_name": context_result.get("collection_name", collection),
+            "processing_time": context_result.get("processing_time", 0),
+            "query": context_result.get("query", query),
+            "retrieval_status": context_result.get("retrieval_status", "error"),
+            "error": str(e)
+        }
+        updated_history = history + [[query, error_response]]
+        yield "", updated_history, metrics
+
+def get_temporal_status() -> dict:
+    """Get status of Temporal system and services"""
+    try:
+        # Test Temporal connection
+        status = {}
+        
+        # Test OpenAI API Key
+        if os.environ.get("OPENAI_API_KEY"):
+            status["OpenAI"] = "✅ API Key Set"
+        else:
+            status["OpenAI"] = "❌ No API Key"
+        
+        # Test Temporal configuration
+        temporal_host = os.environ.get("TEMPORAL_HOST", "localhost:7233")
+        status["Temporal Host"] = f"✅ Configured: {temporal_host}"
+        
+        # Test Temporal namespace
+        temporal_namespace = os.environ.get("TEMPORAL_NAMESPACE", "default")
+        status["Temporal Namespace"] = f"✅ {temporal_namespace}"
+        
+        # Note: In a real implementation, you could test actual Temporal connectivity here
+        # For now, we show configuration status
+        status["System"] = "✅ Temporal-based Architecture"
+        
+        return status
+        
+    except Exception as e:
+        return {"error": str(e)}
+
+def test_temporal_system() -> dict:
+    """Test Temporal system components"""
+    return {
+        "Architecture": "✅ Pure Temporal Workflows",
+        "Chat Interface": "✅ Gradio + Temporal Client",
+        "Orchestration": "✅ GenericPipelineWorkflow", 
+        "Activities": "✅ Embedding + Retriever Services",
+        "Database": "✅ Qdrant Vector Store",
+        "Monitoring": "✅ Temporal UI (port 8081)"
+    }
+
+async def test_temporal_connection() -> dict:
+    """Test connectivity to Temporal server"""
+    try:
+        await Client.connect(TEMPORAL_HOST, namespace=TEMPORAL_NAMESPACE)
+        # Simple test - try to get workflow service info
+        return {"status": "✅ Connected", "host": TEMPORAL_HOST, "namespace": TEMPORAL_NAMESPACE}
+    except Exception as e:
+        return {"status": f"❌ {str(e)}", "host": TEMPORAL_HOST, "namespace": TEMPORAL_NAMESPACE}
+
+def test_temporal_connection_sync() -> dict:
+    """Synchronous wrapper for Temporal connection test"""
+    try:
+        return asyncio.run(test_temporal_connection())
+    except Exception as e:
+        return {"status": f"❌ {str(e)}", "host": TEMPORAL_HOST, "namespace": TEMPORAL_NAMESPACE}
+
+def create_gradio_app():
+    """Create and configure the Gradio chat interface"""
+    
+    # Custom CSS for better styling
+    custom_css = """
+    .gradio-container {
+        max-width: 1200px !important;
+    }
+    .chat-message {
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 10px;
+    }
+    """
+    
+    with gr.Blocks(
+        title="RAG Chat Assistant", 
+        theme=gr.themes.Soft(),
+        css=custom_css
+    ) as demo:
+        
+        # Header
+        gr.Markdown("# 🤖 RAG Chat Assistant")
+        gr.Markdown("Ask questions and get answers based on your document collection with real-time streaming.")
+        
+        with gr.Row():
+            # Main chat interface
+            with gr.Column(scale=3):
+                chatbot = gr.Chatbot(
+                    height=500,
+                    bubble_full_width=False,
+                    show_copy_button=True,
+                    placeholder="Start a conversation...",
+                    show_label=False
+                )
+                
+                with gr.Row():
+                    msg = gr.Textbox(
+                        placeholder="Type your question here...",
+                        scale=4,
+                        show_label=False,
+                        container=False
+                    )
+                    submit_btn = gr.Button("Send", variant="primary", scale=1)
+                    clear_btn = gr.Button("Clear", scale=1)
+            
+            # Settings and debug panel
+            with gr.Column(scale=1):
+                # Collection selection
+                collection_dropdown = gr.Dropdown(
+                    choices=AVAILABLE_COLLECTIONS,
+                    value=DEFAULT_COLLECTION,
+                    label="📁 Document Collection",
+                    interactive=True
+                )
+                
+                # Advanced settings
+                with gr.Accordion("⚙️ Advanced Settings", open=False):
+                    temperature = gr.Slider(
+                        minimum=0.0,
+                        maximum=2.0,
+                        value=0.7,
+                        step=0.1,
+                        label="Temperature",
+                        info="Higher values make output more creative"
+                    )
+                    max_tokens = gr.Slider(
+                        minimum=100,
+                        maximum=2000,
+                        value=1000,
+                        step=100,
+                        label="Max Tokens",
+                        info="Maximum response length"
+                    )
+                
+                # Response metrics
+                with gr.Accordion("📊 Response Metrics", open=True):
+                    metrics_json = gr.JSON(
+                        label="Last Response Stats",
+                        value={
+                            "response_time": 0, 
+                            "token_count": 0,
+                            "collection_name": "None",
+                            "processing_time": 0,
+                            "total_chunks": 0,
+                            "retrieval_status": "pending"
+                        }
+                    )
+                    
+                # Retrieved Documents
+                with gr.Accordion("📄 Retrieved Documents", open=False):
+                    retrieved_docs = gr.JSON(
+                        label="Document Chunks",
+                        value=[]
+                    )
+                
+                # Debug information
+                with gr.Accordion("🔧 Debug Info", open=False):
+                    cache_info = gr.JSON(label="Cache Status")
+                    refresh_cache = gr.Button("🔄 Refresh Cache")
+                    
+                    service_status = gr.JSON(label="Service Status")
+                    test_services_btn = gr.Button("🧪 Test Services")
+        
+        # Example queries
+        with gr.Accordion("💡 Example Questions", open=False):
+            gr.Examples(
+                examples=[
+                    ["What is RAG and how does it work?"],
+                    ["Explain the key components of a RAG system"],
+                    ["How does RAG help solve LLM hallucinations?"],
+                    ["What are the benefits of modular RAG architectures?"]
+                ],
+                inputs=msg,
+                label="Click an example to try it"
+            )
+        
+        # Event handlers
+        def handle_submit(message, history, collection, temp, max_tok):
+            print(f"🚀 HANDLE_SUBMIT: Called with message='{message}', collection='{collection}'", flush=True)
+            if not message.strip():
+                print("❌ HANDLE_SUBMIT: Empty message received", flush=True)
+                return "", history, {"error": "Empty message"}, []
+            
+            print("🚀 HANDLE_SUBMIT: About to call stream_rag_response...", flush=True)
+            # Stream the response
+            for result in stream_rag_response(message, history, collection, temp, max_tok):
+                msg_out, hist_out, metrics_out = result
+                retrieved_chunks = metrics_out.get("retrieved_chunks", [])
+                yield msg_out, hist_out, metrics_out, retrieved_chunks
+        
+        def clear_chat():
+            return [], "", {
+                "response_time": 0, 
+                "token_count": 0,
+                "collection_name": "None",
+                "processing_time": 0,
+                "total_chunks": 0,
+                "retrieval_status": "cleared"
+            }, []
+        
+        # Wire up the events
+        submit_btn.click(
+            handle_submit,
+            inputs=[msg, chatbot, collection_dropdown, temperature, max_tokens],
+            outputs=[msg, chatbot, metrics_json, retrieved_docs],
+            show_progress=True
+        )
+        
+        msg.submit(
+            handle_submit,
+            inputs=[msg, chatbot, collection_dropdown, temperature, max_tokens],
+            outputs=[msg, chatbot, metrics_json, retrieved_docs],
+            show_progress=True
+        )
+        
+        clear_btn.click(clear_chat, outputs=[chatbot, msg, metrics_json, retrieved_docs])
+        
+        refresh_cache.click(get_temporal_status, outputs=cache_info)
+        test_services_btn.click(test_temporal_system, outputs=service_status)
+        
+        # Load initial status on startup
+        demo.load(get_temporal_status, outputs=cache_info)
+        demo.load(test_temporal_system, outputs=service_status)
+    
+    return demo
+
+def get_context_for_query_temporal_with_chunks(query: str, collection: str) -> dict:
+    """
+    Synchronous wrapper for get_context_via_temporal that returns both context and chunks.
+    
+    This function replaces the HTTP-based get_context_for_query in the 
+    main application flow while maintaining the same interface.
+    """
+    print(f"🔍 GRADIO: get_context_for_query_temporal_with_chunks called with query='{query}', collection='{collection}'")
+    try:
+        result = asyncio.run(get_context_via_temporal(query, collection))
+        print(f"🔍 GRADIO: Retrieved context result: {len(result.get('chunks', []))} chunks, context length: {len(result.get('context', ''))}")
+        return result
+    except Exception as e:
+        print(f"❌ GRADIO: Exception in get_context_for_query_temporal_with_chunks: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "context": f"Error retrieving context via Temporal: {str(e)}",
+            "chunks": [],
+            "total_results": 0
+        }
+
+def get_context_for_query_temporal(query: str, collection: str) -> str:
+    """
+    Synchronous wrapper for get_context_via_temporal.
+    
+    This function replaces the HTTP-based get_context_for_query in the 
+    main application flow while maintaining the same interface.
+    """
+    try:
+        result = asyncio.run(get_context_via_temporal(query, collection))
+        return result["context"] if isinstance(result, dict) else result
+    except Exception as e:
+        return f"Error retrieving context via Temporal: {str(e)}"
+
+def main():
+    """Main entry point"""
+    print("🚀 Starting RAG Chat Interface...")
+    
+    # Check if required services are available
+    print("🔍 Checking Temporal system connectivity...")
+    status = test_temporal_system()
+    for service, state in status.items():
+        print(f"   {service}: {state}")
+    
+    # Create and launch the app
+    app = create_gradio_app()
+    
+    print("🌟 Launching Gradio interface...")
+    print("   📱 Container URL: http://0.0.0.0:7860")
+    print("   🌐 FastAPI Backend: http://fastapi:8000")
+    print("   🔍 Retriever Service: http://retriever-service:8000")
+    
+    app.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=False,
+        debug=True,
+        show_error=True
+    )
+
+if __name__ == "__main__":
+    main()

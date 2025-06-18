@@ -7,15 +7,18 @@ import logging
 import os
 from temporalio.client import Client
 from temporalio.worker import Worker
-from workflows import DocumentProcessingWorkflow, HealthCheckWorkflow, RetrievalWorkflow
-from activities import chunk_documents_activity, embed_documents_activity, health_check_activity
+from workflows import GenericPipelineWorkflow
+from service_config import get_service_config
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Also enable Temporal logging
+logging.getLogger("temporalio").setLevel(logging.DEBUG)
 
 # Configuration
 TEMPORAL_HOST = os.getenv("TEMPORAL_HOST", "localhost:7233")
@@ -25,6 +28,13 @@ TASK_QUEUE = os.getenv("TEMPORAL_TASK_QUEUE", "document-processing-queue")
 async def main():
     """Run the Temporal worker."""
     logger.info("Starting Temporal worker...")
+    
+    # Get service configuration
+    config = get_service_config()
+    
+    # Dynamically discover activity functions
+    activity_functions = config.discover_activity_functions("activities")
+    logger.info(f"Discovered {len(activity_functions)} activity functions")
     
     # Create client
     client = await Client.connect(
@@ -38,12 +48,8 @@ async def main():
     worker = Worker(
         client,
         task_queue=TASK_QUEUE,
-        workflows=[DocumentProcessingWorkflow, HealthCheckWorkflow, RetrievalWorkflow],
-        activities=[
-            chunk_documents_activity,
-            embed_documents_activity,
-            health_check_activity
-        ],
+        workflows=[GenericPipelineWorkflow],
+        activities=activity_functions,
         max_concurrent_workflow_tasks=10,
         max_concurrent_activities=20
     )

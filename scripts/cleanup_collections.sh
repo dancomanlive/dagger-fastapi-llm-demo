@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Simple script to clean up all document collections in Qdrant
-# Usage: ./cleanup_collections.sh
+# Usage: ./scripts/cleanup_collections.sh
 
 set -e
 

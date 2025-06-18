@@ -61,14 +61,6 @@ def run_service_tests(service_path, service_name):
                 f"{service_name} - Unit Tests",
                 cwd=service_path
             ))
-        
-        # Run behave if features exist
-        if (service_path / "features").exists():
-            results.append(run_command(
-                ["python", "-m", "behave", "features/", "-v"],
-                f"{service_name} - BDD Tests",
-                cwd=service_path
-            ))
     
     return results
 
@@ -125,10 +117,10 @@ def main():
                 print(f"⚠️  Skipping {service_name} - path not found: {service_path}")
     
     # Run E2E tests if they exist
-    e2e_script = project_root / "e2e_test.sh"
+    e2e_script = project_root / "scripts" / "e2e_test.sh"
     if e2e_script.exists() and not args.service:
         all_results.append(run_command(
-            ["bash", "e2e_test.sh"],
+            ["bash", "scripts/e2e_test.sh"],
             "End-to-End Integration Tests",
             cwd=project_root
         ))

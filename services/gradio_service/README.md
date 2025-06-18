@@ -1,13 +1,20 @@
-# Gradio Chat Service
+# RAG Chat Service - Modular Architecture
 
-A web-based chat interface for the RAG (Retrieval-Augmented Generation) pipeline that integrates with Temporal workflows for distributed document processing.
+A clean, modular RAG (Retrieval-Augmented Generation) chat interface built with Gradio, designed for easy integration into larger applications.
+
+## Architecture
+
+The service is now organized into separate, focused modules with clean separation of concerns.
 
 ## Features
 
+- **Modular Design**: Separated business logic from UI components
 - **Real-time streaming responses** from OpenAI with RAG context
 - **Interactive chat interface** with conversation history
 - **Document collection selection** for targeted search
-- **Debug information panel** showing retrieved documents and metrics
+- **Comprehensive metrics display** showing all retrieval information
+- **Retrieved documents panel** with scores and content
+- **Easy integration** into larger applications
 - **Temporal workflow integration** for distributed document retrieval
 - **Response metrics and settings** configuration
 - **Docker-ready** microservice architecture
@@ -25,15 +32,16 @@ The Gradio service provides a **web interface** that:
 
 ### Document Retrieval via Workflows
 
-The service uses Temporal's **RetrievalWorkflow** instead of direct HTTP calls:
+The service uses Temporal's **GenericPipelineWorkflow** with the `document_retrieval` pipeline instead of direct HTTP calls:
 
 ```python
 async def get_context_via_temporal(query: str, collection: str) -> str:
-    """Get context using Temporal RetrievalWorkflow"""
+    """Get context using GenericPipelineWorkflow with document_retrieval pipeline"""
     client = await Client.connect(TEMPORAL_HOST, namespace=TEMPORAL_NAMESPACE)
     
     workflow_handle = await client.start_workflow(
-        "RetrievalWorkflow",
+        "GenericPipelineWorkflow",
+        args=["document_retrieval", {"query": query, "top_k": 5}],
         args=[query, 5],  # query and top_k
         id=f"gradio-retrieval-{timestamp}",
         task_queue="workflow-task-queue"
@@ -109,18 +117,6 @@ cd services/gradio_service
 python -m pytest tests/test_temporal_integration.py -v
 ```
 
-### Integration Tests (Behave BDD)  
-Focus on user interaction and workflow behavior:
-```bash
-cd services/gradio_service
-behave features/ -v
-
-# Run specific scenarios
-behave features/ --tags=@temporal      # Temporal workflow integration
-behave features/ --tags=@ui           # User interface behavior
-behave features/ --tags=@error        # Error handling scenarios
-```
-
 ### Test Categories
 
 **Unit Tests (pytest)**:
@@ -128,8 +124,6 @@ behave features/ --tags=@error        # Error handling scenarios
 - Workflow execution and error handling
 - OpenAI API integration
 - Configuration and environment handling
-
-**BDD Tests (behave)**:
 - User query submission through Gradio interface
 - Multi-user concurrent access scenarios
 - Collection selection and search behavior  
@@ -147,7 +141,6 @@ behave features/ --tags=@error        # Error handling scenarios
 - `pytest>=7.0.0` - Unit testing framework
 - `pytest-asyncio>=0.21.0` - Async testing support
 - `pytest-mock>=3.10.0` - Mocking utilities
-- `behave>=1.2.6` - BDD testing framework
 
 ## Service Dependencies
 
@@ -179,9 +172,7 @@ python main.py
 When extending the service:
 
 1. **Add unit tests** for new Temporal integrations in `tests/test_temporal_integration.py`
-2. **Add BDD scenarios** for new user workflows in `features/gradio_temporal_integration.feature`  
-3. **Update step definitions** in `features/steps/gradio_temporal_steps.py`
-4. **Test both** unit and integration layers before deployment
+2. **Test thoroughly** before deployment
 
 ### Debugging
 

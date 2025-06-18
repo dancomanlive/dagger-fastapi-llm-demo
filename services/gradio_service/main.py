@@ -25,35 +25,68 @@ TEMPORAL_NAMESPACE = os.environ.get("TEMPORAL_NAMESPACE", "default")
 
 async def get_context_via_temporal(query: str, collection: str) -> dict:
     """
-    Get context using Temporal RetrievalWorkflow instead of HTTP calls.
+    Get context using GenericPipelineWorkflow with document_retrieval pipeline.
     
     This replaces the HTTP-based get_context_for_query function.
     Returns both formatted context and raw chunks.
     """
     try:
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Starting with query='{query}', collection='{collection}'")
+        
         # Connect to Temporal
         client = await Client.connect(TEMPORAL_HOST, namespace=TEMPORAL_NAMESPACE)
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Connected to Temporal at {TEMPORAL_HOST}")
         
-        # Start RetrievalWorkflow
+        # Start GenericPipelineWorkflow with document_retrieval pipeline
+        workflow_args = ["document_retrieval", {"query": query, "collection": collection, "top_k": 5}]
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Starting workflow with args: {workflow_args}")
+        
         workflow_handle = await client.start_workflow(
-            "RetrievalWorkflow",
-            args=[query, 5],  # query and top_k
+            "GenericPipelineWorkflow",
+            args=workflow_args,  # Pipeline name and input
             id=f"gradio-retrieval-{int(time.time() * 1000)}",
             task_queue="document-processing-queue"  # Use the correct task queue
         )
         
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Workflow started, waiting for result...")
+        
         # Get the result
         result = await workflow_handle.result()
         
-        # Format the search results into context string
-        if result.get("status") == "completed" and "search_result" in result:
-            search_data = result["search_result"]
-            if "results" in search_data and search_data["results"]:
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Got workflow result type: {type(result)}")
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Result keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Full result: {result}")
+        
+        # Handle different result formats - check if result is the direct search data or wrapped
+        search_data = None
+        
+        # First, check if result is directly the search result (new format)
+        if isinstance(result, list) and len(result) > 0 and isinstance(result[0], dict):
+            # Result is a list with search results (like your JSON example)
+            search_data = result[0]
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Found direct list result format")
+        elif result.get("status") == "completed" and "final_result" in result:
+            # Legacy format with final_result wrapper
+            search_data = result["final_result"]
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Found completed workflow with final_result")
+        elif result.get("status") == "success" and "retrieved_documents" in result:
+            # Direct success format
+            search_data = result
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Found direct success format")
+        
+        if search_data:
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Search data type: {type(search_data)}")
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Search data keys: {list(search_data.keys()) if isinstance(search_data, dict) else 'Not a dict'}")
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Search data: {search_data}")
+            
+            if search_data.get("status") == "success" and "retrieved_documents" in search_data and search_data["retrieved_documents"]:
+                print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Found {len(search_data['retrieved_documents'])} retrieved documents")
                 # Format results into context
                 contexts = []
                 chunks = []
-                for i, doc in enumerate(search_data["results"]):
+                for i, doc in enumerate(search_data["retrieved_documents"]):
                     content = doc.get("text", "")
+                    print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Document {i}: ID={doc.get('id', 'N/A')}, text_length={len(content)}")
                     contexts.append(f"Context {i+1}: {content}")
                     chunks.append({
                         "id": doc.get("id", ""),
@@ -62,32 +95,47 @@ async def get_context_via_temporal(query: str, collection: str) -> dict:
                     })
                 
                 formatted_context = "\n\n".join(contexts)
-                return {
+                final_result = {
                     "context": formatted_context,
                     "chunks": chunks,
-                    "total_results": len(chunks)
+                    "total_results": len(chunks),
+                    "collection_name": search_data.get("collection_name", "unknown"),
+                    "processing_time": search_data.get("processing_time", 0),
+                    "query": search_data.get("query", ""),
+                    "retrieval_status": search_data.get("status", "unknown")
                 }
+                print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Returning success with {len(chunks)} chunks, context length: {len(formatted_context)}")
+                return final_result
             else:
-                print("❌ No results in search data")  # Debug log
-                return {
+                print(f"❌ GET_CONTEXT_VIA_TEMPORAL: No retrieved_documents in search data. Search data: {search_data}")
+                error_result = {
                     "context": "No relevant context found.",
                     "chunks": [],
                     "total_results": 0
                 }
+                print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Returning error result: {error_result}")
+                return error_result
         else:
-            print(f"❌ Workflow status: {result.get('status', 'unknown')}")  # Debug log
-            return {
+            print(f"❌ GET_CONTEXT_VIA_TEMPORAL: Workflow status: {result.get('status', 'unknown')}, keys: {list(result.keys()) if isinstance(result, dict) else 'not dict'}")
+            error_result = {
                 "context": f"Workflow completed but no results found: {result.get('status', 'unknown')}",
                 "chunks": [],
                 "total_results": 0
             }
+            print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Returning workflow error result: {error_result}")
+            return error_result
             
     except Exception as e:
-        return {
+        print(f"❌ GET_CONTEXT_VIA_TEMPORAL: Exception occurred: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        error_result = {
             "context": f"Error retrieving context via Temporal: {str(e)}",
             "chunks": [],
             "total_results": 0
         }
+        print(f"🔧 GET_CONTEXT_VIA_TEMPORAL: Returning exception error result: {error_result}")
+        return error_result
 
 def get_openai_client():
     """Get OpenAI client with API key from environment"""
@@ -101,7 +149,7 @@ DEFAULT_COLLECTION = "default"
 DOCUMENT_COLLECTION_NAME = os.environ.get("DOCUMENT_COLLECTION_NAME", "document_chunks")
 AVAILABLE_COLLECTIONS = ["default", DOCUMENT_COLLECTION_NAME]
 
-# Note: get_context_for_query has been removed - we now use Temporal workflows only
+# Note: get_context_for_query has been removed - we now use GenericPipelineWorkflow only
 
 def stream_rag_response(
     query: str, 
@@ -116,17 +164,43 @@ def stream_rag_response(
     response_text = ""
     token_count = 0
     
+    # Get context from GenericPipelineWorkflow with document_retrieval pipeline (outside try-catch)
+    print(f"🔍 GRADIO STREAM: Starting retrieval for query='{query}', collection='{collection}'")
+    print(f"🔍 GRADIO STREAM: About to call get_context_for_query_temporal_with_chunks...")
+    
+    context_result = get_context_for_query_temporal_with_chunks(query, collection)
+    
+    print(f"🔍 GRADIO STREAM: Raw context_result type: {type(context_result)}")
+    print(f"🔍 GRADIO STREAM: Raw context_result keys: {list(context_result.keys()) if isinstance(context_result, dict) else 'Not a dict'}")
+    print(f"🔍 GRADIO STREAM: Raw context_result: {context_result}")
+    
+    # Safely extract context and chunks with error handling
     try:
-        # Get context from Temporal RetrievalWorkflow (instead of HTTP)
-        context_result = get_context_for_query_temporal_with_chunks(query, collection)
-        context = context_result["context"]
-        retrieved_chunks = context_result["chunks"]
-        
-        # Check if we got meaningful context
-        if not context or context.startswith("Error") or context == "No relevant context found.":
-            print("⚠️  No valid context retrieved, using fallback response")
-            context = "No relevant document context available."
-            retrieved_chunks = []
+        context = context_result.get("context", "") if isinstance(context_result, dict) else ""
+        retrieved_chunks = context_result.get("chunks", []) if isinstance(context_result, dict) else []
+        print(f"🔍 GRADIO STREAM: Successfully extracted context and chunks")
+    except Exception as e:
+        print(f"❌ GRADIO STREAM: Error extracting context/chunks: {e}")
+        context = ""
+        retrieved_chunks = []
+    
+    print(f"🔍 GRADIO STREAM: Extracted context type: {type(context)}, length: {len(context) if context else 'None'}")
+    print(f"🔍 GRADIO STREAM: Extracted chunks type: {type(retrieved_chunks)}, length: {len(retrieved_chunks) if retrieved_chunks else 'None'}")
+    print(f"🔍 GRADIO STREAM: Context content: '{context}'")
+    print(f"🔍 GRADIO STREAM: First chunk: {retrieved_chunks[0] if retrieved_chunks else 'No chunks'}")
+    
+    # Check if we got meaningful context
+    if not context or context.startswith("Error") or context == "No relevant context found.":
+        print("⚠️  GRADIO STREAM: No valid context retrieved, using fallback response")
+        print(f"⚠️  GRADIO STREAM: Context was: '{context}'")
+        print(f"⚠️  GRADIO STREAM: Context startswith Error: {context.startswith('Error') if context else 'N/A'}")
+        print(f"⚠️  GRADIO STREAM: Context == No relevant: {context == 'No relevant context found.'}")
+        context = "No relevant document context available."
+        # Don't reset retrieved_chunks to empty - keep the original chunks for debugging
+    else:
+        print(f"✅ GRADIO STREAM: Valid context retrieved: {len(context)} chars, {len(retrieved_chunks)} chunks")
+    
+    try:
         
         # Prepare messages for OpenAI
         messages = [
@@ -170,14 +244,18 @@ Instructions:
                 response_text += content
                 token_count += 1
                 
-                # Calculate metrics
+                # Calculate metrics with enhanced retrieval info
                 elapsed_time = time.time() - start_time
                 metrics = {
                     "response_time": round(elapsed_time, 2),
                     "token_count": token_count,
                     "collection_used": collection,
                     "retrieved_chunks": retrieved_chunks,
-                    "total_chunks": len(retrieved_chunks)
+                    "total_chunks": len(retrieved_chunks),
+                    "collection_name": context_result.get("collection_name", collection),
+                    "processing_time": context_result.get("processing_time", 0),
+                    "query": context_result.get("query", query),
+                    "retrieval_status": context_result.get("retrieval_status", "unknown")
                 }
                 
                 # Yield updated chat history
@@ -186,12 +264,18 @@ Instructions:
                 
     except Exception as e:
         error_response = f"Error generating response: {str(e)}"
+        print(f"❌ GRADIO STREAM: OpenAI error: {str(e)}")
+        print(f"🔍 GRADIO STREAM: Still preserving {len(retrieved_chunks)} retrieved chunks in error response")
         metrics = {
             "response_time": round(time.time() - start_time, 2),
             "token_count": 0,
             "collection_used": collection,
-            "retrieved_chunks": [],
-            "total_chunks": 0,
+            "retrieved_chunks": retrieved_chunks,  # Preserve the chunks even on error
+            "total_chunks": len(retrieved_chunks),
+            "collection_name": context_result.get("collection_name", collection),
+            "processing_time": context_result.get("processing_time", 0),
+            "query": context_result.get("query", query),
+            "retrieval_status": context_result.get("retrieval_status", "error"),
             "error": str(e)
         }
         updated_history = history + [[query, error_response]]
@@ -231,7 +315,7 @@ def test_temporal_system() -> dict:
     return {
         "Architecture": "✅ Pure Temporal Workflows",
         "Chat Interface": "✅ Gradio + Temporal Client",
-        "Orchestration": "✅ RetrievalWorkflow", 
+        "Orchestration": "✅ GenericPipelineWorkflow", 
         "Activities": "✅ Embedding + Retriever Services",
         "Database": "✅ Qdrant Vector Store",
         "Monitoring": "✅ Temporal UI (port 8081)"
@@ -240,7 +324,7 @@ def test_temporal_system() -> dict:
 async def test_temporal_connection() -> dict:
     """Test connectivity to Temporal server"""
     try:
-        client = await Client.connect(TEMPORAL_HOST, namespace=TEMPORAL_NAMESPACE)
+        await Client.connect(TEMPORAL_HOST, namespace=TEMPORAL_NAMESPACE)
         # Simple test - try to get workflow service info
         return {"status": "✅ Connected", "host": TEMPORAL_HOST, "namespace": TEMPORAL_NAMESPACE}
     except Exception as e:
@@ -332,7 +416,21 @@ def create_gradio_app():
                 with gr.Accordion("📊 Response Metrics", open=True):
                     metrics_json = gr.JSON(
                         label="Last Response Stats",
-                        value={"response_time": 0, "token_count": 0}
+                        value={
+                            "response_time": 0, 
+                            "token_count": 0,
+                            "collection_name": "None",
+                            "processing_time": 0,
+                            "total_chunks": 0,
+                            "retrieval_status": "pending"
+                        }
+                    )
+                    
+                # Retrieved Documents
+                with gr.Accordion("📄 Retrieved Documents", open=False):
+                    retrieved_docs = gr.JSON(
+                        label="Document Chunks",
+                        value=[]
                     )
                 
                 # Debug information
@@ -345,7 +443,7 @@ def create_gradio_app():
         
         # Example queries
         with gr.Accordion("💡 Example Questions", open=False):
-            examples = gr.Examples(
+            gr.Examples(
                 examples=[
                     ["What is RAG and how does it work?"],
                     ["Explain the key components of a RAG system"],
@@ -358,32 +456,44 @@ def create_gradio_app():
         
         # Event handlers
         def handle_submit(message, history, collection, temp, max_tok):
+            print(f"🚀 HANDLE_SUBMIT: Called with message='{message}', collection='{collection}'", flush=True)
             if not message.strip():
-                return "", history, {"error": "Empty message"}
+                print("❌ HANDLE_SUBMIT: Empty message received", flush=True)
+                return "", history, {"error": "Empty message"}, []
             
+            print("🚀 HANDLE_SUBMIT: About to call stream_rag_response...", flush=True)
             # Stream the response
             for result in stream_rag_response(message, history, collection, temp, max_tok):
-                yield result
+                msg_out, hist_out, metrics_out = result
+                retrieved_chunks = metrics_out.get("retrieved_chunks", [])
+                yield msg_out, hist_out, metrics_out, retrieved_chunks
         
         def clear_chat():
-            return [], "", {"response_time": 0, "token_count": 0}
+            return [], "", {
+                "response_time": 0, 
+                "token_count": 0,
+                "collection_name": "None",
+                "processing_time": 0,
+                "total_chunks": 0,
+                "retrieval_status": "cleared"
+            }, []
         
         # Wire up the events
-        submit_click = submit_btn.click(
+        submit_btn.click(
             handle_submit,
             inputs=[msg, chatbot, collection_dropdown, temperature, max_tokens],
-            outputs=[msg, chatbot, metrics_json],
+            outputs=[msg, chatbot, metrics_json, retrieved_docs],
             show_progress=True
         )
         
-        msg_submit = msg.submit(
+        msg.submit(
             handle_submit,
             inputs=[msg, chatbot, collection_dropdown, temperature, max_tokens],
-            outputs=[msg, chatbot, metrics_json],
+            outputs=[msg, chatbot, metrics_json, retrieved_docs],
             show_progress=True
         )
         
-        clear_btn.click(clear_chat, outputs=[chatbot, msg, metrics_json])
+        clear_btn.click(clear_chat, outputs=[chatbot, msg, metrics_json, retrieved_docs])
         
         refresh_cache.click(get_temporal_status, outputs=cache_info)
         test_services_btn.click(test_temporal_system, outputs=service_status)
@@ -401,9 +511,15 @@ def get_context_for_query_temporal_with_chunks(query: str, collection: str) -> d
     This function replaces the HTTP-based get_context_for_query in the 
     main application flow while maintaining the same interface.
     """
+    print(f"🔍 GRADIO: get_context_for_query_temporal_with_chunks called with query='{query}', collection='{collection}'")
     try:
-        return asyncio.run(get_context_via_temporal(query, collection))
+        result = asyncio.run(get_context_via_temporal(query, collection))
+        print(f"🔍 GRADIO: Retrieved context result: {len(result.get('chunks', []))} chunks, context length: {len(result.get('context', ''))}")
+        return result
     except Exception as e:
+        print(f"❌ GRADIO: Exception in get_context_for_query_temporal_with_chunks: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return {
             "context": f"Error retrieving context via Temporal: {str(e)}",
             "chunks": [],

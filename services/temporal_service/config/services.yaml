@@ -1,0 +1,61 @@
+services:
+  embedding_service:
+    task_queue: "embedding-task-queue"
+    activities:
+      perform_embedding_and_indexing_activity:
+        timeout_minutes: 30
+        retry_attempts: 3
+        retry_initial_interval_seconds: 2
+        retry_maximum_interval_seconds: 60
+  
+  retrieval_service:
+    task_queue: "retrieval-task-queue"
+    activities:
+      search_documents_activity:
+        timeout_minutes: 5
+        retry_attempts: 3
+        retry_initial_interval_seconds: 1
+        retry_maximum_interval_seconds: 30
+
+  local_activities:
+    chunk_documents_activity:
+      timeout_minutes: 10
+      retry_attempts: 3
+      retry_initial_interval_seconds: 1
+      retry_maximum_interval_seconds: 30
+    
+    health_check_activity:
+      timeout_minutes: 1
+      retry_attempts: 2
+      retry_initial_interval_seconds: 1
+      retry_maximum_interval_seconds: 10
+
+# Pipeline definitions
+pipelines:
+  document_processing:
+    name: "DocumentProcessingPipeline"
+    description: "Processes documents through chunking and embedding"
+    steps:
+      - activity: "chunk_documents_activity"
+        type: "local"
+        input_transform: "documents"
+      - activity: "perform_embedding_and_indexing_activity"
+        type: "remote"
+        service: "embedding_service"
+        input_transform: "chunked_docs_with_collection"
+    
+  document_retrieval:
+    name: "DocumentRetrievalPipeline"
+    description: "Searches for documents using semantic similarity"
+    steps:
+      - activity: "search_documents_activity"
+        type: "remote"
+        service: "retrieval_service"
+        input_transform: "query_with_collection"
+
+  health_check:
+    name: "HealthCheckPipeline"
+    description: "Simple health monitoring"
+    steps:
+      - activity: "health_check_activity"
+        type: "local"

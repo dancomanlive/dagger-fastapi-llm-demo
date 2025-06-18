@@ -1,54 +1,136 @@
-# Temporal Document Processing Service
+# Generic Temporal Orchestration Service
 
-This service provides Temporal workflows and activities for distributed document processing, including chunking, embedding, and retrieval operations.
+This service provides a **generic, configuration-driven** Temporal workflow orchestration system for distributed service coordination. The service can execute any pipeline defined through YAML configuration without requiring code changes.
 
-## Features
+## 🚀 Key Features
 
-- Document chunking into paragraphs with proper metadata
-- Distributed workflow orchestration via Temporal
-- Integration with embedding and retrieval services through Temporal activities
-- Fault-tolerant workflow execution with retries and timeouts
-- Health monitoring workflows
-- BDD integration testing with Behave
+- **Configuration-Driven Pipelines**: Define workflows through YAML configuration
+- **Generic Pipeline Execution**: Execute any configured pipeline via `GenericPipelineWorkflow`
+- **Dynamic Service Routing**: Route activities to services via configurable task queues
+- **Dynamic Activity Discovery**: Activities are discovered automatically from configuration
+- **Fault-Tolerant**: Built-in retry policies, timeouts, and error handling
+- **Extensible**: Add new pipelines and services without code changes
+- **Type-Safe**: Full TypeScript-style type hints and validation
 
-## Architecture
+## 🏗️ Architecture
 
-This service implements a **worker-only architecture** that:
-- Registers workflows and activities with the Temporal server
-- Coordinates distributed processing across multiple services
-- Uses Temporal's task queue routing for cross-service communication
-- Provides workflow orchestration without direct HTTP endpoints
+This service implements a **generic orchestrator pattern** that:
+- Loads pipeline definitions from `config/services.yaml`
+- Routes activities to appropriate services via Temporal task queues
+- Provides generic workflow interfaces for any configured pipeline
+- Supports local and remote activity execution
+- Enables dynamic pipeline composition
 
-## Workflows
+## 📋 Workflows
 
-### DocumentProcessingWorkflow
+### GenericPipelineWorkflow (NEW)
 
-Orchestrates document processing through a distributed pipeline:
+**The main workflow for generic pipeline execution:**
 
-1. **Chunking**: Splits documents into paragraphs using local `chunk_documents_activity`
-2. **Embedding**: Routes chunks to the embedding service via Temporal task queue for vectorization and storage
+```python
+# Execute any configured pipeline
+result = await client.execute_workflow(
+    "GenericPipelineWorkflow",
+    args=[pipeline_name, input_data],
+    id="workflow-id",
+    task_queue="document-processing-queue"
+)
+```
 
-**Parameters:**
-- `documents`: List of documents with `id`, `text`, and optional `metadata`
-- `embedding_service_url`: DEPRECATED (ignored - uses Temporal activity routing)
+**Examples:**
+- `pipeline_name="document_processing"` - Process and embed documents
+- `pipeline_name="document_retrieval"` - Search for documents
+- `pipeline_name="health_check"` - Health monitoring
+- `pipeline_name="custom_pipeline"` - Any pipeline you define in config
 
-### RetrievalWorkflow
+## Configuration
+- **Purpose**: System health monitoring
+- **Now Uses**: `health_check` pipeline from configuration
+- **Interface**: Unchanged - returns simple health status
 
-Orchestrates document search and retrieval:
+## ⚙️ Configuration
 
-1. **Search**: Routes search queries to the retrieval service via Temporal task queue
+### Service Configuration (`config/services.yaml`)
 
-**Parameters:**
-- `query`: Search query string
-- `top_k`: Number of top results to return (default: 10)
+Define services, activities, and pipelines through YAML configuration:
 
-### HealthCheckWorkflow
+```yaml
+services:
+  embedding_service:
+    task_queue: "embedding-task-queue"
+    activities:
+      perform_embedding_and_indexing_activity:
+        timeout_minutes: 30
+        retry_attempts: 3
 
-Simple health check workflow for monitoring:
+  retrieval_service:
+    task_queue: "retrieval-task-queue"  
+    activities:
+      search_documents_activity:
+        timeout_minutes: 5
+        retry_attempts: 3
 
-1. **Health Check**: Executes local `health_check_activity` to verify worker health
+  local_activities:
+    chunk_documents_activity:
+      timeout_minutes: 10
+      retry_attempts: 3
 
-## Activities
+pipelines:
+  document_processing:
+    name: "DocumentProcessingPipeline"
+    steps:
+      - activity: "chunk_documents_activity"
+        type: "local"
+        input_transform: "documents"
+      - activity: "perform_embedding_and_indexing_activity"
+        type: "remote"
+        service: "embedding_service"
+        input_transform: "chunked_docs_with_collection"
+
+  custom_pipeline:
+    name: "CustomPipeline"
+    steps:
+      - activity: "your_activity"
+        type: "remote"
+        service: "your_service"
+```
+
+### Adding New Pipelines
+
+1. **Add Service** (if needed):
+```yaml
+services:
+  analytics_service:
+    task_queue: "analytics-task-queue"
+    activities:
+      analyze_data_activity:
+        timeout_minutes: 15
+        retry_attempts: 2
+```
+
+2. **Define Pipeline**:
+```yaml
+pipelines:
+  data_analysis:
+    name: "DataAnalysisPipeline" 
+    steps:
+      - activity: "analyze_data_activity"
+        type: "remote"
+        service: "analytics_service"
+        input_transform: "passthrough"
+```
+
+3. **Execute Pipeline**:
+```python
+result = await client.execute_workflow(
+    "GenericPipelineWorkflow",
+    args=["data_analysis", your_data],
+    id="analysis-workflow",
+    task_queue="document-processing-queue"
+)
+```
+
+## 🔧 Activities
 
 ### Local Activities
 - `chunk_documents_activity`: Splits documents into paragraphs with metadata
@@ -82,12 +164,6 @@ pip install -r requirements.txt
 
 # Run tests
 python -m pytest tests/ -v
-
-# Run BDD integration tests
-behave features/ -v
-
-# Run specific test scenarios
-behave features/ --tags=@workflow
 ```
 
 ## Client Usage
@@ -96,18 +172,19 @@ Workflows are executed by Temporal clients (e.g., from the Gradio service or oth
 
 ```python
 from temporalio.client import Client
-from workflows import DocumentProcessingWorkflow
 
 # Connect to Temporal
 client = await Client.connect("localhost:7233")
 
-# Start document processing workflow
-result = await client.execute_workflow(
-    DocumentProcessingWorkflow.run,
-    args=[documents],
+# Start generic pipeline workflow
+result = await client.start_workflow(
+    "GenericPipelineWorkflow",
+    args=["document_processing", documents],  # Pipeline name and input
     id="document-processing-" + workflow_id,
     task_queue="document-processing-queue"
 )
+
+result = await workflow_handle.result()
 ```
 
 ## Environment Variables
@@ -131,19 +208,6 @@ Focus on workflow orchestration:
 ```bash
 cd services/temporal_service
 python -m pytest tests/test_workflows.py -v
-```
-
-### Integration Tests (Behave BDD)
-Focus on end-to-end workflow behavior:
-```bash
-cd services/temporal_service
-behave features/ -v
-
-# Run specific scenarios
-behave features/ --tags=@workflow      # Workflow orchestration
-behave features/ --tags=@health        # Health check workflows
-behave features/ --tags=@retrieval     # Document retrieval
-behave features/ --tags=@activity      # Direct activity testing
 ```
 
 ## Service Dependencies

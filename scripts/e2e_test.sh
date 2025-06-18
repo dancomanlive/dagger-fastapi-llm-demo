@@ -165,7 +165,7 @@ if [ "$all_healthy" = true ]; then
     echo "   3. Run the Temporal workflow test to validate the pipeline"
     echo ""
     echo -e "${YELLOW}🧪 Available Test Commands:${NC}"
-    echo "  • Test Temporal workflows:   python test_temporal_e2e.py"
+    echo "  • Test Temporal workflows:   python tests/test_temporal_e2e.py"
     echo "  • View service logs:         docker-compose logs -f [service-name]"
     echo "  • Stop services:             docker-compose down"
 else
@@ -176,7 +176,7 @@ echo ""
 echo "📚 Pure Temporal Architecture Test Instructions:"
 echo ""
 echo "1. Test the complete workflow pipeline:"
-echo "   python test_temporal_e2e.py"
+echo "   python tests/test_temporal_e2e.py"
 echo ""
 echo "2. Monitor workflows in Temporal Web UI:"
 echo "   http://localhost:8081"
@@ -230,7 +230,7 @@ if [ "$all_healthy" = true ]; then
     export TEMPORAL_NAMESPACE="default"
     export TEST_DOCUMENT_COLLECTION_NAME="$TEST_DOCUMENT_COLLECTION_NAME"
     
-    if $python_cmd test_temporal_e2e.py; then
+    if $python_cmd tests/test_temporal_e2e.py; then
         print_success "✅ TEMPORAL WORKFLOW TEST PASSED!"
         echo ""
         echo -e "${GREEN}🎉 END-TO-END PURE TEMPORAL ARCHITECTURE TEST SUCCESSFUL!${NC}"

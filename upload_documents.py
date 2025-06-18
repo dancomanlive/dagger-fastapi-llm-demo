@@ -76,22 +76,29 @@ def load_pdfs_from_directory(directory: str) -> list:
 
 
 async def trigger_temporal_workflow(documents: list, temporal_host: str = "localhost:7233", wait_for_completion: bool = False) -> bool:
-    """Send documents to temporal service for processing via Temporal client."""
+    """
+    Send documents to temporal service for processing via Temporal client.
+    
+    Uses the new GenericPipelineWorkflow with the 'document_processing' pipeline
+    configuration instead of the legacy hardcoded DocumentProcessingWorkflow.
+    """
     try:
         client = await Client.connect(f"{temporal_host}")
         
-        # Start the document processing workflow
-        workflow_id = f"upload-docs-{len(documents)}-{asyncio.get_event_loop().time():.0f}"
+        # Start the generic pipeline workflow with document_processing pipeline
+        # This uses the configuration-driven approach instead of hardcoded workflows
+        workflow_id = f"doc-processing-pipeline-{len(documents)}-{asyncio.get_event_loop().time():.0f}"
         
         handle = await client.start_workflow(
-            "DocumentProcessingWorkflow",
-            documents,  # Just pass documents directly - workflow expects this as first parameter
+            "GenericPipelineWorkflow",
+            args=["document_processing", documents],  # Pipeline name and input as args
             id=workflow_id,
             task_queue="document-processing-queue",
             execution_timeout=timedelta(minutes=10),
         )
         
-        print(f"✅ Workflow started successfully! ID: {workflow_id}")
+        print(f"✅ Generic pipeline workflow started successfully! ID: {workflow_id}")
+        print("📊 Pipeline: document_processing")
         print(f"📊 Track progress at: http://localhost:8081/namespaces/default/workflows/{workflow_id}")
         
         if wait_for_completion:
@@ -138,7 +145,7 @@ async def main_async():
         for doc in documents:
             print(f"  - {doc['id']}: {doc['metadata']['source']} ({len(doc['text'])} chars)")
     else:
-        print("🚀 Triggering temporal workflow...")
+        print("🚀 Triggering generic pipeline workflow (document_processing)...")
         success = await trigger_temporal_workflow(documents, args.temporal_host, args.wait)
         if not success:
             sys.exit(1)

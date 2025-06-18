@@ -8,7 +8,7 @@ to handle document embedding and indexing operations.
 import os
 import time
 import logging
-from typing import List, Dict, Any
+from typing import Dict, Any, List
 from qdrant_client import QdrantClient
 from temporalio import activity
 
@@ -18,14 +18,16 @@ logger = logging.getLogger(__name__)
 # Configuration from environment variables (same as main.py)
 QDRANT_HOST = os.getenv("QDRANT_HOST_FOR_SERVICE", "http://qdrant:6333")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
-EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "fast-bge-small-en") # Updated default model
+EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5") # Updated default model
 # Clean up PAYLOAD_TEXT_FIELD_NAME by removing comments and extra quotes
 _raw_payload_field = os.getenv("PAYLOAD_TEXT_FIELD_NAME", "document")
 PAYLOAD_TEXT_FIELD_NAME = _raw_payload_field.split('#')[0].strip().strip('"')
 
 
 @activity.defn
-async def perform_embedding_and_indexing_activity(documents: List[Dict[str, Any]], collection_name: str) -> Dict[str, Any]:
+async def perform_embedding_and_indexing_activity(
+    *args, **kwargs
+) -> Dict[str, Any]:
     """
     Temporal activity for performing embedding and indexing of documents.
     
@@ -43,6 +45,21 @@ async def perform_embedding_and_indexing_activity(documents: List[Dict[str, Any]
     Raises:
         Exception: If embedding or indexing fails
     """
+    # Handle the argument structure that Temporal passes
+    # When called from a workflow with *args spreading, Temporal wraps the arguments in a single list
+    if len(args) == 2:
+        # Direct unpacking: documents, collection_name
+        documents, collection_name = args
+        activity.logger.info(f"Using direct args unpacking: {len(documents)} documents for collection '{collection_name}'")
+    elif len(args) == 1 and isinstance(args[0], list) and len(args[0]) == 2:
+        # Wrapped in an extra list: [[documents], collection_name]
+        documents, collection_name = args[0]
+        activity.logger.info(f"Using nested list unpacking: {len(documents)} documents for collection '{collection_name}'")
+    else:
+        raise ValueError(f"Unexpected arguments structure: args={args}, kwargs={kwargs}")
+    
+    activity.logger.info(f"Starting embedding and indexing for {len(documents)} documents in collection '{collection_name}'")
+    
     qdrant_client = None
     start_time = time.time()
     
@@ -55,7 +72,10 @@ async def perform_embedding_and_indexing_activity(documents: List[Dict[str, Any]
             client_args["api_key"] = QDRANT_API_KEY
         
         qdrant_client = QdrantClient(**client_args)
-        logger.info(f"Connected to Qdrant at {QDRANT_HOST}")
+        
+        # Set the FastEmbed model for this client instance
+        qdrant_client.set_model(EMBEDDING_MODEL_NAME)
+        logger.info(f"Connected to Qdrant at {QDRANT_HOST} with embedding model: {EMBEDDING_MODEL_NAME}")
         
         # Prepare documents for FastEmbed integration
         documents_to_add = []

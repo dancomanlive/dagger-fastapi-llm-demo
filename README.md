@@ -52,10 +52,16 @@ Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system
 
 ### 4. Code/Implementation
 - `services/gradio_service/main.py`: Chat UI with Temporal client integration.
-- `services/temporal_service/workflows.py`: RetrievalWorkflow and DocumentProcessingWorkflow.
+- `services/gradio_service/rag_service.py`: RAG pipeline integration and backend communication.
+- `services/temporal_service/workflows.py`: Temporal workflows for document processing.
 - `services/temporal_service/activities.py`: Workflow activities (chunking, embedding).
+- `services/temporal_service/pipeline_executor.py`: Centralized pipeline execution logic.
+- `services/temporal_service/normalization.py`: Data normalization and transformation utilities.
 - `services/retriever_service/activities.py`: Vector search activities for Temporal.
 - `services/embedding_service/activities.py`: Text embedding activities for Temporal.
+- `services/workflow_composer_service/`: Advanced workflow composition and agent orchestration.
+- `tests/`: Centralized test suite with comprehensive coverage.
+- `scripts/`: Automation scripts for testing and maintenance.
 
 ---
 
@@ -64,11 +70,34 @@ Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system
 | Service           | Purpose                        | Key Functions                     |
 |-------------------|-------------------------------|-----------------------------------|
 | Gradio            | Chat UI + Temporal Client     | Web interface, workflow triggers |
-| Temporal Worker   | Workflow orchestration        | RetrievalWorkflow, Activities     |
+| Temporal Worker   | Workflow orchestration        | Workflows, Activities, Pipeline   |
 | Retriever         | Vector search activities      | search_vectors, index_vectors     |
 | Embedding         | Text embedding activities     | embed_text, embed_query           |
+| Workflow Composer | Workflow composition          | Agent orchestration, GraphQL API |
 | Qdrant            | Vector Database               | Document storage, similarity      |
 | PostgreSQL        | Temporal State Store          | Workflow persistence              |
+
+---
+
+## Testing & Development
+
+### Test Structure
+- **Unit Tests**: Individual service tests in `services/*/tests/`
+- **Integration Tests**: Cross-service tests in `tests/`
+- **E2E Tests**: Full pipeline tests with `scripts/e2e_test.sh`
+- **Normalization Tests**: TDD-style data transformation tests
+
+### Running Tests
+```bash
+# Run all tests
+python run_tests.py
+
+# Run E2E tests
+scripts/e2e_test.sh
+
+# Clean up test collections
+scripts/cleanup_collections.sh
+```
 
 ---
 
@@ -90,6 +119,14 @@ Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system
    ```bash
    python upload_documents.py
    ```
+3. **Run tests:**
+   ```bash
+   python run_tests.py
+   ```
+4. **Run E2E tests:**
+   ```bash
+   scripts/e2e_test.sh
+   ```
 
 **Access interfaces:**
 - **Chat Interface**: http://localhost:7860 (Main user interface)
@@ -102,28 +139,53 @@ Enterprise-grade microservices-based Retrieval-Augmented Generation (RAG) system
 
 ```
 ├── docker-compose.yml       # Simplified Temporal-based orchestration
-├── requirements.txt         # Root dependencies  
+├── requirements.txt         # Root dependencies
+├── run_tests.py            # Test runner entry point
+├── upload_documents.py     # Document upload utility
+├── e2e_requirements.txt    # E2E testing dependencies
+├── scripts/                # Automation scripts
+│   ├── e2e_test.sh        # End-to-end testing script
+│   └── cleanup_collections.sh # Qdrant cleanup utility
+├── tests/                  # Centralized test suite
+│   ├── run_tests.py       # Main test runner
+│   ├── test_temporal_e2e.py # E2E tests
+│   ├── test_normalization_tdd.py # Normalization tests
+│   ├── test_normalization_integration.py # Integration tests
+│   └── test_*.py          # Additional test files
+├── document_files/         # Sample documents for testing
+│   ├── ai-report.pdf
+│   ├── ai-science.pdf
+│   └── README.md
 ├── services/
 │   ├── gradio_service/     # Chat interface + Temporal client
 │   │   ├── main.py         # Gradio app with Temporal integration
-│   │   ├── tests/          # Temporal integration tests
-│   │   ├── features/       # BDD scenarios
+│   │   ├── rag_service.py  # RAG pipeline integration
+│   │   ├── gradio_ui.py    # UI components
+│   │   ├── tests/          # Gradio integration tests
 │   │   ├── Dockerfile      # Gradio container
 │   │   └── requirements.txt # Gradio dependencies
 │   ├── temporal_service/   # Workflow orchestration
-│   │   ├── workflows.py    # RetrievalWorkflow, DocumentProcessingWorkflow
+│   │   ├── workflows.py    # Temporal workflows
 │   │   ├── activities.py   # Document processing activities
+│   │   ├── pipeline_executor.py # Pipeline execution logic
+│   │   ├── normalization.py # Centralized normalization
 │   │   ├── worker.py       # Temporal worker
-│   │   ├── tests/          # Workflow tests
-│   │   └── features/       # BDD scenarios
+│   │   ├── transforms/     # Data transformation modules
+│   │   └── tests/          # Workflow tests
 │   ├── retriever_service/  # Vector search activities
 │   │   ├── activities.py   # search_vectors, index_vectors
 │   │   ├── worker.py       # Activity worker
 │   │   └── tests/          # Activity tests
-│   └── embedding_service/  # Text embedding activities
-│       ├── activities.py   # embed_text, embed_query
-│       ├── worker.py       # Activity worker
-│       └── tests/          # Activity tests
+│   ├── embedding_service/  # Text embedding activities
+│   │   ├── activities.py   # embed_text, embed_query
+│   │   ├── worker.py       # Activity worker
+│   │   └── tests/          # Activity tests
+│   └── workflow_composer_service/ # Workflow composition
+│       ├── activities.py   # Composition activities
+│       ├── worker.py       # Composition worker
+│       ├── api/            # GraphQL API
+│       ├── agents/         # AI agents
+│       └── tests/          # Composition tests
 └── ci/
     └── ci_pipeline.py      # CI/CD pipeline
 ```

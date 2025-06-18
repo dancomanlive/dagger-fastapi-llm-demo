@@ -107,6 +107,6 @@ async def embed_documents_activity(documents: List[Dict[str, Any]], embedding_se
 
 
 @activity.defn
-async def health_check_activity() -> str:
+async def health_check_activity(input_data: Any = None) -> str:
     """Simple health check activity."""
     return "Activity worker is healthy"

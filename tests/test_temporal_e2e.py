@@ -2,13 +2,13 @@
 """
 End-to-End Temporal Workflow Test Script
 
-This script tests the complete document processing pipeline using pure Temporal workflows:
-1. DocumentProcessingWorkflow - processes and embeds documents
-2. RetrievalWorkflow - searches for relevant documents
+This script tests the complete document processing pipeline using GenericPipelineWorkflow:
+1. document_processing pipeline - processes and embeds documents
+2. document_retrieval pipeline - searches for relevant documents
 3. Validates the complete workflow chain
 
 Usage:
-    python test_temporal_e2e.py
+    python tests/test_temporal_e2e.py
 """
 
 import asyncio
@@ -32,19 +32,21 @@ TEST_DOCUMENT = {
 
 TEST_QUERY = "machine learning algorithms"
 
-async def test_document_processing_workflow(client: Client) -> str:
-    """Test the DocumentProcessingWorkflow"""
-    print("🔄 Testing DocumentProcessingWorkflow...")
+print(f"🔧 DEBUG: Using collection name: {COLLECTION_NAME}")
+
+async def test_document_processing_pipeline(client: Client) -> str:
+    """Test the document_processing pipeline using GenericPipelineWorkflow"""
+    print("🔄 Testing document_processing pipeline...")
     
     workflow_id = f"e2e-doc-processing-{int(time.time() * 1000)}"
     
     try:
-        # Start DocumentProcessingWorkflow
+        # Start GenericPipelineWorkflow with document_processing pipeline
         workflow_handle = await client.start_workflow(
-            "DocumentProcessingWorkflow",
-            args=[[TEST_DOCUMENT]],  # List of documents
+            "GenericPipelineWorkflow",
+            args=["document_processing", {"documents": [TEST_DOCUMENT], "collection": COLLECTION_NAME}],  # Pipeline name and documents with collection
             id=workflow_id,
-            task_queue="document-processing-queue"  # Match the worker's task queue
+            task_queue="document-processing-queue"
         )
         
         print(f"   Started workflow: {workflow_id}")
@@ -52,13 +54,13 @@ async def test_document_processing_workflow(client: Client) -> str:
         # Wait for completion
         result = await workflow_handle.result()
         
-        print("   ✅ DocumentProcessingWorkflow completed successfully!")
+        print("   ✅ Document processing pipeline completed successfully!")
         print(f"   📊 Result: {result}")
         
         return workflow_id
         
     except Exception as e:
-        print(f"   ❌ DocumentProcessingWorkflow failed: {str(e)}")
+        print(f"   ❌ Document processing pipeline failed: {str(e)}")
         print(f"   🔍 Exception type: {type(e).__name__}")
         if hasattr(e, '__cause__') and e.__cause__:
             print(f"   🔍 Root cause: {e.__cause__}")
@@ -67,19 +69,19 @@ async def test_document_processing_workflow(client: Client) -> str:
         traceback.print_exc()
         raise
 
-async def test_retrieval_workflow(client: Client) -> Dict[str, Any]:
-    """Test the RetrievalWorkflow"""
-    print("🔍 Testing RetrievalWorkflow...")
+async def test_retrieval_pipeline(client: Client) -> Dict[str, Any]:
+    """Test the document_retrieval pipeline using GenericPipelineWorkflow"""
+    print("🔍 Testing document_retrieval pipeline...")
     
     workflow_id = f"e2e-retrieval-{int(time.time() * 1000)}"
     
     try:
-        # Start RetrievalWorkflow
+        # Start GenericPipelineWorkflow with document_retrieval pipeline
         workflow_handle = await client.start_workflow(
-            "RetrievalWorkflow",
-            args=[TEST_QUERY, 3],  # query and top_k (collection_name comes from environment)
+            "GenericPipelineWorkflow",
+            args=["document_retrieval", {"query": TEST_QUERY, "top_k": 3, "collection": COLLECTION_NAME}],  # Pipeline name and input
             id=workflow_id,
-            task_queue="document-processing-queue"  # Match the worker's task queue
+            task_queue="document-processing-queue"
         )
         
         print(f"   Started workflow: {workflow_id}")
@@ -87,28 +89,28 @@ async def test_retrieval_workflow(client: Client) -> Dict[str, Any]:
         # Wait for completion
         result = await workflow_handle.result()
         
-        print("   ✅ RetrievalWorkflow completed successfully!")
-        print(f"   📊 Found {len(result.get('search_result', {}).get('results', []))} results")
+        print("   ✅ Document retrieval pipeline completed successfully!")
+        print(f"   📊 Found {len(result.get('final_result', {}).get('retrieved_documents', []))} results")
         
         return result
         
     except Exception as e:
-        print(f"   ❌ RetrievalWorkflow failed: {str(e)}")
+        print(f"   ❌ Document retrieval pipeline failed: {str(e)}")
         raise
 
-async def test_health_check_workflow(client: Client) -> str:
-    """Test the HealthCheckWorkflow"""
-    print("🏥 Testing HealthCheckWorkflow...")
+async def test_health_check_pipeline(client: Client) -> str:
+    """Test the health_check pipeline using GenericPipelineWorkflow"""
+    print("🏥 Testing health_check pipeline...")
     
     workflow_id = f"e2e-health-{int(time.time() * 1000)}"
     
     try:
-        # Start HealthCheckWorkflow
+        # Start GenericPipelineWorkflow with health_check pipeline
         workflow_handle = await client.start_workflow(
-            "HealthCheckWorkflow",
-            args=[],
+            "GenericPipelineWorkflow",
+            args=["health_check", None],  # Pipeline name and input (None for health check)
             id=workflow_id,
-            task_queue="document-processing-queue"  # Match the worker's task queue
+            task_queue="document-processing-queue"
         )
         
         print(f"   Started workflow: {workflow_id}")
@@ -116,37 +118,39 @@ async def test_health_check_workflow(client: Client) -> str:
         # Wait for completion
         result = await workflow_handle.result()
         
-        print("   ✅ HealthCheckWorkflow completed successfully!")
+        print("   ✅ Health check pipeline completed successfully!")
         print(f"   📊 Health status: {result}")
         
         return result
         
     except Exception as e:
-        print(f"   ❌ HealthCheckWorkflow failed: {str(e)}")
+        print(f"   ❌ Health check pipeline failed: {str(e)}")
         raise
 
 async def validate_retrieval_results(retrieval_result: Dict[str, Any]) -> bool:
     """Validate that retrieval results contain relevant content"""
     print("🔬 Validating retrieval results...")
     
-    search_result = retrieval_result.get("search_result", {})
-    results = search_result.get("results", [])
+    final_result = retrieval_result.get("final_result", {})
+    retrieved_documents = final_result.get("retrieved_documents", [])
     
-    if not results:
-        print("   ❌ No search results found")
+    if not retrieved_documents:
+        print("   ❌ No retrieved documents found")
+        print(f"   🔍 Final result keys: {list(final_result.keys()) if final_result else 'None'}")
+        print(f"   🔍 Full result structure: {retrieval_result}")
         return False
     
     # Check if any result contains relevant keywords
-    relevant_keywords = ["machine learning", "neural network", "artificial intelligence"]
+    relevant_keywords = ["machine learning", "neural network", "artificial intelligence", "deep learning"]
     found_relevant = False
     
-    for i, result in enumerate(results):
-        content = result.get("content", "").lower()
+    for i, result in enumerate(retrieved_documents):
+        text = result.get("text", "").lower()
         score = result.get("score", 0)
-        print(f"   📄 Result {i+1}: score={score:.3f}, content_length={len(content)}")
+        print(f"   📄 Result {i+1}: score={score:.3f}, text_length={len(text)}")
         
         for keyword in relevant_keywords:
-            if keyword in content:
+            if keyword in text:
                 print(f"      ✅ Found relevant keyword: '{keyword}'")
                 found_relevant = True
                 break
@@ -174,11 +178,11 @@ async def main():
         print("")
         
         # Test 1: Health Check
-        await test_health_check_workflow(client)
+        await test_health_check_pipeline(client)
         print("")
         
         # Test 2: Document Processing
-        await test_document_processing_workflow(client)
+        await test_document_processing_pipeline(client)
         print("")
         
         # Wait a moment for indexing to complete
@@ -187,7 +191,7 @@ async def main():
         print("")
         
         # Test 3: Document Retrieval
-        retrieval_result = await test_retrieval_workflow(client)
+        retrieval_result = await test_retrieval_pipeline(client)
         print("")
         
         # Test 4: Validate Results
