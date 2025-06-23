@@ -1,18 +1,18 @@
 """
-Agent tools package for Pattern 2 workflow generation.
+Agent tools package for YAML generation workflow.
 """
-from .intent_inference import infer_user_intent
-from .service_discovery import discover_services, get_activity_details, query_graphql
-from .workflow_planning import plan_activity_sequence
-from .workflow_execution import execute_planned_workflow
-from .smart_assistant import smart_workflow_assistant
+from .service_discovery import discover_services_complete
+from .dynamic_yaml_generation import (
+    generate_services_yaml_from_graphql,
+    save_generated_services_yaml
+)
+from .test_validation import (
+    validate_services_yaml_with_tests
+)
 
 __all__ = [
-    'infer_user_intent',
-    'discover_services', 
-    'get_activity_details',
-    'query_graphql',
-    'plan_activity_sequence',
-    'execute_planned_workflow',
-    'smart_workflow_assistant'
+    'discover_services_complete',
+    'generate_services_yaml_from_graphql',
+    'save_generated_services_yaml',
+    'validate_services_yaml_with_tests'
 ]

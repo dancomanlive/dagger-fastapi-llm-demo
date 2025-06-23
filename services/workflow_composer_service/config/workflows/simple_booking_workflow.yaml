@@ -1,9 +1,0 @@
-workflows:
-- activities:
-  - id: utility_service.validate_inputs_activity
-    parameters: {}
-  - id: booking_service.check_availability_activity
-    parameters: {}
-  description: This workflow validates inputs and checks availability.
-  name: Simple Booking Workflow
-  version: 1.0.0

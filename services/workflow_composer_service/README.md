@@ -22,22 +22,19 @@ This service acts as the orchestration layer that allows LLMs to:
 
 ## Key Components
 
-### Service Registry (`service_registry.py`)
-- Maintains metadata for all available activities
-- Supports both file-based configuration and runtime registration
-- Exports LLM-friendly format for easy discovery
+### Production Discovery System (`docker_production_discovery.py`)
+- Real-time service discovery using Temporal API and HTTP metadata endpoints
+- Discovers active task queues and running workers
+- Fetches complete activity schemas with input/output specifications
+- Provides live system observability and health status
 
-### Workflow Engine (`workflow_engine.py`)
-- Functional approach to workflow execution
-- Dynamic workflow definitions as data structures
-- Integration with Temporal for reliable execution
+### GraphQL API (`gql_schema/schema.py`)
+- Complete introspection of available capabilities using production discovery
+- Structured queries for real-time activity discovery
+- Mutations for workflow creation and YAML generation
+- HTTP-based API with full service metadata
 
-### GraphQL Schema (`schema.py`)
-- Complete introspection of available capabilities
-- Structured queries for activity discovery
-- Mutations for workflow creation and execution
-
-### LLM Composer (`llm_composer.py`)
+### GraphQL API
 - High-level API for LLM interaction
 - Workflow composition and validation
 - Activity parameter mapping and data flow
@@ -65,11 +62,7 @@ The service will start on port 8000 with the following endpoints:
 
 ### Configuration
 
-The service uses YAML configuration files in the `config/` directory:
-
-- `config/registry.yaml` - Service and activity definitions
-- `config/workflows/` - Workflow definitions
-- `config/workflow_examples.yaml` - Example patterns for LLM guidance
+The service uses dynamic discovery with no static configuration files required. All services and activities are discovered automatically from running Temporal workers and their metadata endpoints.
 
 ### Example LLM Interaction
 
@@ -126,9 +119,10 @@ pytest tests/
 
 ### Adding New Activities
 
-1. Update `config/registry.yaml` with the new activity metadata
-2. Ensure the corresponding service implements the activity
-3. The activity will be automatically discoverable by LLMs
+New activities are automatically discovered when services start up. The dynamic discovery system will:
+1. Detect new services via Temporal task queue monitoring
+2. Query service metadata endpoints for activity definitions
+3. Make activities immediately available to LLMs without configuration changes
 
 ### Creating Workflow Examples
 

@@ -14,11 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create config directory if it doesn't exist
-RUN mkdir -p config/workflows
-
 # Expose port for the API
-EXPOSE 8000
+EXPOSE 8001
 
 # Command to run the service
-CMD ["python", "main.py"]
+CMD ["python", "run_graphql_server.py"]

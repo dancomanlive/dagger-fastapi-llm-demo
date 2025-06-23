@@ -26,18 +26,42 @@ services:
       - smartagent-net
     restart: unless-stopped
 
+  # Workflow Composer Service (GraphQL API)
+  workflow-composer:
+    build:
+      context: ./services/workflow_composer_service
+    ports:
+      - "8001:8001"  # GraphQL API endpoint
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    depends_on:
+      temporal:
+        condition: service_healthy
+    networks:
+      - smartagent-net
+    restart: unless-stopped
+
   # Embedding Service (Temporal Activities)
   embedding-service:
     build:
       context: ./services/embedding_service
       args:
         EMBEDDING_MODEL_ARG: "BAAI/bge-small-en-v1.5"
+    ports:
+      - "8082:8082"  # Metadata endpoint
     environment:
       - TEMPORAL_HOST=temporal:7233
       - TEMPORAL_NAMESPACE=default
       - TEMPORAL_TASK_QUEUE=embedding-task-queue
       - PYTHONPATH=/app
       - EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
+      - METADATA_PORT=8082
     volumes:
       - fastembed_models:/root/.cache/fastembed
     depends_on:
@@ -53,11 +77,14 @@ services:
       context: ./services/retriever_service
       args:
         EMBEDDING_MODEL_ARG: "BAAI/bge-small-en-v1.5"
+    ports:
+      - "8083:8083"  # Metadata endpoint
     environment:
       - QDRANT_HOST_FOR_SERVICE=http://qdrant:6333
       - QDRANT_API_KEY=${QDRANT_API_KEY:-}
       - TEMPORAL_HOST=temporal:7233
       - TEMPORAL_NAMESPACE=default
+      - METADATA_PORT=8083
       - TEMPORAL_TASK_QUEUE=retriever-task-queue
       - PYTHONPATH=/app
       - EMBEDDING_MODEL=BAAI/bge-small-en-v1.5

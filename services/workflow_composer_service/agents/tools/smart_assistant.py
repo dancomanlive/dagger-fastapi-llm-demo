@@ -6,7 +6,7 @@ from smolagents import tool
 
 # Import the modular tools
 from .intent_inference import infer_user_intent
-from .service_discovery import discover_services
+from .service_discovery import discover_services_complete
 from .workflow_planning import plan_activity_sequence
 from .workflow_execution import execute_planned_workflow
 
@@ -52,7 +52,7 @@ def smart_workflow_assistant(user_message: str) -> str:
         
         # Step 2: Discover Available Activities  
         result.append("🔍 STEP 2: ACTIVITY REGISTRY QUERY")
-        available_activities = discover_services()
+        available_activities = discover_services_complete()
         
         if "error" in available_activities:
             return f"❌ Service discovery failed: {available_activities['error']}"

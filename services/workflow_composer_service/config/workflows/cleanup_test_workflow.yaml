@@ -1,9 +1,0 @@
-workflows:
-- activities:
-  - id: utility_service.validate_inputs_activity
-    parameters: {}
-  - id: utility_service.format_response_activity
-    parameters: {}
-  description: Simple test workflow after cleanup
-  name: cleanup_test_workflow
-  version: 1.0.0

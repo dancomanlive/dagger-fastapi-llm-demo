@@ -11,74 +11,60 @@ WORKFLOW_SERVICE_URL = "http://localhost:8001"
 
 
 @tool
-def discover_services() -> Dict[str, Any]:
+def discover_services_complete() -> Dict[str, Any]:
     """
-    Discover all available services and their activities.
-    Returns detailed information about what services are available and what they can do.
+    Perform complete service discovery using the optimized GraphQL query.
+    This is much more efficient than schema introspection as it uses a pre-optimized query
+    to get all service details, activities, parameters, and system status in one call.
+    
+    Returns:
+        Complete service information including activities, I/O parameters, timeouts, and system status
     """
     try:
-        response = requests.get(f"{WORKFLOW_SERVICE_URL}/services")
-        services_data = response.json()
-        
-        # Format for better readability
-        summary = {
-            "total_services": len(services_data["services"]),
-            "services": {}
-        }
-        
-        for service_name, service_info in services_data["services"].items():
-            activities = service_info["activities"]
-            summary["services"][service_name] = {
-                "activity_count": len(activities),
-                "activities": {
-                    name: {
-                        "description": info["description"],
-                        "parameters": [p["name"] for p in info.get("parameters", [])]
+        # The optimized GraphQL query that gets everything we need in one call
+        optimized_query = '''
+        {
+            services {
+                name
+                taskQueue
+                temporalStatus
+                health
+                activities {
+                    name
+                    description
+                    parameters {
+                        name
+                        type
+                        description
+                        required
                     }
-                    for name, info in activities.items()
+                    returns {
+                        type
+                        description
+                    }
+                    timeoutSeconds
+                    retryAttempts
                 }
             }
+            discoveryInfo {
+                temporalConnected
+            }
+        }
+        '''
         
-        return summary
-    except Exception as e:
-        return {"error": f"Failed to discover services: {str(e)}"}
-
-
-@tool
-def get_activity_details(activity_id: str) -> Dict[str, Any]:
-    """
-    Get detailed information about a specific activity.
-    
-    Args:
-        activity_id: The ID of the activity (e.g., "utility_service.validate_inputs_activity")
-    
-    Returns:
-        Detailed information about the activity including parameters and return types.
-    """
-    try:
-        response = requests.get(f"{WORKFLOW_SERVICE_URL}/activities/{activity_id}")
-        return response.json()
-    except Exception as e:
-        return {"error": f"Failed to get activity details: {str(e)}"}
-
-
-@tool
-def query_graphql(query: str) -> Dict[str, Any]:
-    """
-    Execute a GraphQL query against the activity registry for introspection.
-    
-    Args:
-        query: GraphQL query string
-        
-    Returns:
-        GraphQL query results
-    """
-    try:
         response = requests.post(
             f"{WORKFLOW_SERVICE_URL}/graphql",
-            json={"query": query},
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
+            json={"query": optimized_query}
         )
-        return response.json()
+        
+        if response.status_code == 200:
+            result = response.json()
+            if "errors" in result:
+                return {"error": f"GraphQL errors: {result['errors']}"}
+            return result["data"]
+        else:
+            return {"error": f"HTTP {response.status_code}: {response.text}"}
+            
     except Exception as e:
-        return {"error": f"GraphQL query failed: {str(e)}"}
+        return {"error": f"Failed to discover services: {str(e)}"}

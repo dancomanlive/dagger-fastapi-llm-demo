@@ -1,7 +1,0 @@
-workflows:
-- activities:
-  - id: utility_service.validate_inputs_activity
-    parameters: {}
-  description: Test workflow
-  name: test_no_loop_workflow
-  version: 1.0.0

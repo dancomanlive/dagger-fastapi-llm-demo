@@ -8,6 +8,8 @@ to handle document embedding and indexing operations.
 import os
 import time
 import logging
+import re
+import uuid
 from typing import Dict, Any, List
 from qdrant_client import QdrantClient
 from temporalio import activity
@@ -22,6 +24,54 @@ EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5") # 
 # Clean up PAYLOAD_TEXT_FIELD_NAME by removing comments and extra quotes
 _raw_payload_field = os.getenv("PAYLOAD_TEXT_FIELD_NAME", "document")
 PAYLOAD_TEXT_FIELD_NAME = _raw_payload_field.split('#')[0].strip().strip('"')
+
+
+@activity.defn
+async def chunk_documents_activity(documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Chunk documents into paragraphs for better processing.
+    
+    Args:
+        documents: List of documents with 'id', 'text', and optional 'metadata'
+    
+    Returns:
+        List of chunked documents with chunk IDs
+    """
+    logger.info(f"Chunking {len(documents)} documents")
+    
+    chunked_docs = []
+    
+    for doc in documents:
+        doc_id = doc["id"]
+        text = doc["text"]
+        metadata = doc.get("metadata", {})
+        
+        # Split text into paragraphs (by double newlines or single newlines followed by whitespace)
+        paragraphs = re.split(r'\n\s*\n|\n(?=\s)', text.strip())
+        
+        # Filter out empty paragraphs and very short ones
+        valid_paragraphs = [p.strip() for p in paragraphs if len(p.strip()) > 20]
+        
+        # Create chunks
+        for chunk_idx, paragraph in enumerate(valid_paragraphs):
+            # Generate a proper UUID for the chunk
+            chunk_id = str(uuid.uuid4())
+            
+            chunk_metadata = metadata.copy()
+            chunk_metadata.update({
+                "original_doc_id": doc_id,
+                "chunk_index": chunk_idx,
+                "total_chunks": len(valid_paragraphs)
+            })
+            
+            chunked_docs.append({
+                "id": chunk_id,
+                "text": paragraph,
+                "metadata": chunk_metadata
+            })
+    
+    logger.info(f"Created {len(chunked_docs)} chunks from {len(documents)} documents")
+    return chunked_docs
 
 
 @activity.defn

@@ -34,8 +34,6 @@ ALLOWED_HARDCODING_FILES = {
 HARDCODED_PATTERNS = {
     'orchestration_hardcoding': [
         # Direct activity function calls without dynamic resolution (but not function definitions)
-        r'(?<!async def )chunk_documents_activity\(',
-        r'(?<!async def )embed_documents_activity\(',
         r'(?<!async def )health_check_activity\(',
         # Hardcoded task queue references (not env defaults)
         r'"EmbeddingTaskQueue"',
@@ -43,12 +41,8 @@ HARDCODED_PATTERNS = {
         # Hardcoded service URLs in orchestration logic
         r'"http://embedding_service"',
         r'"http://retrieval_service"',
-        # Pipeline hardcoding in workflow execute_activity calls
-        r'workflow\.execute_activity.*"chunk_documents_activity"',
-        r'workflow\.execute_activity.*"embed_documents_activity"',
-        # Import statements for specific activities (should be dynamic)
-        r'from activities import.*chunk_documents_activity',
-        r'from activities import.*embed_documents_activity'
+        # Pipeline hardcoding in workflow execute_activity calls - removing chunk and embed since they moved
+        # Import statements for specific activities (should be dynamic) - removing moved activities
     ]
 }
 

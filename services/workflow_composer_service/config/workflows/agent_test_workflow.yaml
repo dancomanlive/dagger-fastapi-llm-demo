@@ -1,7 +1,0 @@
-workflows:
-- activities:
-  - id: utility_service.validate_inputs_activity
-    parameters: {}
-  description: Agent test
-  name: agent_test_workflow
-  version: 1.0.0

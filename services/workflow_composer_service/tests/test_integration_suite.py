@@ -62,7 +62,7 @@ class WorkflowComposerIntegrationTests(unittest.TestCase):
         # Check required modules can be imported
         required_modules = [
             "agents.agent_factory",
-            "agents.tools.smart_assistant",
+            "agents.tools.service_discovery",
             "tests.test_utils",
             "smolagents", 
             "requests",
@@ -80,12 +80,11 @@ class WorkflowComposerIntegrationTests(unittest.TestCase):
         # Check file structure
         essential_files = [
             "agents/agent_factory.py",
-            "agents/tools/smart_assistant.py",
+            "agents/tools/service_discovery.py",
             "tests/test_utils.py",
             "activities.py", 
-            "service_registry.py",
-            "api/main.py",
-            "graphql/schema.py"
+            "gql_schema/schema.py",
+            "docker_production_discovery.py"
         ]
         for file in essential_files:
             file_path = self.service_dir / file
@@ -178,33 +177,22 @@ class WorkflowComposerIntegrationTests(unittest.TestCase):
             print("⚠️  Skipping Pattern 2 test - no OpenAI API key")
             return
         
-        from agents.tools.smart_assistant import smart_workflow_assistant
-        from agents.tools.intent_inference import infer_user_intent
-        from agents.tools.service_discovery import discover_services
+        from agents.tools.service_discovery import discover_services_complete
+        from agents.tools.dynamic_yaml_generation import generate_services_yaml_from_graphql
         
-        # Test intent inference
-        user_query = "I need to find accommodation in Paris for 2 people from Dec 15-20"
-        intent_result = infer_user_intent(user_query)
-        
-        # Validate intent result has structure (not just formatted string)
-        self.assertIsInstance(intent_result, (dict, str))
-        if isinstance(intent_result, str):
-            print("⚠️  Intent inference returning formatted string - needs structured data")
-        
-        # Test service discovery
-        services = discover_services()  # Function takes no arguments
+        # Test service discovery (the core tool)
+        services = discover_services_complete()  # Function takes no arguments
         self.assertIsInstance(services, (list, dict, str))
         
-        # Test smart workflow assistant
-        workflow_result = smart_workflow_assistant(
-            "Create a workflow to book accommodation in Paris"
-        )
-        
-        # Validate workflow assistant returns structured data
-        self.assertIsInstance(workflow_result, (dict, str))
-        if isinstance(workflow_result, str):
-            print("⚠️  Workflow assistant returning formatted string - this is expected for readable output")
+        # Test YAML generation workflow
+        if isinstance(services, str) and "services" in services.lower():
+            # Try to generate YAML from the discovery results
+            yaml_result = generate_services_yaml_from_graphql()
+            self.assertIsInstance(yaml_result, (dict, str))
             
+            if isinstance(yaml_result, str):
+                print("⚠️  YAML generation returning formatted string - this is expected for readable output")
+        
         print("✅ Pattern 2 validation PASSED")
 
     # ========================================
@@ -288,7 +276,6 @@ if __name__ == "__main__":
         main_files = [
             "smolagents_integration.py",
             "activities.py",
-            "workflow_engine.py", 
             "main.py"
         ]
         
@@ -325,15 +312,15 @@ if __name__ == "__main__":
             print("⚠️  Skipping E2E test - no OpenAI API key")
             return
         
-        # Test that the smart workflow assistant function is available
+        # Test that the service discovery function is available
         try:
-            from agents.tools.smart_assistant import smart_workflow_assistant
+            from agents.tools.service_discovery import discover_services_complete
             
-            # Test with a simple request (without actually running the agent to avoid loops)
-            test_result = smart_workflow_assistant("test simple workflow creation")
-            self.assertIsInstance(test_result, str)  # Should return formatted string
+            # Test with a simple discovery call
+            test_result = discover_services_complete()
+            self.assertIsInstance(test_result, (str, dict, list))  # Should return discovery data
             
-            print("✅ Pattern 2 workflow assistant accessible and functional")
+            print("✅ Service discovery tool accessible and functional")
             
         except Exception as e:
             print(f"⚠️  E2E test encountered issue: {e}")

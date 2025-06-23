@@ -2,6 +2,11 @@ services:
   embedding_service:
     task_queue: "embedding-task-queue"
     activities:
+      chunk_documents_activity:
+        timeout_minutes: 10
+        retry_attempts: 3
+        retry_initial_interval_seconds: 1
+        retry_maximum_interval_seconds: 30
       perform_embedding_and_indexing_activity:
         timeout_minutes: 30
         retry_attempts: 3
@@ -18,12 +23,6 @@ services:
         retry_maximum_interval_seconds: 30
 
   local_activities:
-    chunk_documents_activity:
-      timeout_minutes: 10
-      retry_attempts: 3
-      retry_initial_interval_seconds: 1
-      retry_maximum_interval_seconds: 30
-    
     health_check_activity:
       timeout_minutes: 1
       retry_attempts: 2
@@ -37,7 +36,8 @@ pipelines:
     description: "Processes documents through chunking and embedding"
     steps:
       - activity: "chunk_documents_activity"
-        type: "local"
+        type: "remote"
+        service: "embedding_service"
         input_transform: "documents"
       - activity: "perform_embedding_and_indexing_activity"
         type: "remote"

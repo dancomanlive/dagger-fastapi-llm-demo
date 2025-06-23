@@ -13,8 +13,8 @@ if __name__ == "__main__":
     from api.main import app
     
     print("🚀 Starting Workflow Composer Service API...")
-    print("📖 API Documentation: http://localhost:8000/docs")
-    print("🔍 GraphQL Playground: http://localhost:8000/graphql")
+    print("📖 API Documentation: http://localhost:8001/docs")
+    print("🔍 GraphQL Playground: http://localhost:8001/graphql")
     print("=" * 60)
     
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8001, reload=False)
