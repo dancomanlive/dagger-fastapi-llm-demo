@@ -69,6 +69,11 @@ class GradioInterface:
             gr.Markdown(f"# 🤖 {config.ui.title}")
             gr.Markdown(config.ui.description)
             
+            # Quick access links
+            gr.Markdown("""
+            📄 **[Upload Documents](http://localhost:7861)** | 🔍 **[Temporal Monitoring](http://localhost:8081)** | 💬 **Chat Interface** (current)
+            """, elem_classes=["quick-links"])
+            
             with gr.Row():
                 # Main chat interface
                 with gr.Column(scale=3):

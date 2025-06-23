@@ -28,8 +28,8 @@ ENV PYTHONUNBUFFERED=1
 ENV FASTAPI_SERVICE_URL=http://fastapi:8000
 ENV RETRIEVER_SERVICE_URL=http://retriever-service:8000
 
-# Expose port for Gradio
-EXPOSE 7860
+# Expose ports for both Gradio interfaces
+EXPOSE 7860 7861
 
-# Run the Gradio app with new entry point
-CMD ["python", "app.py"]
+# Run the launcher that starts both interfaces
+CMD ["python", "launch_both.py"]

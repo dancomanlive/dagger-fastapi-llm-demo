@@ -161,9 +161,9 @@ python upload_documents.py
    - View vector search operations
 
 ### Workflow Visualization
-- Document upload → Temporal orchestrates: chunking → embedding → storage
-- Chat query → Temporal orchestrates: search → retrieval → response generation
-- All operations visible in Temporal UI with full execution traces
+- **Document Upload** → Web interface at http://localhost:7861 → Temporal orchestrates: chunking → embedding → storage
+- **Chat Query** → Web interface at http://localhost:7860 → Temporal orchestrates: search → retrieval → response generation
+- **All Operations** → Visible in Temporal UI with full execution traces at http://localhost:8081
 
 ---
 
@@ -171,7 +171,7 @@ python upload_documents.py
 
 ```
 ├── docker-compose.yml       # Microservice orchestration with Temporal
-├── upload_documents.py     # Document upload utility (local setup)
+├── upload_documents.py     # Simplified upload launcher (see web interface)
 ├── scripts/                # Testing and maintenance automation
 │   ├── e2e_test.sh        # End-to-end workflow testing
 │   └── cleanup_collections.sh # Vector database cleanup
@@ -180,8 +180,10 @@ python upload_documents.py
 │   └── test_*.py          # Service integration tests
 ├── document_files/         # Sample documents for testing
 ├── services/               # Temporal-orchestrated microservices
-│   ├── gradio_service/     # Chat UI + Temporal workflow triggers
-│   │   ├── main.py         # Gradio app with workflow integration
+│   ├── gradio_service/     # Chat UI + Document Upload interfaces
+│   │   ├── app.py          # Main chat interface (port 7860)
+│   │   ├── upload_app.py   # Document upload interface (port 7861)
+│   │   ├── launch_both.py  # Launcher for both interfaces
 │   │   ├── rag_service.py  # RAG workflow client
 │   │   └── Dockerfile      # Containerized UI service
 │   ├── temporal_service/   # Workflow orchestration engine
